@@ -1,0 +1,174 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Travelbolt_AI | Hajj & Umrah Simplified</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        
+        /* Dark Theme Background */
+        .landing-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        /* ✈️ ANIMATION FOR THE PLANE */
+        @keyframes floatPlane {
+            0% { transform: translateY(0px) rotate(-2deg) translateX(0px); }
+            50% { transform: translateY(-25px) rotate(2deg) translateX(15px); }
+            100% { transform: translateY(0px) rotate(-2deg) translateX(0px); }
+        }
+
+        .plane-animation {
+            animation: floatPlane 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-body text-gray-900">
+    
+    <!-- ==================== NAVBAR ==================== -->
+    <nav class="bg-white shadow-md border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <!-- Logo -->
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-700 rounded-lg flex items-center justify-center shadow-lg shadow-blue-200">
+                <span class="material-symbols-outlined text-white">travel_explore</span>
+            </div>
+            <h1 class="text-2xl font-extrabold text-blue-700">Travelbolt_AI</h1>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="hidden md:flex gap-8 text-sm font-bold text-gray-600">
+            <a href="#" class="hover:text-blue-700 transition-colors">Home</a>
+            <a href="#features" class="hover:text-blue-700 transition-colors">Features</a>
+            <a href="#about" class="hover:text-blue-700 transition-colors">About</a>
+            <a href="#contact" class="hover:text-blue-700 transition-colors">Contact</a>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-4">
+            <a href="{% url 'travel_app:client_login' %}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition-colors">Login</a>
+            <a href="{% url 'travel_app:client_register' %}" class="px-4 py-2 bg-blue-700 text-white rounded-lg font-bold hover:bg-blue-800 transition-colors shadow-lg shadow-blue-200">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- ==================== HERO SECTION ==================== -->
+    <div class="landing-bg min-h-screen relative overflow-hidden flex items-center justify-center px-6 py-12">
+        
+        <!-- ============================================================ -->
+        <div class="absolute bottom-[-20%] right-[-15%] md:right-[-10%] w-[140%] md:w-[100%] opacity-90 pointer-events-none z-0">
+            <!-- Using your exact filename: plane.png.png -->
+            <img src="{% static 'images/plane.png.png' %}" alt="Flying Plane" class="plane-animation w-full object-contain drop-shadow-2xl">
+        </div>
+        <!-- ============================================================ -->
+
+        <!-- Content Wrapper (Keep this on top of the plane) -->
+        <div class="max-w-7xl w-full relative z-10">
+            <!-- Left Text Section -->
+            <div class="text-white max-w-2xl space-y-6">
+                <span class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-blue-200 text-xs font-bold border border-white/20">
+                    <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                    AI Powered Travel Assistant
+                </span>
+                
+                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">
+                    Plan Your <span class="text-blue-400">Hajj & Umrah</span><br>
+                    Journey With Confidence
+                </h1>
+                
+                <p class="text-blue-200 text-lg max-w-lg">
+                    Experience a seamless pilgrimage with Travelbolt_AI. Book flights, hotels, and manage your travel documents all in one place.
+                </p>
+                
+                <div class="flex gap-4 pt-4">
+                    <a href="{% url 'travel_app:client_register' %}" class="px-4 py-2 bg-blue-700 text-white rounded-lg font-bold hover:bg-blue-800 transition-colors shadow-lg shadow-blue-200">Get Started</a>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    
+
+    <!-- ==================== FEATURES SECTION ==================== -->
+    <div id="features" class="max-w-7xl mx-auto px-6 py-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4">
+                <span class="material-symbols-outlined">mosque</span>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900">Hajj & Umrah Packages</h3>
+            <p class="text-gray-500 mt-2">Curated pilgrimage packages with premium accommodations and guided rituals.</p>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4">
+                <span class="material-symbols-outlined">flight_takeoff</span>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900">Flight & Hotel Booking</h3>
+            <p class="text-gray-500 mt-2">Seamless booking for flights and hotels in Makkah and Madinah.</p>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4">
+                <span class="material-symbols-outlined">support_agent</span>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900">24/7 Support</h3>
+            <p class="text-gray-500 mt-2">Dedicated support agents to guide you through your spiritual journey.</p>
+        </div>
+    </div>
+    <!-- ==================== ABOUT SECTION ==================== -->
+    <div id="about" class="max-w-7xl mx-auto px-6 py-16">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 md:p-12 text-center">
+            <h2 class="text-3xl font-extrabold text-gray-900">About Travelbolt_AI</h2>
+            <div class="w-16 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+            <p class="text-gray-600 mt-6 max-w-3xl mx-auto leading-relaxed">
+                At Travelbolt_AI, we are revolutionizing the pilgrimage experience. By combining advanced artificial intelligence with deep-rooted knowledge of Hajj and Umrah rituals, we provide a seamless, stress-free planning journey. From securing the best flight deals to finding premium accommodations in Makkah and Madinah, our platform empowers pilgrims to focus on their spiritual connection while we handle the logistics.
+            </p>
+            <div class="mt-8 flex flex-wrap justify-center gap-6 text-sm text-gray-500">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-600 text-base">check_circle</span>
+                    Trusted by 2,400+ Pilgrims
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-600 text-base">check_circle</span>
+                    AI-Powered Guidance
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-600 text-base">check_circle</span>
+                    Best Price Guarantee
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CONTACT SECTION ==================== -->
+    <div id="contact" class="max-w-7xl mx-auto px-6 pb-20">
+        <div class="bg-blue-50 rounded-2xl border border-blue-100 p-8 md:p-12 text-center">
+            <h2 class="text-3xl font-extrabold text-gray-900">Contact Our Support Team</h2>
+            <div class="w-16 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+            <p class="text-gray-600 mt-6 max-w-2xl mx-auto leading-relaxed">
+                Have questions about your upcoming pilgrimage? Our dedicated 24/7 support agents are here to guide you every step of the way.
+            </p>
+            
+            <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-6">
+                <div class="flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-sm border border-gray-200">
+                    <span class="material-symbols-outlined text-blue-600">mail</span>
+                    <span class="text-gray-700 font-medium">support@travelbolt.ai</span>
+                </div>
+                <div class="flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-sm border border-gray-200">
+                    <span class="material-symbols-outlined text-blue-600">call</span>
+                    <span class="text-gray-700 font-medium">+234 8035979082 - Al-iklas</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer id="contact" class="bg-white border-t border-gray-200 py-8 text-center text-sm text-gray-500">
+        <p>&copy; 2026 Travelbolt_AI. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

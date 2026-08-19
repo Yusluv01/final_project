@@ -1,0 +1,574 @@
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
+from phonenumber_field.modelfields import PhoneNumberField
+from simple_history.models import HistoricalRecords
+from django.conf import settings # ✅ Added this import for AUTH_USER_MODEL
+
+
+
+
+class Agent(AbstractUser):
+    """Unified User Model for both Admins/Staff and Clients"""
+    
+    # ROLE (To separate them in the dashboard)
+    ROLE_CHOICES = [
+        ('admin', 'Administrator'),
+        ('staff', 'Staff'),
+        ('client', 'Client'),
+    ]
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='client')
+
+    # ==================== COMMON FIELDS (Required for everyone) ====================
+    # username, password, email, first_name, last_name are already provided by AbstractUser
+    phone = PhoneNumberField(null=True, blank=True, region='NG')  # Optional phone number field
+    
+    # ==================== FIELDS FOR AGENTS/STAFF ONLY (Accept Null) ====================
+    agent_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    profile_image = models.ImageField(upload_to='agents/', null=True, blank=True)
+    bio = models.TextField(null=True, blank=True)
+    is_online = models.BooleanField(default=False)
+    last_activity = models.DateTimeField(null=True, blank=True)
+
+    # ==================== FIELDS FOR CLIENTS ONLY (Accept Null) ====================
+    # Passport info
+    passport_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    passport_expiry = models.DateField(null=True, blank=True)
+    
+    # Personal details
+    gender = models.CharField(max_length=10, blank=True, null=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    country = models.CharField(max_length=100, null=True, blank=True)
+    nationality = models.CharField(max_length=100, null=True, blank=True)
+    travel_type = models.CharField(max_length=20, null=True, blank=True)
+    next_of_kin_phone = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+    )
+
+    # ==================== SYSTEM FIELDS ====================
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    first_login = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        # Auto-generate Agent ID only if they are an Admin/Staff
+        if self.role in ['admin', 'staff'] and not self.agent_id:
+            # ... (your existing agent_id generation logic here) ...
+            pass
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.role})"
+    
+    @property
+    def is_client(self):
+        return self.role == 'client'
+    
+    @property
+    def is_staff_member(self):
+        return self.role in ['admin', 'staff']
+
+# class Agent(AbstractUser):
+#     """Extended user model for travel agents"""
+#     ROLE_CHOICES = [
+#         ('admin', 'Administrator'),
+#         ('manager', 'Team Manager'),
+#         ('agent', 'Travel Agent'),
+#         ('concierge', 'Concierge'),
+#         ('support', 'Support Staff'),
+#     ]
+    
+#     agent_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
+#     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='agent')
+#     phone = PhoneNumberField(null=True, blank=True, region='SA')
+#     profile_image = models.ImageField(upload_to='agents/', null=True, blank=True)
+#     bio = models.TextField(null=True, blank=True)
+#     is_online = models.BooleanField(default=False)
+#     last_activity = models.DateTimeField(null=True, blank=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+#     history = HistoricalRecords()
+    
+    # ============ FIX FOR REVERSE ACCESSOR CLASH ============
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='agent_user_set',
+        blank=True,
+        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        verbose_name='groups',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='agent_user_set',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
+    # =========================================================
+
+    def save(self, *args, **kwargs):
+        if not self.agent_id:
+            # Get the last agent_id and increment it
+            last_agent = self.__class__.objects.order_by('-agent_id').first()
+            if last_agent and last_agent.agent_id:
+                try:
+                    last_num = int(last_agent.agent_id.split('-')[1])
+                    new_num = last_num + 1
+                except (IndexError, ValueError):
+                    new_num = 1
+            else:
+                new_num = 1
+            
+            # Keep trying until we find a unique ID
+            while True:
+                new_id = f"TB-{str(new_num).zfill(4)}"
+                if not self.__class__.objects.filter(agent_id=new_id).exists():
+                    self.agent_id = new_id
+                    break
+                new_num += 1
+    
+            super().save(*args, **kwargs)
+
+class TravelPackage(models.Model):
+    """Travel package details"""
+    PACKAGE_TYPE = [
+        ('hajj_2024', 'Hajj 2024'),
+        ('hajj_2025', 'Hajj 2025'),
+        ('umrah', 'Umrah'),
+        ('umrah_ramadan', 'Umrah - Ramadan'),
+        ('umrah_regular', 'Umrah - Regular'),
+        ('student_visa_uk', 'Student Visa - UK'),
+        ('student_visa_canada', 'Student Visa - Canada'),
+        ('tourist_visa', 'Tourist Visa'),
+        ('business_visa', 'Business Visa'),
+        ('family_visit', 'Family Visit Visa'),
+        ('custom', 'Custom Package'),
+    ]
+    
+    name = models.CharField(max_length=200)
+    package_type = models.CharField(max_length=20, choices=PACKAGE_TYPE)
+    description = models.TextField()
+    short_description = models.CharField(max_length=200, null=True, blank=True)
+    price = models.DecimalField(max_digits=12, decimal_places=2)
+    duration_days = models.IntegerField(default=0)
+    includes = models.JSONField(default=list, blank=True)
+    excludes = models.JSONField(default=list, blank=True)
+    requirements = models.JSONField(default=list, blank=True)
+    featured_image = models.ImageField(upload_to='packages/', null=True, blank=True)
+    available_from = models.DateField()
+    available_until = models.DateField()
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.name} - {self.get_package_type_display()}"
+
+
+class Client(models.Model):
+    """Client model for tracking travelers"""
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+    ]
+
+    # ✅ FIXED: Link to settings.AUTH_USER_MODEL (Agent) instead of built-in User
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='client_profile')
+
+    # Contact Information
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=20)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True, null=True)
+    
+    # Travel & Document Information
+    passport_number = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    passport_expiry = models.DateField(blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    nationality = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Travel preferences
+    TRAVEL_TYPE_CHOICES = [
+        ('hajj', 'Hajj'),
+        ('umrah', 'Umrah'),
+        ('visa_student', 'Student Visa'),
+        ('visa_tourist', 'Tourist Visa'),
+        ('other', 'Other'),
+    ]
+    travel_type = models.CharField(max_length=20, choices=TRAVEL_TYPE_CHOICES, default='umrah')
+    
+    # Internal tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+    @property
+    def full_name(self):
+        """Return the client's full name"""
+        return f"{self.first_name} {self.last_name}"
+
+    class Meta:
+        verbose_name = "Client"
+        verbose_name_plural = "Clients"
+        ordering = ['-created_at']
+
+
+class ClientDocument(models.Model):
+    """Documents uploaded by clients themselves"""
+
+    DOCUMENT_TYPES = [
+        ('passport', 'Passport Copy'),
+        ('passport_photo', 'Passport Photograph'),
+        ('visa', 'Visa Copy'),
+        ('id_card', 'ID Card'),
+        ('vaccination', 'Vaccination Certificate'),
+        ('other', 'Other'),
+    ]
+
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE
+    )
+
+    file = models.FileField(
+        upload_to='documents/'
+    )
+
+    document_type = models.CharField(
+        max_length=20,
+        choices=DOCUMENT_TYPES,
+        default='other'
+    )
+
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    # Document has been approved
+    is_verified = models.BooleanField(
+        default=False
+    )
+
+    # Document has been rejected
+    is_rejected = models.BooleanField(
+        default=False
+    )
+
+    # Admin/staff who reviewed the document
+    verified_by = models.ForeignKey(
+        Agent,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return f"{self.client.full_name} - {self.get_document_type_display()}"
+
+
+# ==================== NEW CLIENT USER MODEL ====================
+class ClientUser(AbstractUser):
+    """Custom user model for Clients to log into the portal"""
+    # ✅ FIXED: Added related_name='auth_user' to prevent clash with Client.user
+    client = models.OneToOneField(Client, on_delete=models.CASCADE, null=True, blank=True, related_name='auth_user')
+    is_client = models.BooleanField(default=True)
+    
+    # ============ FIX FOR REVERSE ACCESSOR CLASH ============
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='client_user_set',
+        blank=True,
+        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        verbose_name='groups',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='client_user_set',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
+    # =========================================================
+    
+    def __str__(self):
+        return f"Client: {self.username}"
+
+
+class Booking(models.Model):
+    """Booking/Itinerary model"""
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('pending', 'Pending Documents'),
+        ('processing', 'Processing'),
+        ('confirmed', 'Confirmed'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('refunded', 'Refunded'),
+    ]
+    
+    TRAVEL_CLASS_CHOICES = [
+        ('economy', 'Economy'),
+        ('premium_economy', 'Premium Economy'),
+        ('business', 'Business'),
+        ('first', 'First Class'),
+    ]
+    
+    booking_id = models.CharField(max_length=20, unique=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='bookings')
+    package = models.ForeignKey(TravelPackage, on_delete=models.SET_NULL, null=True, related_name='bookings')
+    agent = models.ForeignKey(Agent, on_delete=models.SET_NULL, null=True, related_name='bookings')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    travel_class = models.CharField(max_length=20, choices=TRAVEL_CLASS_CHOICES, default='economy')
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    payment_status = models.CharField(
+        max_length=20, 
+        choices=[('pending', 'Pending'), ('paid', 'Paid'), ('partial', 'Partial'), ('refunded', 'Refunded')], 
+        default='pending'
+    )
+    travel_date_start = models.DateField()
+    travel_date_end = models.DateField()
+    flight_details = models.JSONField(default=dict, null=True, blank=True)
+    hotel_details = models.JSONField(default=dict, null=True, blank=True)
+    transport_details = models.JSONField(default=dict, null=True, blank=True)
+    special_requests = models.TextField(null=True, blank=True)
+    document_metadata = models.JSONField(default=dict, null=True, blank=True)
+    cancellation_policy = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    itinerary_details = models.TextField(null=True, blank=True)
+    history = HistoricalRecords()
+    
+    def save(self, *args, **kwargs):
+        if not self.booking_id:
+            year_month = timezone.now().strftime('%Y%m')
+            count = Booking.objects.filter(created_at__year=timezone.now().year).count() + 1
+            self.booking_id = f"TB-{year_month}-{str(count).zfill(4)}"
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.booking_id} - {self.client.first_name} {self.client.last_name}"
+    
+    @property
+    def balance_due(self):
+        return self.total_amount - self.paid_amount - self.discount_amount
+
+
+class Document(models.Model):
+    """Document tracking for clients"""
+    DOCUMENT_TYPES = [
+        ('passport', 'Passport'),
+        ('passport_photo', 'Passport Photo'),
+        ('visa', 'Visa'),
+        ('visa_application', 'Visa Application Form'),
+        ('vaccination', 'Vaccination Certificate'),
+        ('bank_statement', 'Bank Statement'),
+        ('enrollment_letter', 'Enrollment Letter'),
+        ('medical_report', 'Medical Report'),
+        ('travel_insurance', 'Travel Insurance'),
+        ('flight_ticket', 'Flight Ticket'),
+        ('hotel_voucher', 'Hotel Voucher'),
+        ('consent_form', 'Consent Form'),
+        ('other', 'Other'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending Upload'),
+        ('uploaded', 'Uploaded'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+        ('expired', 'Expired'),
+    ]
+    
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='uploaded_documents')
+    document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPES)
+    file = models.FileField(upload_to='documents/%Y/%m/%d/', null=True, blank=True)
+    file_name = models.CharField(max_length=200, null=True, blank=True)
+    file_size = models.IntegerField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    verified_by = models.ForeignKey(Agent, on_delete=models.SET_NULL, null=True, blank=True)
+    verification_date = models.DateTimeField(null=True, blank=True)
+    verification_notes = models.TextField(null=True, blank=True)
+    expiry_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.booking.booking_id} - {self.get_document_type_display()}"
+
+
+class Message(models.Model):
+    """Messaging center model"""
+    MESSAGE_TYPES = [
+        ('whatsapp', 'WhatsApp'),
+        ('email', 'Email'),
+        ('sms', 'SMS'),
+        ('system', 'System Notification'),
+        ('in_app', 'In-App Message'),
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('normal', 'Normal'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    ]
+    
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='messages', null=True, blank=True)
+    sender = models.ForeignKey(Agent, on_delete=models.SET_NULL, null=True, related_name='sent_messages')
+    recipient = models.CharField(max_length=100)
+    recipient_name = models.CharField(max_length=100, null=True, blank=True)
+    message_type = models.CharField(max_length=20, choices=MESSAGE_TYPES, default='whatsapp')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='normal')
+    subject = models.CharField(max_length=200, null=True, blank=True)
+    content = models.TextField()
+    is_bulk = models.BooleanField(default=False)
+    template_name = models.CharField(max_length=100, null=True, blank=True)
+    attachment = models.FileField(upload_to='messages/', null=True, blank=True)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(
+        max_length=20, 
+        choices=[('pending', 'Pending'), ('sent', 'Sent'), ('failed', 'Failed'), ('delivered', 'Delivered'), ('read', 'Read')], 
+        default='pending'
+    )
+    error_message = models.TextField(null=True, blank=True)
+    metadata = models.JSONField(default=dict, null=True, blank=True)
+    history = HistoricalRecords()
+    
+    def __str__(self):
+        return f"{self.booking.booking_id if self.booking else 'Bulk'} - {self.message_type}"
+
+
+class Payment(models.Model):
+    """Payment tracking model"""
+    PAYMENT_METHODS = [
+        ('card', 'Credit/Debit Card'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('apple_pay', 'Apple Pay'),
+        ('google_pay', 'Google Pay'),
+        ('cash', 'Cash'),
+        ('check', 'Check'),
+        # ('paypal', 'PayPal'),
+        ('paystack', 'Paystack'),
+    ]
+    
+    PAYMENT_STATUS = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+        ('chargeback', 'Chargeback'),
+    ]
+    
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='payments')
+    invoice_number = models.CharField(max_length=20, unique=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
+    transaction_id = models.CharField(max_length=100, null=True, blank=True)
+    payment_gateway_response = models.JSONField(default=dict, null=True, blank=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    refunded_at = models.DateTimeField(null=True, blank=True)
+    refund_reason = models.TextField(null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.invoice_number:
+            self.invoice_number = f"INV-{timezone.now().strftime('%Y%m')}-{str(self.id or 1).zfill(4)}"
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.invoice_number} - {self.amount}"
+
+
+class Notification(models.Model):
+    """System notifications"""
+    NOTIFICATION_TYPES = [
+        ('info', 'Information'),
+        ('warning', 'Warning'),
+        ('success', 'Success'),
+        ('error', 'Error'),
+        ('reminder', 'Reminder'),
+        ('alert', 'Alert'),
+    ]
+    
+    recipient = models.ForeignKey(Agent, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='info')
+    link = models.URLField(null=True, blank=True)
+    link_text = models.CharField(max_length=100, null=True, blank=True)
+    is_read = models.BooleanField(default=False)
+    read_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def mark_as_read(self):
+        if not self.is_read:
+            self.is_read = True
+            self.read_at = timezone.now()
+            self.save()
+    
+    def __str__(self):
+        return f"{self.title} - {self.recipient.username}"
+
+
+class AuditLog(models.Model):
+    """Audit log for tracking changes"""
+    ACTION_CHOICES = [
+        ('create', 'Create'),
+        ('update', 'Update'),
+        ('delete', 'Delete'),
+        ('view', 'View'),
+        ('login', 'Login'),
+        ('logout', 'Logout'),
+        ('export', 'Export'),
+        ('import', 'Import'),
+    ]
+    
+    user = models.ForeignKey(Agent, on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    model_name = models.CharField(max_length=100)
+    object_id = models.CharField(max_length=50, null=True, blank=True)
+    object_repr = models.CharField(max_length=200, null=True, blank=True)
+    changes = models.JSONField(default=dict, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.user} - {self.action} - {self.model_name}"
+
+
+class FlightSearchHistory(models.Model):
+    """Track flight searches for analytics"""
+    user = models.ForeignKey(Agent, on_delete=models.CASCADE, related_name='flight_searches')
+    origin = models.CharField(max_length=10)
+    destination = models.CharField(max_length=10)
+    departure_date = models.DateField()
+    return_date = models.DateField(null=True, blank=True)
+    passengers = models.IntegerField(default=1)
+    travel_class = models.CharField(max_length=20, default='economy')
+    results_count = models.IntegerField(default=0)
+    searched_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.origin} → {self.destination} - {self.searched_at.strftime('%Y-%m-%d')}"

@@ -1,0 +1,107 @@
+{% extends 'travel_app/base.html' %}
+{% load static %}
+
+{% block title %}Client Tracker | Travelbolt_AI{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-extrabold text-gray-900">Client Tracker</h2>
+            <p class="text-sm text-gray-500">Manage and track all your clients and their documents.</p>
+        </div>
+        <a href="{% url 'travel_app:client_create' %}" class="bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-blue-800 transition-colors shadow-lg shadow-blue-200">
+            <span class="material-symbols-outlined text-sm">add</span>
+            Add Client
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+            <div class="flex justify-between items-start">
+                <span class="material-symbols-outlined text-blue-600">people</span>
+            </div>
+            <h3 class="text-2xl font-bold mt-2 text-gray-900">{{ total_clients|default:0 }}</h3>
+            <p class="text-xs text-gray-500">Total Clients</p>
+        </div>
+        <div class="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+            <div class="flex justify-between items-start">
+                <span class="material-symbols-outlined text-red-600">pending</span>
+            </div>
+            <h3 class="text-2xl font-bold mt-2 text-gray-900">{{ missing_passports|default:0 }}</h3>
+            <p class="text-xs text-gray-500">Missing Documents</p>
+        </div>
+        <div class="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+            <div class="flex justify-between items-start">
+                <span class="material-symbols-outlined text-green-600">verified</span>
+            </div>
+            <h3 class="text-2xl font-bold mt-2 text-gray-900">{{ visa_approved|default:0 }}</h3>
+            <p class="text-xs text-gray-500">Visa Approved</p>
+        </div>
+        <div class="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+            <div class="flex justify-between items-start">
+                <span class="material-symbols-outlined text-purple-600">school</span>
+            </div>
+            <h3 class="text-2xl font-bold mt-2 text-gray-900">{{ student_enrolment|default:0 }}</h3>
+            <p class="text-xs text-gray-500">Student Enrolment</p>
+        </div>
+    </div>
+
+    <!-- Client List -->
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <h3 class="font-semibold text-gray-900">All Clients</h3>
+            <span class="text-sm text-gray-500">{{ clients|length }} clients</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Client</th>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Passport</th>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Travel Type</th>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Phone</th>
+                        <th class="px-6 py-3 text-right text-[10px] uppercase text-gray-500 border-b border-gray-200">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in clients %}
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                        <td class="px-6 py-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-700">
+                                    {{ client.first_name|slice:":1" }}{{ client.last_name|slice:":1" }}
+                                </div>
+                                <div>
+                                    <span class="text-sm font-bold text-gray-900">{{ client.first_name }} {{ client.last_name }}</span>
+                                    <span class="text-[10px] text-gray-400 block">{{ client.email }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-3 text-sm text-gray-700">{{ client.passport_number }}</td>
+                        <td class="px-6 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                                {{ client.get_travel_type_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3 text-sm text-gray-700">{{ client.phone }}</td>
+                        <td class="px-6 py-3 text-right">
+                            <a href="{% url 'travel_app:client_detail' client.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-bold">View</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-gray-400">
+                            No clients found. Add your first client!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

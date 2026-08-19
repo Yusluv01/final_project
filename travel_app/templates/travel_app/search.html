@@ -1,0 +1,312 @@
+{% extends 'travel_app/base.html' %}
+{% load static %}
+
+{% block title %}Flight Search | Travelbolt_AI{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- ==================== PAGE HEADER ==================== -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-extrabold text-gray-900">
+                {% if origin and destination %}
+                    {{ origin|upper }} <span class="text-blue-600 mx-2">→</span> {{ destination|upper }}
+                {% else %}
+                    Flight Search
+                {% endif %}
+            </h2>
+            {% if origin and destination %}
+            <p class="text-sm text-gray-500 mt-1">
+                {% if date %}{{ date }}{% else %}Select dates{% endif %} • 
+                {{ adults|default:1 }} Adult • Economy
+                {% if travel_type %}<span class="text-teal-600 font-bold"> • {{ travel_type }}</span>{% endif %}
+            </p>
+            {% else %}
+            <p class="text-sm text-gray-500 mt-1">Search and compare flights for your clients.</p>
+            {% endif %}
+        </div>
+        <div class="flex gap-2">
+            <button id="filters-btn" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors">
+                <span class="material-symbols-outlined text-sm">filter_list</span>
+                All Filters
+            </button>
+            
+            <button id="student-discount-btn" class="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-bold hover:bg-purple-700 transition-colors">
+                <span class="material-symbols-outlined text-sm">school</span>
+                Apply Student Discount
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== SEARCH FORM ==================== -->
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+        <form method="get" action="{% url 'travel_app:flight_search' %}">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">From</label>
+                    <input type="text" name="origin" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                           placeholder="e.g. LOS, ABV, KAN" value="{{ origin|default:'' }}">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">To</label>
+                    <input type="text" name="destination" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                           placeholder="e.g. JED, DXB" value="{{ destination|default:'' }}">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Departure</label>
+                    <input type="date" name="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                           value="{{ date|default:'' }}">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Return (Optional)</label>
+                    <input type="date" name="return_date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                           value="{{ return_date|default:'' }}">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Passengers</label>
+                    <select name="adults" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="1" {% if adults == 1 %}selected{% endif %}>1 Adult</option>
+                        <option value="2" {% if adults == 2 %}selected{% endif %}>2 Adults</option>
+                        <option value="3" {% if adults == 3 %}selected{% endif %}>3 Adults</option>
+                        <option value="4" {% if adults == 4 %}selected{% endif %}>4 Adults</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 mt-4">
+                <button type="submit" class="bg-blue-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 transition-colors shadow-lg shadow-blue-200 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">search</span>
+                    Search Flights
+                </button>
+                {% if total_results is not None %}
+                <span id="results-count" class="text-sm text-gray-500">{{ total_results }} flights found</span>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- ==================== SEARCH RESULTS ==================== -->
+    {% if search_performed %}
+        
+        {% if search_results %}
+
+            <!-- ==================== FLIGHT RESULTS ==================== -->
+            <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                    <h3 class="font-semibold flex items-center gap-2 text-gray-900">
+                        <span class="material-symbols-outlined text-blue-600">flight</span>
+                        Flight Results
+                    </h3>
+                    <span class="text-sm text-gray-500">{{ search_results|length }} flights found</span>
+                </div>
+
+                <div id="flight-results-container" class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Airline</th>
+                                <th class="px-4 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Departure</th>
+                                <th class="px-4 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Arrival</th>
+                                <th class="px-4 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Duration</th>
+                                <th class="px-4 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Stops</th>
+                                <th class="px-4 py-3 text-right text-[10px] uppercase text-gray-500 border-b border-gray-200" id="price-header">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="flight-results-body">
+                            {% for flight in search_results %}
+                            <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100 flight-row" data-original-price="{{ flight.price }}">
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
+                                            {{ flight.airline|slice:":2"|upper }}
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-bold text-gray-900">{{ flight.airline }}</span>
+                                            {% if flight.badge %}
+                                            <span class="ml-2 text-[8px] px-1.5 py-0.5 rounded font-bold 
+                                                {% if flight.badge == 'HAJJ READY' %}bg-yellow-500 text-white
+                                                {% elif flight.badge == 'STUDENT' %}bg-purple-600 text-white
+                                                {% elif flight.badge == 'PREMIUM' %}bg-blue-600 text-white
+                                                {% else %}bg-gray-500 text-white{% endif %}">
+                                                {{ flight.badge }}
+                                            </span>
+                                            {% endif %}
+                                            
+                                            <!-- ==================== AI RECOMMENDED BADGE ==================== -->
+                                            {% if flight.ai_recommended %}
+                                            <div class="mt-1 flex items-center gap-2">
+                                                <span class="px-2 py-0.5 bg-green-100 text-green-700 border border-green-200 rounded-full text-[10px] font-bold flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                                                    AI Recommended
+                                                </span>
+                                                <span class="text-[10px] text-gray-500 italic" title="{{ flight.ai_reason|default:'Best value and fastest direct flight.' }}">
+                                                    (Best value)
+                                                </span>
+                                            </div>
+                                            {% endif %}
+                                            <!-- ========================================================== -->
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-700">{{ flight.departure|default:"TBD" }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-700">{{ flight.arrival|default:"TBD" }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-700">{{ flight.duration|default:"N/A" }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-700">
+                                    {% if flight.stops == 0 %}
+                                    <span class="text-teal-600 font-medium">Direct</span>
+                                    {% else %}
+                                    <span class="text-gray-600">{{ flight.stops }} stop{% if flight.stops > 1 %}s{% endif %}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 text-right font-bold text-blue-700 flight-price">${{ flight.price|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        {% else %}
+            
+            <!-- ==================== NO RESULTS ==================== -->
+            <div class="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm">
+                <span class="material-symbols-outlined text-6xl text-gray-300">flight</span>
+                <h3 class="text-xl font-bold text-gray-700 mt-4">No Flights Found</h3>
+                <p class="text-gray-500 mt-2">Try adjusting your search criteria or dates.</p>
+                <div class="mt-6 flex gap-4 justify-center">
+                    <button class="px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm font-bold hover:bg-gray-200 transition-colors">
+                        Clear Filters
+                    </button>
+                    <button class="px-4 py-2 bg-blue-700 text-white rounded-lg text-sm font-bold hover:bg-blue-800 transition-colors">
+                        Modify Search
+                    </button>
+                </div>
+            </div>
+
+        {% endif %}
+
+    {% else %}
+        
+        <!-- ==================== INITIAL STATE ==================== -->
+        <div class="bg-white border border-gray-200 rounded-xl p-16 text-center shadow-sm">
+            <span class="material-symbols-outlined text-7xl text-gray-300">flight_takeoff</span>
+            <h3 class="text-xl font-bold text-gray-700 mt-6">Search for Flights</h3>
+            <p class="text-gray-500 mt-2 max-w-md mx-auto">
+                Enter your origin, destination, and travel dates above to find the best flight options for your clients.
+            </p>
+            <div class="mt-6 flex gap-3 justify-center">
+    <span class="text-sm text-gray-400">Popular routes:</span>
+    <a href="{% url 'travel_app:flight_search' %}?origin=LOS&destination=JED&date=2026-08-10" class="text-sm text-blue-600 hover:underline">Lagos → Jeddah</a>
+    <span class="text-gray-300">|</span>
+    <a href="{% url 'travel_app:flight_search' %}?origin=ABV&destination=MED&date=2026-08-10" class="text-sm text-blue-600 hover:underline">Abuja → Madinah</a>
+    <span class="text-gray-300">|</span>
+    <a href="{% url 'travel_app:flight_search' %}?origin=KAN&destination=JED&date=2026-08-10" class="text-sm text-blue-600 hover:underline">Kano → Jeddah</a>
+  </div>
+        </div>
+
+    {% endif %}
+
+    <!-- ==================== STATUS BAR ==================== -->
+    <div class="bg-white border border-gray-200 rounded-xl px-4 py-2 flex items-center justify-between text-[11px] text-gray-500">
+        <div class="flex gap-6">
+            <span class="">SERVER STATUS: <span class="text-green-600 font-bold">OPTIMAL</span></span>
+            <span class="">API LATENCY: <span id="latency">42</span>ms</span>
+            <span class="">FLIGHT DATA SOURCE: GDS HUB 1</span>
+        </div>
+        <div class="flex gap-4">
+            <a class="hover:text-blue-700 transition-colors" href="#">Privacy Policy</a>
+            <a class="hover:text-blue-700 transition-colors" href="#">Terms of Service</a>
+        </div>
+    </div>
+
+</div>
+
+<!-- ==================== JAVASCRIPT FOR BUTTONS ==================== -->
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // ==================== APPLY STUDENT DISCOUNT ====================
+        const discountBtn = document.getElementById('student-discount-btn');
+        let discountApplied = false;
+
+        if (discountBtn) {
+            discountBtn.addEventListener('click', function() {
+                const priceElements = document.querySelectorAll('.flight-price');
+                
+                if (priceElements.length === 0) {
+                    alert('⚠️ Please search for flights first before applying a discount.');
+                    return;
+                }
+
+                if (!discountApplied) {
+                    // Apply 15% discount
+                    priceElements.forEach(el => {
+                        // Get the original price from the data attribute
+                        const row = el.closest('tr');
+                        const originalPrice = parseFloat(row.dataset.originalPrice);
+                        const discountedPrice = originalPrice * 0.85; // 15% off
+                        el.textContent = '$' + discountedPrice.toFixed(2);
+                    });
+                    
+                    discountBtn.innerHTML = '<span class="material-symbols-outlined text-sm">school</span> Remove Discount';
+                    discountBtn.classList.remove('bg-purple-600');
+                    discountBtn.classList.add('bg-gray-600');
+                    discountApplied = true;
+                } else {
+                    // Revert to original price
+                    priceElements.forEach(el => {
+                        const row = el.closest('tr');
+                        const originalPrice = parseFloat(row.dataset.originalPrice);
+                        el.textContent = '$' + originalPrice.toFixed(2);
+                    });
+                    
+                    discountBtn.innerHTML = '<span class="material-symbols-outlined text-sm">school</span> Apply Student Discount';
+                    discountBtn.classList.remove('bg-gray-600');
+                    discountBtn.classList.add('bg-purple-600');
+                    discountApplied = false;
+                }
+            });
+        }
+
+        // ==================== ALL FILTERS ====================
+        const filtersBtn = document.getElementById('filters-btn');
+        
+        if (filtersBtn) {
+            filtersBtn.addEventListener('click', function() {
+                // Create a simple filter modal
+                const hasResults = document.querySelectorAll('.flight-row').length > 0;
+                
+                if (!hasResults) {
+                    alert('⚠️ Please search for flights first to use filters.');
+                    return;
+                }
+
+                // Simple filter: Show only direct flights
+                const rows = document.querySelectorAll('.flight-row');
+                let directCount = 0;
+                let totalCount = rows.length;
+
+                rows.forEach(row => {
+                    const stopsCell = row.querySelector('td:nth-child(5)');
+                    if (stopsCell && stopsCell.textContent.trim() === 'Direct') {
+                        row.style.display = ''; // Show
+                        directCount++;
+                    } else {
+                        row.style.display = 'none'; // Hide
+                    }
+                });
+
+                // Update the results count text
+                const countSpan = document.getElementById('results-count');
+                if (countSpan) {
+                    countSpan.textContent = `${directCount} flights found (Direct only)`;
+                }
+
+                alert(`🔍 Filters applied: Showing only ${directCount} direct flights out of ${totalCount}. Refresh the page to reset.`);
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

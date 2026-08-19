@@ -1,0 +1,158 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Pay Booking | Travelbolt_AI</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+</head>
+
+<body class="bg-gray-50">
+
+    <main class="min-h-screen flex items-center justify-center px-6 py-10">
+
+        <div class="w-full max-w-2xl">
+
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+
+                <div class="text-center mb-8">
+
+                    <div class="w-16 h-16 mx-auto bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4">
+
+                        <i class="fa-solid fa-credit-card text-2xl"></i>
+
+                    </div>
+
+                    <h1 class="text-2xl font-bold text-gray-800">
+                        Make Payment
+                    </h1>
+
+                    <p class="text-gray-500 mt-2">
+                        Complete your payment for this booking.
+                    </p>
+
+                </div>
+
+
+                <!-- BOOKING INFORMATION -->
+
+                <div class="bg-gray-50 rounded-xl p-6 mb-6">
+
+                    <div class="flex justify-between py-3 border-b border-gray-200">
+
+                        <span class="text-gray-500">
+                            Booking
+                        </span>
+
+                        <span class="font-semibold text-gray-800">
+                            {{ booking.booking_id }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex justify-between py-3 border-b border-gray-200">
+
+                        <span class="text-gray-500">
+                            Package
+                        </span>
+
+                        <span class="font-semibold text-gray-800">
+
+                            {% if booking.package %}
+                                {{ booking.package.name }}
+                            {% else %}
+                                Travel Service
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex justify-between py-3 border-b border-gray-200">
+
+                        <span class="text-gray-500">
+                            Total Amount
+                        </span>
+
+                        <span class="font-semibold text-gray-800">
+                            ₦{{ booking.total_amount|floatformat:2 }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex justify-between py-3 border-b border-gray-200">
+
+                        <span class="text-gray-500">
+                            Already Paid
+                        </span>
+
+                        <span class="font-semibold text-green-600">
+                            ₦{{ booking.paid_amount|floatformat:2 }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex justify-between py-4">
+
+                        <span class="text-lg font-bold text-gray-800">
+                            Balance Due
+                        </span>
+
+                        <span class="text-xl font-bold text-blue-600">
+                            ₦{{ booking.balance_due|floatformat:2 }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PAYSTACK BUTTON -->
+
+                <button
+                    type="button"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+                >
+
+                    <i class="fa-solid fa-lock mr-2"></i>
+
+                    Continue to Payment
+
+                </button>
+
+
+                <a
+                    href="{% url 'travel_app:client_dashboard' %}"
+                    class="block text-center mt-4 text-gray-500 hover:text-blue-600"
+                >
+
+                    ← Back to Dashboard
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+
+</html>

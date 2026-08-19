@@ -1,0 +1,182 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Profile | Travelbolt_AI</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body class="bg-gray-50">
+
+<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+
+    <div class="flex items-center justify-between px-6 py-3">
+
+        <div class="flex items-center gap-3">
+
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                <i class="fa-solid fa-plane-departure"></i>
+            </div>
+
+            <div>
+                <h1 class="text-xl font-bold text-blue-700">
+                    Travelbolt_AI
+                </h1>
+
+                <p class="text-xs text-gray-400">
+                    Client Portal
+                </p>
+            </div>
+
+        </div>
+
+        <div class="flex items-center gap-6">
+
+            <a
+                href="{% url 'travel_app:client_dashboard' %}"
+                class="text-gray-600 hover:text-blue-600 font-medium"
+            >
+                <i class="fa-solid fa-house mr-2"></i>
+                Dashboard
+            </a>
+
+            <a
+                href="{% url 'travel_app:client_logout' %}"
+                class="text-red-600 hover:text-red-700 font-medium"
+            >
+                <i class="fa-solid fa-right-from-bracket mr-2"></i>
+                Logout
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="pt-28 px-6 pb-12">
+
+    <div class="max-w-4xl mx-auto">
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+
+            <div class="flex items-center gap-4 mb-8">
+
+                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-user text-2xl"></i>
+                </div>
+
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">
+                        My Profile
+                    </h1>
+
+                    <p class="text-gray-500">
+                        View your personal travel information.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">
+                        First Name
+                    </label>
+
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        {{ client.first_name|default:"Not provided" }}
+                    </div>
+                </div>
+
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">
+                        Last Name
+                    </label>
+
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        {{ client.last_name|default:"Not provided" }}
+                    </div>
+                </div>
+
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">
+                        Email
+                    </label>
+
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        {{ client.email|default:"Not provided" }}
+                    </div>
+                </div>
+
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">
+                        Phone Number
+                    </label>
+
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        {{ client.phone|default:"Not provided" }}
+                    </div>
+                </div>
+
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">
+                        Passport Number
+                    </label>
+
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        {{ client.passport_number|default:"Not provided" }}
+                    </div>
+                </div>
+
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">
+                        Travel Type
+                    </label>
+
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        {{ client.get_travel_type_display|default:"Not provided" }}
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="mt-8">
+
+                <a
+                    href="{% url 'travel_app:client_dashboard' %}"
+                    class="inline-flex items-center bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
+                >
+                    <i class="fa-solid fa-arrow-left mr-2"></i>
+                    Back to Dashboard
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+</body>
+</html>

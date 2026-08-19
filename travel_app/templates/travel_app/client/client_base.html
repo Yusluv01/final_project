@@ -1,0 +1,260 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>{% block title %}Client Portal | Travelbolt_AI{% endblock %}</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        
+        /* Custom Thin Scrollbar for a clean look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-body text-gray-900 h-screen flex flex-col">
+    
+    <!-- Client Top Navbar (Fixed at the top) -->
+    <!-- ✅ UPDATED: Reduced px to px-4, reduced gap to gap-3, removed welcoming text completely on mobile -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 px-4 py-4 flex flex-wrap justify-between items-center sticky top-0 z-50 flex-shrink-0">
+        <div class="flex items-center gap-2">
+            <!-- Client Logo -->
+            <div class="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center shadow-sm">
+                <span class="material-symbols-outlined text-white text-sm">travel_explore</span>
+            </div>
+            <h1 class="text-xl font-extrabold text-blue-700">Travelbolt_AI <span class="text-xs text-gray-400 font-normal">Client Portal</span></h1>
+        </div>
+        
+        <!-- ✅ CORRECT LOGIC: AI Assistant is ALWAYS visible, Payments & Logout are only for logged-in users -->
+        <div class="flex items-center gap-3 md:gap-6">
+            
+            <!-- AI Travel Assistant Button (Stays ALWAYS visible) -->
+            <button id="client-ai-btn" class="flex items-center gap-1 text-blue-600 hover:text-blue-800 font-bold text-sm transition-colors">
+                <span class="material-symbols-outlined text-sm">smart_toy</span>
+                <span class="hidden sm:inline">AI Assistant</span>
+            </button>
+            
+            <!-- Payments Link (Only for logged-in users) -->
+            {% if user.is_authenticated %}
+            <a href="{% url 'travel_app:client_payments' %}" class="flex items-center gap-1 text-gray-600 hover:text-blue-700 text-sm font-bold transition-colors">
+                <span class="material-symbols-outlined text-sm">payments</span>
+                <span class="hidden sm:inline">Payments</span>
+            </a>
+
+            <!-- ✅ Welcome text -->
+            <span class="hidden text-sm text-gray-600">Welcome, {{ request.user.client_profile.first_name|default:"Client" }}</span>
+            
+            <!-- Logout Link (Only for logged-in users) -->
+            <a href="{% url 'travel_app:client_logout' %}" class="text-red-500 hover:text-red-700 text-sm font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">logout</span>
+                <span class="hidden sm:inline">Logout</span>
+            </a>
+            {% endif %}
+            
+        </div>
+    </nav>
+
+    <!-- Main Client Content (Scrollable Area) -->
+    <main class="flex-1 w-full overflow-y-auto bg-gray-50">
+        <!-- ✅ UPDATED: Added extra top padding to compensate for tighter mobile navbar -->
+        <div class="max-w-5xl mx-auto px-4 pt-2 md:p-6 min-h-[calc(100vh-80px)]">
+            {% block content %}{% endblock %}
+        </div>
+        <!-- Client Footer -->
+        <div class="text-center py-6 text-xs text-gray-400 border-t border-gray-200 mt-8">
+            &copy; 2026 Travelbolt_AI Client Portal. All rights reserved.
+        </div>
+    </main>
+
+    {% if messages %}
+    <div class="fixed bottom-8 right-8 z-50 space-y-2" id="message-container">
+        {% for message in messages %}
+        <div class="px-4 py-3 rounded-lg shadow-lg text-white font-bold flex items-center gap-3 
+            {% if message.tags == 'success' %}bg-green-500
+            {% elif message.tags == 'error' %}bg-red-500
+            {% elif message.tags == 'warning' %}bg-yellow-500
+            {% else %}bg-blue-500{% endif %}">
+            <span class="material-symbols-outlined">
+                {% if message.tags == 'success' %}check_circle
+                {% elif message.tags == 'error' %}error
+                {% elif message.tags == 'warning' %}warning
+                {% else %}info{% endif %}
+            </span>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <script>
+        const messages = document.querySelector('#message-container');
+        if (messages) {
+            setTimeout(() => {
+                messages.style.opacity = '0';
+                messages.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => messages.remove(), 500);
+            }, 5000);
+        }
+    </script>
+
+    <!-- ==================== CLIENT AI ASSISTANT CHAT MODAL ==================== -->
+    <div id="ai-chat-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[600px]">
+            <!-- Header -->
+            <div class="bg-blue-700 p-4 text-white flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined">smart_toy</span>
+                    <h3 class="font-bold">AI Travel Assistant</h3>
+                </div>
+                <button id="close-ai-chat" class="hover:bg-blue-800 p-1 rounded-full transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Chat Messages Area -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                <div class="flex justify-start">
+                    <div class="bg-white border border-gray-200 rounded-2xl rounded-tl-none p-3 max-w-[80%] shadow-sm">
+                        <p class="text-sm text-gray-700">👋 Hello! I'm your Travelbolt AI Assistant. Ask me anything about Hajj, Umrah, visas, documents, or packages!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 bg-white border-t border-gray-200">
+                <form id="ai-chat-form" class="flex gap-2">
+                    <input type="text" id="ai-chat-input" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" placeholder="Ask a question..." required>
+                    <button type="submit" class="bg-blue-700 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-800 transition-colors flex items-center gap-1">
+                        <span class="material-symbols-outlined">send</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const openBtn = document.getElementById('client-ai-btn');
+            const modal = document.getElementById('ai-chat-modal');
+            const closeBtn = document.getElementById('close-ai-chat');
+            const form = document.getElementById('ai-chat-form');
+            const input = document.getElementById('ai-chat-input');
+            const messages = document.getElementById('chat-messages');
+
+            if (openBtn && modal && closeBtn) {
+                // Open Modal
+                openBtn.addEventListener('click', () => {
+                    modal.classList.remove('hidden');
+                });
+
+                // Close Modal
+                closeBtn.addEventListener('click', () => {
+                    modal.classList.add('hidden');
+                });
+
+                // Close on outside click
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Handle Form Submission
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const question = input.value.trim();
+                    if (!question) return;
+
+                    // 1. Add user message to chat
+                    addMessage(question, 'user');
+                    input.value = '';
+                    showTypingIndicator();
+
+                    try {
+                        // 2. Send to Django backend
+                        const response = await fetch("{% url 'travel_app:ai_assistant_chat' %}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({ message: question })
+                        });
+
+                        const data = await response.json();
+                        removeTypingIndicator();
+
+                        // 3. Add AI response to chat
+                        if (data.success) {
+                            addMessage(data.response, 'ai');
+                        } else {
+                            addMessage('Sorry, I encountered an error. Please try again.', 'ai');
+                        }
+
+                    } catch (error) {
+                        removeTypingIndicator();
+                        addMessage('Network error. Please check your connection.', 'ai');
+                    }
+                });
+            }
+
+            function addMessage(text, sender) {
+                const div = document.createElement('div');
+                div.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+                
+                // Allow text to be rendered safely with line breaks and bolding
+                const formattedText = text.replace(/\n/g, '<br>');
+                
+                div.innerHTML = `
+                    <div class="${sender === 'user' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200'} rounded-2xl ${sender === 'user' ? 'rounded-tr-none' : 'rounded-tl-none'} p-3 max-w-[80%] shadow-sm text-sm leading-relaxed">
+                        ${formattedText}
+                    </div>
+                `;
+                messages.appendChild(div);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function showTypingIndicator() {
+                const div = document.createElement('div');
+                div.id = 'typing-indicator';
+                div.className = 'flex justify-start';
+                div.innerHTML = `
+                    <div class="bg-gray-100 rounded-2xl rounded-tl-none p-3 max-w-[80%] shadow-sm flex gap-1">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></span>
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></span>
+                    </div>
+                `;
+                messages.appendChild(div);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function removeTypingIndicator() {
+                const el = document.getElementById('typing-indicator');
+                if (el) el.remove();
+            }
+        });
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,417 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Travelbolt AI Assistant</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+</head>
+
+
+<body class="bg-gray-50">
+
+
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+
+<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+
+    <div class="flex items-center justify-between px-6 py-3">
+
+        <div class="flex items-center gap-3">
+
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                <i class="fa-solid fa-plane-departure"></i>
+            </div>
+
+            <div>
+
+                <h1 class="text-xl font-bold text-blue-700">
+                    Travelbolt_AI
+                </h1>
+
+                <p class="text-xs text-gray-400">
+                    AI Travel Assistant
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="flex items-center gap-6">
+
+            <a
+                href="{% url 'travel_app:client_dashboard' %}"
+                class="text-gray-600 hover:text-blue-600 font-medium"
+            >
+                <i class="fa-solid fa-house mr-2"></i>
+                Dashboard
+            </a>
+
+            <a
+                href="{% url 'travel_app:client_profile' %}"
+                class="text-gray-600 hover:text-blue-600 font-medium"
+            >
+                <i class="fa-solid fa-user mr-2"></i>
+                My Profile
+            </a>
+
+            <a
+                href="{% url 'travel_app:client_logout' %}"
+                class="text-red-600 hover:text-red-700 font-medium"
+            >
+                <i class="fa-solid fa-right-from-bracket mr-2"></i>
+                Logout
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- ========================================================= -->
+<!-- MAIN -->
+<!-- ========================================================= -->
+
+<main class="pt-28 px-6 pb-12">
+
+    <div class="max-w-4xl mx-auto">
+
+
+        <!-- TITLE -->
+
+        <div class="mb-6">
+
+            <h1 class="text-3xl font-bold text-gray-800">
+                Travelbolt AI Assistant
+            </h1>
+
+            <p class="text-gray-500 mt-2">
+                Ask questions about Hajj, Umrah, visas, documents and travel planning.
+            </p>
+
+        </div>
+
+
+        <!-- CHAT BOX -->
+
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+
+
+            <!-- CHAT HEADER -->
+
+            <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-5">
+
+                <div class="flex items-center gap-3">
+
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+
+                        <i class="fa-solid fa-robot text-xl"></i>
+
+                    </div>
+
+                    <div>
+
+                        <h2 class="font-bold text-lg">
+                            Travelbolt AI
+                        </h2>
+
+                        <p class="text-blue-100 text-sm">
+                            Online • Ready to help
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- MESSAGES -->
+
+            <div
+                id="chatMessages"
+                class="h-[450px] overflow-y-auto p-6 space-y-4"
+            >
+
+                <div class="flex items-start gap-3">
+
+                    <div class="w-9 h-9 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+
+                        <i class="fa-solid fa-robot"></i>
+
+                    </div>
+
+                    <div class="bg-gray-100 rounded-xl px-4 py-3 max-w-[80%]">
+
+                        <p class="text-gray-700">
+                            Hello! I'm your Travelbolt AI Assistant.
+                            How can I help you with your travel plans?
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- INPUT -->
+
+            <div class="border-t border-gray-200 p-4">
+
+                <form
+                    id="chatForm"
+                    class="flex gap-3"
+                >
+
+                    <input
+                        type="text"
+                        id="messageInput"
+                        placeholder="Ask about Hajj, Umrah, visa, documents..."
+                        class="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        autocomplete="off"
+                    >
+
+                    <button
+                        type="submit"
+                        id="sendButton"
+                        class="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition"
+                    >
+                        <i class="fa-solid fa-paper-plane mr-2"></i>
+                        Send
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- SUGGESTIONS -->
+
+        <div class="mt-6">
+
+            <p class="text-sm font-semibold text-gray-600 mb-3">
+                Try asking:
+            </p>
+
+            <div class="flex flex-wrap gap-3">
+
+                <button
+                    onclick="askQuestion('What documents do I need for Umrah?')"
+                    class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm hover:border-blue-400 hover:text-blue-600"
+                >
+                    Umrah documents
+                </button>
+
+                <button
+                    onclick="askQuestion('What documents do I need for Hajj?')"
+                    class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm hover:border-blue-400 hover:text-blue-600"
+                >
+                    Hajj documents
+                </button>
+
+                <button
+                    onclick="askQuestion('What are the visa requirements?')"
+                    class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm hover:border-blue-400 hover:text-blue-600"
+                >
+                    Visa requirements
+                </button>
+
+                <button
+                    onclick="askQuestion('Tell me about your travel packages')"
+                    class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm hover:border-blue-400 hover:text-blue-600"
+                >
+                    Travel packages
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<script>
+
+const chatForm = document.getElementById("chatForm");
+const messageInput = document.getElementById("messageInput");
+const chatMessages = document.getElementById("chatMessages");
+const sendButton = document.getElementById("sendButton");
+
+
+function addMessage(message, sender) {
+
+    const wrapper = document.createElement("div");
+
+    if (sender === "user") {
+
+        wrapper.className = "flex justify-end";
+
+        wrapper.innerHTML = `
+            <div class="bg-blue-600 text-white rounded-xl px-4 py-3 max-w-[80%]">
+                ${escapeHtml(message)}
+            </div>
+        `;
+
+    } else {
+
+        wrapper.className = "flex items-start gap-3";
+
+        wrapper.innerHTML = `
+            <div class="w-9 h-9 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+
+            <div class="bg-gray-100 rounded-xl px-4 py-3 max-w-[80%]">
+                <p class="text-gray-700 whitespace-pre-line">
+                    ${escapeHtml(message)}
+                </p>
+            </div>
+        `;
+
+    }
+
+    chatMessages.appendChild(wrapper);
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+
+function escapeHtml(text) {
+
+    const div = document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+
+}
+
+
+async function askQuestion(question) {
+
+    messageInput.value = question;
+
+    await sendMessage();
+
+}
+
+
+async function sendMessage() {
+
+    const message = messageInput.value.trim();
+
+    if (!message) {
+        return;
+    }
+
+
+    addMessage(message, "user");
+
+    messageInput.value = "";
+
+    sendButton.disabled = true;
+
+    sendButton.innerHTML = `
+        <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+        Thinking...
+    `;
+
+
+    try {
+
+        const response = await fetch(
+            "{% url 'travel_app:ai_assistant_chat' %}",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    message: message
+                })
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (data.success) {
+
+            addMessage(
+                data.response,
+                "ai"
+            );
+
+        } else {
+
+            addMessage(
+                data.error || "Sorry, I could not process your question.",
+                "ai"
+            );
+
+        }
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        addMessage(
+            "Sorry, something went wrong while connecting to the AI Assistant.",
+            "ai"
+        );
+
+    }
+
+
+    sendButton.disabled = false;
+
+    sendButton.innerHTML = `
+        <i class="fa-solid fa-paper-plane mr-2"></i>
+        Send
+    `;
+
+}
+
+
+chatForm.addEventListener(
+    "submit",
+    function(event) {
+
+        event.preventDefault();
+
+        sendMessage();
+
+    }
+);
+
+</script>
+
+
+</body>
+</html>

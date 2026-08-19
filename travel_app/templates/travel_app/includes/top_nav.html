@@ -1,0 +1,42 @@
+<header class="sticky top-0 z-30 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 h-16 gap-4">
+    
+    <!-- Hamburger Menu Button (Visible only on mobile) -->
+    <button class="lg:hidden text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+
+    <!-- Search Bar (Converted to a Form for functionality) -->
+    <form action="{% url 'travel_app:clients' %}" method="get" class="flex items-center bg-gray-50 px-4 py-2 rounded-full border border-gray-200 focus-within:ring-2 focus-within:ring-blue-500 transition-all flex-1 max-w-md lg:max-w-lg">
+        <span class="material-symbols-outlined text-gray-400 text-sm">search</span>
+        <input name="q" class="bg-transparent border-none focus:ring-0 text-sm w-full ml-2 outline-none placeholder:text-gray-400" placeholder="Search clients, passports..." type="text">
+        <!-- Hidden submit button so pressing Enter works -->
+        <button type="submit" class="hidden">Search</button>
+    </form>
+    
+    <div class="flex items-center gap-3 md:gap-6">
+        <!-- Bot Status (Hide text on very small screens) -->
+        <div class="hidden sm:flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            <span class="text-[10px] uppercase font-bold text-gray-500">Bot Online</span>
+        </div>
+        
+        <!-- Notifications -->
+        <button class="hover:bg-gray-100 p-2 rounded-full transition-all text-gray-600 relative">
+            <span class="material-symbols-outlined">notifications</span>
+            {% if notification_count > 0 %}
+            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            {% endif %}
+        </button>
+        
+        <!-- User Profile -->
+        <div class="flex items-center gap-2 md:gap-3">
+            <span class="hidden sm:inline text-sm font-bold text-gray-700">{{ agent_full_name|default:"Agent" }}</span>
+            <div class="relative group">
+                <span class="material-symbols-outlined text-3xl text-gray-400 cursor-pointer">account_circle</span>
+            </div>
+            <a href="{% url 'travel_app:logout' %}" class="hidden md:inline text-red-500 hover:text-red-700 text-xs font-bold">
+                Logout
+            </a>
+        </div>
+    </div>
+</header>

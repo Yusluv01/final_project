@@ -1,0 +1,39 @@
+{% extends 'travel_app/base.html' %}
+{% load static %}
+
+{% block title %}Delete Client | Travelbolt_AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[60vh]">
+    <div class="max-w-lg w-full bg-white rounded-3xl border border-gray-200 shadow-2xl overflow-hidden">
+        <div class="p-8 text-center">
+            <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <span class="material-symbols-outlined text-5xl">warning</span>
+            </div>
+            <h1 class="text-3xl font-black text-gray-900 mb-2">Delete Client?</h1>
+            <p class="text-gray-500 font-medium">
+                Are you sure you want to delete <strong>{{ client.first_name }} {{ client.last_name }}</strong>?
+                <br>This action cannot be undone.
+            </p>
+            
+            <div class="bg-gray-50 rounded-lg p-4 mt-6 text-left text-sm text-gray-700 border border-gray-100">
+                <p><strong>Passport:</strong> {{ client.passport_number }}</p>
+                <p><strong>Email:</strong> {{ client.email }}</p>
+                <p><strong>Phone:</strong> {{ client.phone }}</p>
+                <p><strong>Bookings:</strong> {{ client.bookings.count }}</p>
+            </div>
+
+            <form method="post" class="mt-8 flex gap-4 justify-center">
+                {% csrf_token %}
+                <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200 flex items-center gap-2">
+                    <span class="material-symbols-outlined">delete</span>
+                    Delete Client
+                </button>
+                <a href="{% url 'travel_app:client_detail' client.id %}" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition-colors border border-gray-300">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

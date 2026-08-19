@@ -1,0 +1,68 @@
+<!-- travel_app/templates/travel_app/includes/sidebar.html -->
+<aside id="sidebar" class="fixed left-0 top-0 h-full w-72 bg-white border-r border-gray-200 flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out overflow-y-auto">
+    <div class="p-6">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 bg-blue-700 flex items-center justify-center rounded-lg shadow-lg shadow-blue-200">
+                <span class="material-symbols-outlined text-white">travel_explore</span>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold text-blue-700">Travelbolt_AI</h1>
+                <p class="text-[10px] text-gray-500 uppercase tracking-widest">Management Suite</p>
+            </div>
+        </div>
+        
+        <nav class="space-y-1">
+            <a href="{% url 'travel_app:dashboard' %}" class="flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all {% if request.path == '/' %}bg-blue-50 text-blue-700 font-semibold{% endif %}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="text-sm">Dashboard</span>
+            </a>
+            <a href="{% url 'travel_app:itineraries' %}" class="flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all {% if 'itineraries' in request.path %}bg-blue-50 text-blue-700 font-semibold{% endif %}">
+                <span class="material-symbols-outlined">map</span>
+                <span class="text-sm">Itinerary Planner</span>
+            </a>
+            <a href="{% url 'travel_app:clients' %}" class="flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all {% if 'clients' in request.path %}bg-blue-50 text-blue-700 font-semibold{% endif %}">
+                <span class="material-symbols-outlined">group</span>
+                <span class="text-sm">Client Tracker</span>
+            </a>
+            <a href="{% url 'travel_app:explore' %}" class="flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all {% if 'explore' in request.path %}bg-blue-50 text-blue-700 font-semibold{% endif %}">
+                <span class="material-symbols-outlined">explore</span>
+                <span class="text-sm">Destination Explorer</span>
+            </a>
+            <a href="{% url 'travel_app:flight_search' %}" class="flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all {% if 'search' in request.path %}bg-blue-50 text-blue-700 font-semibold{% endif %}">
+                <span class="material-symbols-outlined">flight_takeoff</span>
+                <span class="text-sm">Flight Search</span>
+            </a>
+            
+            <!-- ✅ FIXED PAYMENTS LINK -->
+            <a href="{% url 'travel_app:payments' %}" class="flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all {% if 'payments' in request.path %}bg-blue-50 text-blue-700 font-semibold{% endif %}">
+                <span class="material-symbols-outlined">payments</span>
+                <span class="text-sm">Payments</span>
+            </a>
+
+            <a href="{% url 'travel_app:messages' %}" class="flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all {% if 'messages' in request.path %}bg-blue-50 text-blue-700 font-semibold{% endif %}">
+                <span class="material-symbols-outlined">chat</span>
+                <span class="text-sm">Messaging Center</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Footer Section -->
+    <div class="p-6 border-t border-gray-200 mt-auto">
+        <!-- AI Travel Assistant button -->
+        <button id="ai-assistant-btn" class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-800 transition-all shadow-lg shadow-blue-200">
+            <span class="material-symbols-outlined">smart_toy</span>
+            AI Travel Assistant
+        </button>
+        <div class="mt-4 flex items-center justify-between text-gray-500">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-sm">account_circle</span>
+                <span class="text-xs">{{ agent_full_name|default:"Agent" }}</span>
+                <span class="text-[10px] text-gray-400">({{ agent_id|default:"TB-0000" }})</span>
+            </div>
+            <a href="{% url 'travel_app:logout' %}" class="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">logout</span>
+                Logout
+            </a>
+        </div>
+    </div>
+</aside>  

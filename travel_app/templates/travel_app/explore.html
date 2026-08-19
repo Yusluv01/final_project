@@ -1,0 +1,210 @@
+{% extends 'travel_app/base.html' %}
+{% load static %}
+
+{% block title %}Destination Explorer | Travelbolt_AI{% endblock %}
+
+{% block content %}
+<div class="space-y-6 h-full w-full">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-extrabold text-gray-900">Destination Explorer</h2>
+            <p class="text-sm text-gray-500">Discover and explore amazing destinations for your clients.</p>
+        </div>
+    </div>
+
+    <!-- Featured Destination -->
+    <div class="bg-gradient-to-r from-blue-700 to-blue-900 rounded-xl overflow-hidden shadow-lg">
+        <div class="p-8 text-white">
+            <span class="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-bold rounded-full border border-white/20">Trending Destination</span>
+            <h3 class="text-3xl font-extrabold mt-2">{{ featured_destination.name|default:"Positano, Italy" }}</h3>
+            <p class="text-white/80 mt-2 max-w-2xl">{{ featured_destination.description|default:"Experience the vertical dream. A cliffside village of pebble beaches and steep, narrow streets lined with boutiques and cafes." }}</p>
+            
+            <!-- BUTTONS WITH CLASSES FOR JAVASCRIPT -->
+            <div class="flex gap-3 mt-4">
+                <button class="explore-now-btn bg-white text-blue-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-100 transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined">rocket_launch</span>
+                    Explore Now
+                </button>
+                
+                <button class="save-fav-btn bg-white/20 backdrop-blur-sm text-white px-6 py-2 rounded-lg font-bold hover:bg-white/30 transition-colors border border-white/30 flex items-center gap-2">
+                    <span class="material-symbols-outlined">favorite_border</span>
+                    Save to Favorites
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hotels -->
+    <div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-900">Curation Engine</h3>
+            <div class="flex gap-2">
+                <!--  ADDED ID TAGS SO JAVASCRIPT CAN FIND THEM -->
+                <button id="filter-btn" class="px-3 py-1 bg-gray-100 border border-gray-300 rounded-full text-xs font-bold hover:bg-gray-200 transition-colors">Filters</button>
+                <button id="sort-btn" class="px-3 py-1 bg-gray-100 border border-gray-300 rounded-full text-xs font-bold hover:bg-gray-200 transition-colors">Sort: Value Score</button>
+            </div>
+        </div>
+
+        <!--  ADDED DATA-PRICE ATTRIBUTE FOR SORTING -->
+        <div id="hotel-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for hotel in hotels %}
+            <div class="hotel-card bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow" data-price="{{ hotel.price }}">
+                
+                <!-- Hotel Image -->
+                <div class="h-48 bg-gray-200 flex items-center justify-center text-gray-400 overflow-hidden">
+                    <img src="{% static hotel.image %}" alt="{{ hotel.name }}" class="w-full h-full object-cover">
+                </div>
+
+                <!-- Hotel Details -->
+                <div class="p-4">
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-gray-900">{{ hotel.name }}</h4>
+                        <span class="text-xs font-bold text-blue-700">${{ hotel.price }}/nt</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Rating: {{ hotel.rating }}/10</p>
+                    <div class="mt-2 bg-gray-50 rounded-lg p-2">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-purple-600 text-sm">auto_awesome</span>
+                            <span class="text-[10px] font-bold text-purple-600">AI Suitability</span>
+                            <span class="ml-auto text-xs font-bold text-purple-600">{{ hotel.match }}% Match</span>
+                        </div>
+                    </div>
+                    <button class="select-room-btn mt-3 w-full border border-blue-700 text-blue-700 py-1.5 rounded-lg text-sm font-bold hover:bg-blue-700 hover:text-white transition-colors">
+                        Select Room
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-3 text-center text-gray-400 py-8">
+                <span class="material-symbols-outlined text-6xl">hotel</span>
+                <p class="mt-2">No hotels found for this destination.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- JAVASCRIPT TO MAKE BUTTONS WORK -->
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // ==================== EXPLORE NOW BUTTON ====================
+        const exploreBtn = document.querySelector('.explore-now-btn');
+        if (exploreBtn) {
+            exploreBtn.addEventListener('click', function() {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Loading...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    // ⚠️ Commented out to prevent accidental page redirect during demo
+                    // window.location.href = "{% url 'travel_app:flight_search' %}?origin=LHR&destination=JED&date=2026-08-01";
+                    
+                    alert('🚀 Redirecting you to the best deals for Makkah, Saudi Arabia!');
+                    
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 1500);
+            });
+        }
+
+        // ==================== SAVE TO FAVORITES BUTTON ====================
+        const favBtn = document.querySelector('.save-fav-btn');
+        if (favBtn) {
+            favBtn.addEventListener('click', function() {
+                const icon = this.querySelector('.material-symbols-outlined');
+                
+                if (this.classList.contains('saved')) {
+                    this.classList.remove('saved');
+                    this.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                    icon.textContent = 'favorite_border';
+                    alert('💔 Removed from favorites.');
+                } else {
+                    this.classList.add('saved');
+                    this.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+                    icon.textContent = 'favorite';
+                    alert('❤️ Saved to your favorites!');
+                }
+            });
+        }
+
+        // ==================== SELECT ROOM BUTTON ====================
+        const selectButtons = document.querySelectorAll('.select-room-btn');
+        
+        selectButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Get the hotel name from the card
+                const hotelName = this.closest('.bg-white').querySelector('h4').textContent;
+                
+                // Show a confirmation alert
+                const confirmed = confirm(`Are you sure you want to book a room at ${hotelName}?`);
+                
+                if (confirmed) {
+                    alert(`✅ Room successfully booked at ${hotelName} for your client!`);
+                    
+                    // Optional: Change button color to show it's booked
+                    this.textContent = 'Room Booked';
+                    this.classList.remove('border-blue-700', 'text-blue-700');
+                    this.classList.add('bg-green-600', 'text-white', 'border-transparent');
+                    this.disabled = true;
+                }
+            });
+        });
+
+        // ==================== SORT BUTTON (Value Score) ====================
+        const sortBtn = document.getElementById('sort-btn');
+        if (sortBtn) {
+            sortBtn.addEventListener('click', function() {
+                const grid = document.getElementById('hotel-grid');
+                const cards = Array.from(grid.querySelectorAll('.hotel-card'));
+                let ascending = !this.dataset.asc; // Toggle sort direction
+
+                cards.sort((a, b) => {
+                    const priceA = parseFloat(a.dataset.price);
+                    const priceB = parseFloat(b.dataset.price);
+                    return ascending ? priceA - priceB : priceB - priceA;
+                });
+
+                // Re-append the sorted cards to the grid
+                cards.forEach(card => grid.appendChild(card));
+                
+                this.dataset.asc = ascending;
+                this.textContent = ascending ? 'Sort: Low to High' : 'Sort: High to Low';
+            });
+        }
+
+        // ==================== FILTERS BUTTON (Show all or > 400) ====================
+        const filterBtn = document.getElementById('filter-btn');
+        if (filterBtn) {
+            filterBtn.addEventListener('click', function() {
+                const cards = document.querySelectorAll('.hotel-card');
+                let visibleCount = 0;
+
+                // Simple toggle logic
+                if (this.dataset.filtered === 'true') {
+                    // Reset: show all
+                    cards.forEach(card => card.style.display = '');
+                    this.dataset.filtered = 'false';
+                    this.textContent = 'Filters';
+                } else {
+                    // Filter: Show only > 400
+                    cards.forEach(card => {
+                        const price = parseFloat(card.dataset.price);
+                        if (price > 400) {
+                            card.style.display = '';
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    this.dataset.filtered = 'true';
+                    this.textContent = 'Reset Filters';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

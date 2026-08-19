@@ -1,0 +1,89 @@
+{% extends 'travel_app/base.html' %}
+{% load static %}
+
+{% block title %}Payments | Travelbolt_AI{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-extrabold text-gray-900">Payment Center</h2>
+            <p class="text-sm text-gray-500">Manage agency billing, view transactions, and settle balances.</p>
+        </div>
+    </div>
+
+    <!-- Payment Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+            <div class="flex justify-between items-start">
+                <span class="material-symbols-outlined text-green-600">payments</span>
+            </div>
+            <h3 class="text-2xl font-bold mt-2 text-gray-900">${{ total_revenue|default:"0" }}</h3>
+            <p class="text-xs text-gray-500">Total Revenue</p>
+        </div>
+        <div class="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+            <div class="flex justify-between items-start">
+                <span class="material-symbols-outlined text-yellow-600">pending</span>
+            </div>
+            <h3 class="text-2xl font-bold mt-2 text-gray-900">${{ pending_invoices|default:"0" }}</h3>
+            <p class="text-xs text-gray-500">Pending Invoices</p>
+        </div>
+        <div class="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+            <div class="flex justify-between items-start">
+                <span class="material-symbols-outlined text-red-600">warning</span>
+            </div>
+            <h3 class="text-2xl font-bold mt-2 text-gray-900">{{ overdue_payments|default:"0" }}</h3>
+            <p class="text-xs text-gray-500">Overdue Payments</p>
+        </div>
+    </div>
+
+    <!-- Payment History -->
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <h3 class="font-semibold text-gray-900">Payment History</h3>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Invoice</th>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Booking</th>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Amount</th>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Method</th>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Status</th>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payment_history %}
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                        <td class="px-6 py-3 text-sm font-bold text-blue-700">{{ payment.reference|default:payment.invoice_number }}</td>
+                        <td class="px-6 py-3 text-sm text-gray-700">{{ payment.booking.booking_id|default:"N/A" }}</td>
+                        <td class="px-6 py-3 text-sm font-bold text-gray-900">${{ payment.amount|floatformat:2 }}</td>
+                        <td class="px-6 py-3 text-sm text-gray-700">{{ payment.get_payment_method_display|default:"Paystack" }}</td>
+                        <td class="px-6 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold 
+                                {% if payment.status == 'completed' %}bg-green-100 text-green-700 border border-green-200
+                                {% elif payment.status == 'pending' %}bg-yellow-100 text-yellow-700 border border-yellow-200
+                                {% elif payment.status == 'failed' %}bg-red-100 text-red-700 border border-red-200
+                                {% else %}bg-gray-100 text-gray-600 border border-gray-200{% endif %}">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3 text-sm text-gray-700">{{ payment.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-400">
+                            No payment history found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

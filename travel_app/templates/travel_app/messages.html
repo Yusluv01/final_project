@@ -1,0 +1,307 @@
+{% extends 'travel_app/base.html' %}
+{% load static %}
+
+{% block title %}Messaging Center | Travelbolt_AI{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-extrabold text-gray-900">Messaging Center</h2>
+            <p class="text-sm text-gray-500">Send messages and communicate with your clients.</p>
+        </div>
+    </div>
+
+    <!-- Bulk WhatsApp Messaging -->
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-green-600">chat</span>
+                <h3 class="font-semibold text-gray-900">Bulk WhatsApp Broadcast</h3>
+            </div>
+            <span class="px-2 py-0.5 bg-green-600 text-white text-[10px] font-bold rounded">LIVE</span>
+        </div>
+
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Recipient Group</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="group-select">
+                        <option value="umrah">Umrah Group ({{ group_counts.umrah|default:0 }})</option>
+                        <option value="hajj">Hajj Group ({{ group_counts.hajj|default:0 }})</option>
+                        <option value="student">Student Visa Group ({{ group_counts.student|default:0 }})</option>
+                        <option value="all">All Clients ({{ total_clients|default:0 }})</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Message Template</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="template-select">
+                        <option value="visa_approval">Visa Approval Notification</option>
+                        <option value="appointment">Interview Appointment Reminder</option>
+                        <option value="document_request">Document Collection Request</option>
+                        <option value="custom">Custom Message</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-gray-700 mb-1">Message Content</label>
+                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[120px]" id="message-content" placeholder="Type your broadcast message here. Use {name} for personalization..."></textarea>
+            </div>
+
+            <!-- Hidden file inputs -->
+            <input type="file" id="pdf-upload" accept=".pdf" style="display: none;">
+            <input type="file" id="image-upload" accept="image/*" style="display: none;">
+
+            <div class="flex items-center justify-between">
+                <div class="flex gap-3">
+                    <button class="text-sm text-gray-600 hover:text-blue-600 flex items-center gap-1" id="attach-pdf-btn">
+                        <span class="material-symbols-outlined text-sm">attach_file</span>
+                        Attach PDF
+                    </button>
+                    <button class="text-sm text-gray-600 hover:text-blue-600 flex items-center gap-1" id="attach-image-btn">
+                        <span class="material-symbols-outlined text-sm">image</span>
+                        Attach Image
+                    </button>
+                </div>
+                
+                <!-- ==================== NEW BUTTONS SECTION ==================== -->
+                <div class="flex gap-2">
+                    <!-- 🟢 NEW TEST BUTTON -->
+                    <button id="send-test-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-blue-200 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">science</span>
+                        Send Test
+                    </button>
+
+                    <!-- 🟢 EXISTING SEND BUTTON -->
+                    <button class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition-colors shadow-lg shadow-green-200 flex items-center gap-2" id="send-broadcast">
+                        <span class="material-symbols-outlined text-sm">send</span>
+                        Send to All
+                    </button>
+                </div>
+                <!-- ==================== END NEW BUTTONS SECTION ==================== -->
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Messages -->
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h3 class="font-semibold text-gray-900">Recent Messages</h3>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Recipient</th>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Type</th>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Message</th>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Status</th>
+                        <th class="px-6 py-3 text-left text-[10px] uppercase text-gray-500 border-b border-gray-200">Sent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for message in recent_messages %}
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                        <td class="px-6 py-3 text-sm font-bold text-gray-900">{{ message.recipient_name|default:message.recipient }}</td>
+                        <td class="px-6 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold 
+                                {% if message.message_type == 'whatsapp' %}bg-green-100 text-green-700 border border-green-200
+                                {% elif message.message_type == 'email' %}bg-blue-100 text-blue-700 border border-blue-200
+                                {% else %}bg-gray-100 text-gray-600 border border-gray-200{% endif %}">
+                                {{ message.get_message_type_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3 text-sm text-gray-700 truncate max-w-xs">{{ message.content|truncatechars:50 }}</td>
+                        <td class="px-6 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold 
+                                {% if message.status == 'delivered' %}bg-green-100 text-green-700 border border-green-200
+                                {% elif message.status == 'sent' %}bg-yellow-100 text-yellow-700 border border-yellow-200
+                                {% elif message.status == 'failed' %}bg-red-100 text-red-700 border border-red-200
+                                {% else %}bg-gray-100 text-gray-600 border border-gray-200{% endif %}">
+                                {{ message.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3 text-sm text-gray-700">{{ message.sent_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-gray-400">
+                            No messages sent yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- JAVASCRIPT TO MAKE BUTTONS WORK -->
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // ==================== ATTACH PDF ====================
+        const pdfBtn = document.getElementById('attach-pdf-btn');
+        const pdfInput = document.getElementById('pdf-upload');
+        
+        if (pdfBtn && pdfInput) {
+            pdfBtn.addEventListener('click', function() {
+                pdfInput.click();
+            });
+            
+            pdfInput.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    alert('📄 PDF Attached: ' + this.files[0].name);
+                }
+            });
+        }
+
+        // ==================== ATTACH IMAGE ====================
+        const imageBtn = document.getElementById('attach-image-btn');
+        const imageInput = document.getElementById('image-upload');
+        
+        if (imageBtn && imageInput) {
+            imageBtn.addEventListener('click', function() {
+                imageInput.click();
+            });
+            
+            imageInput.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    alert('🖼️ Image Attached: ' + this.files[0].name);
+                }
+            });
+        }
+
+        // ==================== SEND TEST (SEND TO YOURSELF) ====================
+        const testBtn = document.getElementById('send-test-btn');
+        const messageContent = document.getElementById('message-content');
+        
+        if (testBtn) {
+            testBtn.addEventListener('click', function() {
+                const message = messageContent.value.trim();
+                
+                if (!message) {
+                    alert('⚠️ Please type a message before sending.');
+                    return;
+                }
+
+                // Show loading state
+                const originalText = this.innerHTML;
+                this.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Sending Test...';
+                this.disabled = true;
+
+                // Prepare FormData (Allows sending files)
+                const formData = new FormData();
+                formData.append('content', message);
+                formData.append('group', 'test');
+
+                // Add PDF if attached
+                if (pdfInput.files.length > 0) {
+                    formData.append('attachment', pdfInput.files[0]);
+                }
+                // Add Image if attached (and no PDF was attached)
+                else if (imageInput.files.length > 0) {
+                    formData.append('attachment', imageInput.files[0]);
+                }
+
+                // Send the data to Django backend
+                fetch("{% url 'travel_app:send_message' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: formData  // Do NOT set Content-Type header when using FormData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ Test message sent to your phone! Check WhatsApp.');
+                        messageContent.value = '';
+                        pdfInput.value = ''; // Clear file input
+                        imageInput.value = ''; // Clear file input
+                    } else {
+                        alert('❌ Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Network error: ' + error);
+                })
+                .finally(() => {
+                    // Reset button
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                });
+            });
+        }
+
+        // ==================== SEND TO ALL (REAL VERSION) ====================
+        const sendBtn = document.getElementById('send-broadcast');
+        const groupSelect = document.getElementById('group-select');
+        
+        if (sendBtn) {
+            sendBtn.addEventListener('click', function() {
+                const group = groupSelect.value;
+                const message = messageContent.value.trim();
+                
+                if (!message) {
+                    alert('⚠️ Please type a message before sending.');
+                    return;
+                }
+                
+                // Show loading state
+                const originalText = this.innerHTML;
+                this.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Sending...';
+                this.disabled = true;
+                
+                // Prepare FormData (Allows sending files)
+                const formData = new FormData();
+                formData.append('content', message);
+                formData.append('group', group);
+
+                // Add PDF if attached
+                if (pdfInput.files.length > 0) {
+                    formData.append('attachment', pdfInput.files[0]);
+                }
+                // Add Image if attached (and no PDF was attached)
+                else if (imageInput.files.length > 0) {
+                    formData.append('attachment', imageInput.files[0]);
+                }
+
+                // Send the data to Django backend
+                fetch("{% url 'travel_app:send_message' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: formData  // Do NOT set Content-Type header when using FormData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        messageContent.value = '';
+                        pdfInput.value = ''; // Clear file input
+                        imageInput.value = ''; // Clear file input
+                    } else {
+                        alert('❌ Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Network error: ' + error);
+                })
+                .finally(() => {
+                    // Reset button
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,22 @@
+#  letsfg_kvhUeUGyygnKTdiCFjmuLbDfRxLcLPGDlNJRrvP2mGs
+Django==4.2.7
+django-crispy-forms==2.1
+crispy-bootstrap5==0.7
+Pillow==10.1.0
+python-dotenv==1.0.0
+djangorestframework==3.14.0
+django-cors-headers==4.3.0
+django-filter==23.3
+whitenoise==6.6.0
+django-allauth==0.57.0
+django-import-export==3.3.6
+django-simple-history==3.4.0
+django-ckeditor==6.7.0
+django-phonenumber-field==7.2.0
+phonenumbers==8.13.29
+django-select2==8.1.0
+gunicorn==21.2.0
+psycopg2-binary==2.9.9
+openai
+requests
+
