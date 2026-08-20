@@ -34,7 +34,7 @@ packages_data = [
         'price': 8500.00,
         'duration_days': 14,
         'available_from':'2026-01-01',
-        'available_until': 2026-12-31',
+        'available_until':'2026-12-31',
     },
     {
         'name': 'Umrah Luxury Package',
@@ -43,7 +43,7 @@ packages_data = [
         'price': 4200.00,
         'duration_days': 10,
         'available_from': '2026-01-01',
-        'available_until': 2026-12-31',
+        'available_until':'2026-12-31',
     },
     {
         'name': 'UK Student Visa Package',
