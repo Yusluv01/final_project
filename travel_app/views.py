@@ -763,18 +763,48 @@ def flight_search_api(request):
 @login_required
 def explore(request):
     hotels_data = [
-        {'name': 'Makkah Clock Royal Tower, Fairmont', 'price': 450, 'rating': 9.2, 'match': 98, 'image': 'images/riyadh saudi_arabia.jpg', 'description': 'The iconic landmark overlooking the Masjid al-Haram.'},
-        {'name': 'Pullman ZamZam Makkah', 'price': 320, 'rating': 8.9, 'match': 95, 'image': 'images/Zamzam_Pullman_Makkah.jpg', 'description': 'Modern luxury just steps from the holy mosque.'},
-        {'name': 'Jabal Omar Hyatt Regency Makkah', 'price': 450, 'rating': 9.2, 'match': 98, 'image': 'images/jabal_omar_hyatt.jpg', 'description': 'Luxury hotel offering breathtaking views of the Kaaba.'}
+        {
+            'name': 'Makkah Clock Royal Tower, Fairmont',
+            'price': 450,
+            'rating': 9.2,
+            'match': 98,
+            'image': 'travel_app/images/riyadh_saudi_arabia.jpg',
+            'description': 'The iconic landmark overlooking the Masjid al-Haram.'
+        },
+        {
+            'name': 'Pullman ZamZam Makkah',
+            'price': 320,
+            'rating': 8.9,
+            'match': 95,
+            'image': 'travel_app/images/Zamzam_Pullman_Makkah.jpg',
+            'description': 'Modern luxury just steps from the holy mosque.'
+        },
+        {
+            'name': 'Jabal Omar Hyatt Regency Makkah',
+            'price': 450,
+            'rating': 9.2,
+            'match': 98,
+            'image': 'travel_app/images/jabal_omar_hyatt.jpg',
+            'description': 'Luxury hotel offering breathtaking views of the Kaaba.'
+        }
     ]
+
     context = {
         'featured_destination': {
             'name': 'Makkah, Saudi Arabia',
-            'description': 'The holiest city in Islam, home to the Masjid al-Haram and the Kaaba.',
+            'description': (
+                'The holiest city in Islam, home to the Masjid al-Haram '
+                'and the Kaaba.'
+            ),
         },
-        'hotels': hotels_data
+        'hotels': hotels_data,
     }
-    return render(request, 'travel_app/explore.html', context)
+
+    return render(
+        request,
+        'travel_app/explore.html',
+        context
+    )
 
 @login_required
 def export_report(request):
