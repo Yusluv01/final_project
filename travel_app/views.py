@@ -834,63 +834,144 @@ def ai_assistant_chat(request):
         try:
             data = json.loads(request.body)
             query = data.get('message', '').strip().lower()
+
             if not query:
-                return JsonResponse({'success': False, 'error': 'Please enter a question.'})
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Please enter a question.'
+                })
+
             ai_response = None
+
+            # ============================================================
+            # OPENAI AI ASSISTANT
+            # ============================================================
             if hasattr(settings, 'OPENAI_API_KEY') and settings.OPENAI_API_KEY:
                 try:
-                    import openai
-                    openai.api_key = settings.OPENAI_API_KEY
-                    response = openai.ChatCompletion.create(
-                        model="gpt-3.5-turbo",
-                        messages=[
-                            {"role": "system", "content": "You are a helpful travel assistant specializing in Hajj, Umrah, and visa information."},
-                            {"role": "user", "content": query}
-                        ],
-                        max_tokens=500,
-                        temperature=0.7
+                    from openai import OpenAI
+
+                    client = OpenAI(
+                        api_key=settings.OPENAI_API_KEY
                     )
-                    ai_response = response.choices[0].message.content.strip()
+
+                    response = client.responses.create(
+                        model="gpt-5.6-luna",
+                        instructions=(
+                            "You are Travelbolt AI, a helpful travel assistant "
+                            "specializing in Hajj, Umrah, travel planning, "
+                            "visa information, flights, hotels, passports, "
+                            "and travel documentation. "
+                            "Give clear, concise and helpful answers. "
+                            "When discussing official travel or visa requirements, "
+                            "remind users that requirements can change and should "
+                            "be verified with the relevant official authority."
+                        ),
+                        input=query
+                    )
+
+                    ai_response = response.output_text.strip()
+
+                    logger.info(
+                        "OpenAI response generated successfully."
+                    )
+
                 except Exception as e:
-                    logger.error(f"OpenAI error: {e}")
+                    logger.error(
+                        f"OpenAI error: {e}",
+                        exc_info=True
+                    )
+
+            # ============================================================
+            # FALLBACK RESPONSES
+            # ============================================================
             if ai_response:
-                return JsonResponse({'success': True, 'response': ai_response})
+                return JsonResponse({
+                    'success': True,
+                    'response': ai_response
+                })
+
             if 'umrah' in query or 'umra' in query:
                 response = """**Umrah Visa & Document Requirements**:
+
 1. Valid international passport with at least 6 months validity.
-2. Digital photo (white background).
-3. Nusuk Platform booking required.
+2. Digital passport photograph.
+3. Nusuk platform booking where applicable.
 4. Meningococcal Meningitis (ACYW135) vaccination certificate.
-5. Confirmed round-trip flight tickets."""
+5. Confirmed travel arrangements.
+
+Requirements may change, so travelers should verify the latest requirements before travelling."""
+
             elif 'hajj' in query:
                 response = """**Hajj Visa & Document Requirements**:
-1. Hajj visa (processed via NAHCON).
-2. Valid passport (6+ months).
-3. Medical fitness certificate.
-4. Vaccination proof (Meningitis ACYW135, Polio, Yellow Fever).
-5. Biometric enrollment required."""
+
+1. Valid passport with sufficient validity.
+2. Hajj visa processed through the appropriate authorized channels.
+3. Medical fitness documentation where required.
+4. Required vaccination certificates.
+5. Biometric enrollment where applicable.
+
+Hajj requirements can change, so please verify the latest requirements with the appropriate authorities."""
+
             elif 'visa' in query or 'document' in query:
                 response = """Do you need documents for Umrah or Hajj?
-- **Umrah:** Nusuk pre-booking, 6-month passport, ACYW135 vaccination.
-- **Hajj:** NAHCON clearance, medical certificate, biometric enrollment.
-Please tell me which one you are planning."""
-            elif 'woman' in query or 'female' in query or 'mahram' in query:
-                response = """**Rules for Women**:
-1. Women Under 45: Must travel with a Male Guardian (Mahram). Upload Proof of Relationship.
-2. Women Over 45: Permitted without a guardian, provided they upload a notarized No Objection Certificate (NOC) or travel in an organized group."""
+
+- **Umrah:** Passport, required vaccination documentation and applicable travel arrangements.
+- **Hajj:** Passport, Hajj visa, medical documentation and required vaccination records.
+
+Please tell me whether you are planning Hajj or Umrah and I can guide you further."""
+
+            elif (
+                'woman' in query
+                or 'female' in query
+                or 'mahram' in query
+            ):
+                response = """**Women Traveling for Pilgrimage**:
+
+Requirements for women can depend on current Saudi regulations, age, nationality and the type of pilgrimage.
+
+Because these rules can change, travelers should verify the current requirements with the official Saudi authorities or an authorized travel agency."""
+
             elif 'package' in query:
                 response = """**Our Hajj & Umrah Packages:**
-We offer Premium, Standard, and Economy packages ranging from $1,800 to $8,500 depending on accommodation level and distance from the Haram."""
+
+Travelbolt AI can help you explore Hajj and Umrah packages based on your preferred accommodation, duration and travel requirements.
+
+Package prices vary depending on accommodation level, hotel location, flights and other services."""
+
             else:
-                response = """I'm your Travelbolt AI compliance assistant. Please tell me what you are planning:
-- **Umrah:** I will give you Nusuk requirements.
-- **Hajj:** I will give you NAHCON rules.
-- **Women traveling:** I will check if you need a Mahram."""
-            return JsonResponse({'success': True, 'response': response})
+                response = """I'm your Travelbolt AI travel assistant.
+
+I can help you with:
+
+- **Umrah** requirements
+- **Hajj** requirements
+- **Visa** information
+- **Travel documents**
+- **Hajj & Umrah packages**
+- **Flight and hotel planning**
+
+Please tell me what you are planning and I'll help you."""
+
+            return JsonResponse({
+                'success': True,
+                'response': response
+            })
+
         except Exception as e:
-            logger.error(f"AI Assistant error: {e}")
-            return JsonResponse({'success': False, 'error': 'An error occurred. Please try again.'})
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+            logger.error(
+                f"AI Assistant error: {e}",
+                exc_info=True
+            )
+
+            return JsonResponse({
+                'success': False,
+                'error': 'An error occurred. Please try again.'
+            })
+
+    return JsonResponse({
+        'success': False,
+        'error': 'Invalid request method.'
+    })
 
 @login_required(login_url='travel_app:client_login')
 def client_ai_assistant(request):
