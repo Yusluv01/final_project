@@ -111,6 +111,10 @@ INSTALLED_APPS = [
     'ckeditor',
     'phonenumber_field',
 
+    # Cloudinary
+    'cloudinary',
+    'cloudinary_storage',
+
     # Custom application
     'travel_app',
 ]
