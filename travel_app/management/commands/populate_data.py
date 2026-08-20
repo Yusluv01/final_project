@@ -29,13 +29,13 @@ class Command(BaseCommand):
         # 2. Create packages
         packages_data = [
             {
-                'name': 'Hajj 2024 Premium Package',
+                'name': 'Hajj 2026 Premium Package',
                 'package_type': 'hajj_2024',
                 'description': '5-star Hajj package with VIP services',
                 'price': 8500.00,
                 'duration_days': 14,
-                'available_from': '2024-05-01',
-                'available_until': '2024-06-15',
+                'available_from': '2026-01-01',
+                'available_until': '2027-12-31',
             },
             {
                 'name': 'Umrah Luxury Package',
@@ -43,8 +43,8 @@ class Command(BaseCommand):
                 'description': '5-star Umrah package with VIP services',
                 'price': 4200.00,
                 'duration_days': 10,
-                'available_from': '2024-01-01',
-                'available_until': '2024-12-31',
+                'available_from':'2026-01-01',
+                'available_until': '2027-12-31',
             },
             {
                 'name': 'UK Student Visa Package',
@@ -103,20 +103,39 @@ class Command(BaseCommand):
             self.stdout.write(f'✅ Created client: {client.first_name} {client.last_name}')
         
         # 4. Create bookings
-        for i, client in enumerate(clients[:3]):
-            booking = Booking.objects.create(
-                client=client,
-                package=packages[i % len(packages)],
-                agent=admin,
-                status='confirmed' if i % 2 == 0 else 'pending',
-                total_amount=packages[i % len(packages)].price,
-                paid_amount=packages[i % len(packages)].price if i % 2 == 0 else 0,
-                payment_status='paid' if i % 2 == 0 else 'pending',
-                travel_date_start=timezone.now().date() + timedelta(days=30 + i * 10),
-                travel_date_end=timezone.now().date() + timedelta(days=30 + i * 10 + 14),
-                special_requests='Vegetarian meals' if i == 0 else '',
-            )
-            self.stdout.write(f'✅ Created booking: {booking.booking_id}')
-        
-        self.stdout.write(self.style.SUCCESS('🎉 Sample data created successfully!'))
+for i, client in enumerate(clients[:3]):
+
+    package = packages[i % len(packages)]
+
+    booking, created = Booking.objects.get_or_create(
+        client=client,
+        package=package,
+        defaults={
+            'agent': admin,
+            'status': 'confirmed' if i % 2 == 0 else 'pending',
+            'total_amount': package.price,
+            'paid_amount': package.price if i % 2 == 0 else 0,
+            'payment_status': 'paid' if i % 2 == 0 else 'pending',
+            'travel_date_start': (
+                timezone.now().date()
+                + timedelta(days=30 + i * 10)
+            ),
+            'travel_date_end': (
+                timezone.now().date()
+                + timedelta(days=30 + i * 10 + 14)
+            ),
+            'special_requests': (
+                'Vegetarian meals' if i == 0 else ''
+            ),
+        }
+    )
+
+    if created:
+        self.stdout.write(
+            f'✅ Created booking: {booking.booking_id}'
+        )
+    else:
+        self.stdout.write(
+            f'ℹ️ Booking already exists: {booking.booking_id}'
+        )
         self.stdout.write(f'📊 Total: {Client.objects.count()} clients, {Booking.objects.count()} bookings, {TravelPackage.objects.count()} packages')
