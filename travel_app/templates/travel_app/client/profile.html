@@ -4,59 +4,216 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>My Profile | Travelbolt_AI</title>
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- Font Awesome -->
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 </head>
 
-<body class="bg-gray-50">
 
-<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+<body class="bg-gray-50 overflow-x-hidden">
 
-    <div class="flex items-center justify-between px-6 py-3">
 
-        <div class="flex items-center gap-3">
+<!-- ========================================================= -->
+<!-- RESPONSIVE HEADER -->
+<!-- ========================================================= -->
 
-            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-                <i class="fa-solid fa-plane-departure"></i>
+<header
+    class="
+        fixed
+        top-0
+        left-0
+        right-0
+        z-50
+        bg-white
+        border-b
+        border-gray-200
+        shadow-sm
+    "
+>
+
+    <div
+        class="
+            max-w-7xl
+            mx-auto
+            px-4
+            sm:px-6
+            py-3
+        "
+    >
+
+        <!-- ===================================================== -->
+        <!-- HEADER CONTENT -->
+        <!-- ===================================================== -->
+
+        <div
+            class="
+                flex
+                flex-col
+                sm:flex-row
+                sm:items-center
+                sm:justify-between
+                gap-3
+            "
+        >
+
+
+            <!-- ================================================= -->
+            <!-- LOGO -->
+            <!-- ================================================= -->
+
+            <div
+                class="
+                    flex
+                    items-center
+                    gap-2
+                    sm:gap-3
+                    min-w-0
+                "
+            >
+
+                <!-- LOGO ICON -->
+
+                <div
+                    class="
+                        w-9
+                        h-9
+                        sm:w-10
+                        sm:h-10
+                        bg-blue-600
+                        rounded-lg
+                        flex
+                        items-center
+                        justify-center
+                        text-white
+                        shrink-0
+                    "
+                >
+
+                    <i class="fa-solid fa-plane-departure"></i>
+
+                </div>
+
+
+                <!-- LOGO TEXT -->
+
+                <div class="min-w-0">
+
+                    <h1
+                        class="
+                            text-lg
+                            sm:text-xl
+                            font-bold
+                            text-blue-700
+                            truncate
+                        "
+                    >
+                        Travelbolt_AI
+                    </h1>
+
+                    <p class="text-xs text-gray-400">
+                        Client Portal
+                    </p>
+
+                </div>
+
             </div>
 
-            <div>
-                <h1 class="text-xl font-bold text-blue-700">
-                    Travelbolt_AI
-                </h1>
 
-                <p class="text-xs text-gray-400">
-                    Client Portal
-                </p>
-            </div>
+            <!-- ================================================= -->
+            <!-- NAVIGATION -->
+            <!-- ================================================= -->
 
-        </div>
-
-        <div class="flex items-center gap-6">
-
-            <a
-                href="{% url 'travel_app:client_dashboard' %}"
-                class="text-gray-600 hover:text-blue-600 font-medium"
+            <nav
+                class="
+                    flex
+                    items-center
+                    justify-center
+                    sm:justify-end
+                    gap-2
+                    sm:gap-4
+                    w-full
+                    sm:w-auto
+                "
             >
-                <i class="fa-solid fa-house mr-2"></i>
-                Dashboard
-            </a>
 
-            <a
-                href="{% url 'travel_app:client_logout' %}"
-                class="text-red-600 hover:text-red-700 font-medium"
-            >
-                <i class="fa-solid fa-right-from-bracket mr-2"></i>
-                Logout
-            </a>
+                <!-- DASHBOARD -->
+
+                <a
+                    href="{% url 'travel_app:client_dashboard' %}"
+                    class="
+                        inline-flex
+                        items-center
+                        justify-center
+                        gap-2
+                        px-3
+                        sm:px-4
+                        py-2
+                        rounded-lg
+                        text-sm
+                        sm:text-base
+                        text-gray-600
+                        hover:bg-blue-50
+                        hover:text-blue-600
+                        font-medium
+                        transition
+                        whitespace-nowrap
+                    "
+                >
+
+                    <i class="fa-solid fa-house"></i>
+
+                    <span>
+                        Dashboard
+                    </span>
+
+                </a>
+
+
+                <!-- LOGOUT -->
+
+                <a
+                    href="{% url 'travel_app:client_logout' %}"
+                    class="
+                        inline-flex
+                        items-center
+                        justify-center
+                        gap-2
+                        px-3
+                        sm:px-4
+                        py-2
+                        rounded-lg
+                        text-sm
+                        sm:text-base
+                        text-red-600
+                        hover:bg-red-50
+                        hover:text-red-700
+                        font-medium
+                        transition
+                        whitespace-nowrap
+                    "
+                >
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+
+                    <span>
+                        Logout
+                    </span>
+
+                </a>
+
+            </nav>
 
         </div>
 
@@ -65,109 +222,360 @@
 </header>
 
 
-<main class="pt-28 px-6 pb-12">
+<!-- ========================================================= -->
+<!-- MAIN CONTENT -->
+<!-- ========================================================= -->
+
+<main
+    class="
+        pt-32
+        sm:pt-28
+        px-4
+        sm:px-6
+        pb-12
+    "
+>
 
     <div class="max-w-4xl mx-auto">
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
 
-            <div class="flex items-center gap-4 mb-8">
+        <!-- ===================================================== -->
+        <!-- PROFILE CARD -->
+        <!-- ===================================================== -->
 
-                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
-                    <i class="fa-solid fa-user text-2xl"></i>
+        <div
+            class="
+                bg-white
+                rounded-2xl
+                shadow-sm
+                border
+                border-gray-200
+                p-5
+                sm:p-8
+            "
+        >
+
+
+            <!-- ================================================= -->
+            <!-- PROFILE HEADER -->
+            <!-- ================================================= -->
+
+            <div
+                class="
+                    flex
+                    flex-col
+                    sm:flex-row
+                    sm:items-center
+                    gap-4
+                    mb-8
+                "
+            >
+
+                <!-- PROFILE ICON -->
+
+                <div
+                    class="
+                        w-14
+                        h-14
+                        sm:w-16
+                        sm:h-16
+                        bg-blue-100
+                        text-blue-600
+                        rounded-full
+                        flex
+                        items-center
+                        justify-center
+                        shrink-0
+                    "
+                >
+
+                    <i
+                        class="
+                            fa-solid
+                            fa-user
+                            text-xl
+                            sm:text-2xl
+                        "
+                    ></i>
+
                 </div>
 
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-800">
+
+                <!-- PROFILE TITLE -->
+
+                <div class="min-w-0">
+
+                    <h1
+                        class="
+                            text-xl
+                            sm:text-2xl
+                            font-bold
+                            text-gray-800
+                        "
+                    >
                         My Profile
                     </h1>
 
-                    <p class="text-gray-500">
+                    <p
+                        class="
+                            text-sm
+                            sm:text-base
+                            text-gray-500
+                            mt-1
+                        "
+                    >
                         View your personal travel information.
                     </p>
+
                 </div>
 
             </div>
 
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- ================================================= -->
+            <!-- PROFILE INFORMATION -->
+            <!-- ================================================= -->
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">
+            <div
+                class="
+                    grid
+                    grid-cols-1
+                    md:grid-cols-2
+                    gap-5
+                    sm:gap-6
+                "
+            >
+
+
+                <!-- FIRST NAME -->
+
+                <div class="min-w-0">
+
+                    <label
+                        class="
+                            block
+                            text-sm
+                            font-medium
+                            text-gray-500
+                            mb-1
+                        "
+                    >
                         First Name
                     </label>
 
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <div
+                        class="
+                            bg-gray-50
+                            border
+                            border-gray-200
+                            rounded-lg
+                            p-3
+                            break-words
+                            overflow-hidden
+                        "
+                    >
                         {{ client.first_name|default:"Not provided" }}
                     </div>
+
                 </div>
 
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">
+                <!-- LAST NAME -->
+
+                <div class="min-w-0">
+
+                    <label
+                        class="
+                            block
+                            text-sm
+                            font-medium
+                            text-gray-500
+                            mb-1
+                        "
+                    >
                         Last Name
                     </label>
 
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <div
+                        class="
+                            bg-gray-50
+                            border
+                            border-gray-200
+                            rounded-lg
+                            p-3
+                            break-words
+                            overflow-hidden
+                        "
+                    >
                         {{ client.last_name|default:"Not provided" }}
                     </div>
+
                 </div>
 
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">
+                <!-- EMAIL -->
+
+                <div class="min-w-0">
+
+                    <label
+                        class="
+                            block
+                            text-sm
+                            font-medium
+                            text-gray-500
+                            mb-1
+                        "
+                    >
                         Email
                     </label>
 
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <div
+                        class="
+                            bg-gray-50
+                            border
+                            border-gray-200
+                            rounded-lg
+                            p-3
+                            break-all
+                            overflow-hidden
+                        "
+                    >
                         {{ client.email|default:"Not provided" }}
                     </div>
+
                 </div>
 
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">
+                <!-- PHONE -->
+
+                <div class="min-w-0">
+
+                    <label
+                        class="
+                            block
+                            text-sm
+                            font-medium
+                            text-gray-500
+                            mb-1
+                        "
+                    >
                         Phone Number
                     </label>
 
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <div
+                        class="
+                            bg-gray-50
+                            border
+                            border-gray-200
+                            rounded-lg
+                            p-3
+                            break-words
+                            overflow-hidden
+                        "
+                    >
                         {{ client.phone|default:"Not provided" }}
                     </div>
+
                 </div>
 
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">
+                <!-- PASSPORT NUMBER -->
+
+                <div class="min-w-0">
+
+                    <label
+                        class="
+                            block
+                            text-sm
+                            font-medium
+                            text-gray-500
+                            mb-1
+                        "
+                    >
                         Passport Number
                     </label>
 
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <div
+                        class="
+                            bg-gray-50
+                            border
+                            border-gray-200
+                            rounded-lg
+                            p-3
+                            break-all
+                            overflow-hidden
+                        "
+                    >
                         {{ client.passport_number|default:"Not provided" }}
                     </div>
+
                 </div>
 
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">
+                <!-- TRAVEL TYPE -->
+
+                <div class="min-w-0">
+
+                    <label
+                        class="
+                            block
+                            text-sm
+                            font-medium
+                            text-gray-500
+                            mb-1
+                        "
+                    >
                         Travel Type
                     </label>
 
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <div
+                        class="
+                            bg-gray-50
+                            border
+                            border-gray-200
+                            rounded-lg
+                            p-3
+                            break-words
+                            overflow-hidden
+                        "
+                    >
                         {{ client.get_travel_type_display|default:"Not provided" }}
                     </div>
+
                 </div>
 
             </div>
 
+
+            <!-- ================================================= -->
+            <!-- BACK TO DASHBOARD -->
+            <!-- ================================================= -->
 
             <div class="mt-8">
 
                 <a
                     href="{% url 'travel_app:client_dashboard' %}"
-                    class="inline-flex items-center bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
+                    class="
+                        w-full
+                        sm:w-auto
+                        inline-flex
+                        items-center
+                        justify-center
+                        bg-blue-600
+                        text-white
+                        px-5
+                        py-3
+                        rounded-lg
+                        hover:bg-blue-700
+                        transition
+                        font-medium
+                    "
                 >
+
                     <i class="fa-solid fa-arrow-left mr-2"></i>
+
                     Back to Dashboard
+
                 </a>
 
             </div>
@@ -177,6 +585,39 @@
     </div>
 
 </main>
+
+
+<!-- ========================================================= -->
+<!-- FOOTER -->
+<!-- ========================================================= -->
+
+<footer
+    class="
+        border-t
+        border-gray-200
+        bg-white
+        py-6
+    "
+>
+
+    <div
+        class="
+            max-w-7xl
+            mx-auto
+            px-4
+            sm:px-6
+            text-center
+        "
+    >
+
+        <p class="text-sm text-gray-400">
+            © 2026 Travelbolt_AI. All rights reserved.
+        </p>
+
+    </div>
+
+</footer>
+
 
 </body>
 </html>
