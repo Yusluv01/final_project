@@ -6,12 +6,18 @@
 <head>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Travelbolt AI Assistant</title>
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- Font Awesome -->
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
@@ -20,63 +26,232 @@
 </head>
 
 
-<body class="bg-gray-50">
+<body class="bg-gray-50 overflow-x-hidden">
 
 
 <!-- ========================================================= -->
-<!-- HEADER -->
+<!-- RESPONSIVE HEADER -->
 <!-- ========================================================= -->
 
-<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+<header
+    class="
+        fixed
+        top-0
+        left-0
+        right-0
+        z-50
+        bg-white
+        border-b
+        border-gray-200
+        shadow-sm
+    "
+>
 
-    <div class="flex items-center justify-between px-6 py-3">
+    <div
+        class="
+            max-w-7xl
+            mx-auto
+            px-4
+            sm:px-6
+            py-3
+        "
+    >
 
-        <div class="flex items-center gap-3">
+        <!-- ===================================================== -->
+        <!-- HEADER CONTENT -->
+        <!-- ===================================================== -->
 
-            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-                <i class="fa-solid fa-plane-departure"></i>
+        <div
+            class="
+                flex
+                flex-col
+                sm:flex-row
+                sm:items-center
+                sm:justify-between
+                gap-3
+            "
+        >
+
+
+            <!-- ================================================= -->
+            <!-- LOGO -->
+            <!-- ================================================= -->
+
+            <div
+                class="
+                    flex
+                    items-center
+                    gap-2
+                    sm:gap-3
+                    min-w-0
+                "
+            >
+
+                <!-- LOGO ICON -->
+
+                <div
+                    class="
+                        w-9
+                        h-9
+                        sm:w-10
+                        sm:h-10
+                        bg-blue-600
+                        rounded-lg
+                        flex
+                        items-center
+                        justify-center
+                        text-white
+                        shrink-0
+                    "
+                >
+
+                    <i class="fa-solid fa-plane-departure"></i>
+
+                </div>
+
+
+                <!-- LOGO TEXT -->
+
+                <div class="min-w-0">
+
+                    <h1
+                        class="
+                            text-lg
+                            sm:text-xl
+                            font-bold
+                            text-blue-700
+                            truncate
+                        "
+                    >
+                        Travelbolt_AI
+                    </h1>
+
+                    <p class="text-xs text-gray-400">
+                        AI Travel Assistant
+                    </p>
+
+                </div>
+
             </div>
 
-            <div>
 
-                <h1 class="text-xl font-bold text-blue-700">
-                    Travelbolt_AI
-                </h1>
+            <!-- ================================================= -->
+            <!-- NAVIGATION -->
+            <!-- ================================================= -->
 
-                <p class="text-xs text-gray-400">
-                    AI Travel Assistant
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="flex items-center gap-6">
-
-            <a
-                href="{% url 'travel_app:client_dashboard' %}"
-                class="text-gray-600 hover:text-blue-600 font-medium"
+            <nav
+                class="
+                    flex
+                    flex-wrap
+                    items-center
+                    justify-center
+                    sm:justify-end
+                    gap-1
+                    sm:gap-4
+                    w-full
+                    sm:w-auto
+                "
             >
-                <i class="fa-solid fa-house mr-2"></i>
-                Dashboard
-            </a>
 
-            <a
-                href="{% url 'travel_app:client_profile' %}"
-                class="text-gray-600 hover:text-blue-600 font-medium"
-            >
-                <i class="fa-solid fa-user mr-2"></i>
-                My Profile
-            </a>
+                <!-- DASHBOARD -->
 
-            <a
-                href="{% url 'travel_app:client_logout' %}"
-                class="text-red-600 hover:text-red-700 font-medium"
-            >
-                <i class="fa-solid fa-right-from-bracket mr-2"></i>
-                Logout
-            </a>
+                <a
+                    href="{% url 'travel_app:client_dashboard' %}"
+                    class="
+                        inline-flex
+                        items-center
+                        justify-center
+                        gap-2
+                        px-2.5
+                        sm:px-4
+                        py-2
+                        rounded-lg
+                        text-sm
+                        sm:text-base
+                        text-gray-600
+                        hover:bg-blue-50
+                        hover:text-blue-600
+                        font-medium
+                        transition
+                        whitespace-nowrap
+                    "
+                >
+
+                    <i class="fa-solid fa-house"></i>
+
+                    <span>
+                        Dashboard
+                    </span>
+
+                </a>
+
+
+                <!-- MY PROFILE -->
+
+                <a
+                    href="{% url 'travel_app:client_profile' %}"
+                    class="
+                        inline-flex
+                        items-center
+                        justify-center
+                        gap-2
+                        px-2.5
+                        sm:px-4
+                        py-2
+                        rounded-lg
+                        text-sm
+                        sm:text-base
+                        text-gray-600
+                        hover:bg-blue-50
+                        hover:text-blue-600
+                        font-medium
+                        transition
+                        whitespace-nowrap
+                    "
+                >
+
+                    <i class="fa-solid fa-user"></i>
+
+                    <span>
+                        My Profile
+                    </span>
+
+                </a>
+
+
+                <!-- LOGOUT -->
+
+                <a
+                    href="{% url 'travel_app:client_logout' %}"
+                    class="
+                        inline-flex
+                        items-center
+                        justify-center
+                        gap-2
+                        px-2.5
+                        sm:px-4
+                        py-2
+                        rounded-lg
+                        text-sm
+                        sm:text-base
+                        text-red-600
+                        hover:bg-red-50
+                        hover:text-red-700
+                        font-medium
+                        transition
+                        whitespace-nowrap
+                    "
+                >
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+
+                    <span>
+                        Logout
+                    </span>
+
+                </a>
+
+            </nav>
 
         </div>
 
@@ -89,50 +264,132 @@
 <!-- MAIN -->
 <!-- ========================================================= -->
 
-<main class="pt-28 px-6 pb-12">
+<main
+    class="
+        pt-36
+        sm:pt-28
+        px-4
+        sm:px-6
+        pb-12
+    "
+>
 
     <div class="max-w-4xl mx-auto">
 
 
+        <!-- ===================================================== -->
         <!-- TITLE -->
+        <!-- ===================================================== -->
 
         <div class="mb-6">
 
-            <h1 class="text-3xl font-bold text-gray-800">
+            <h1
+                class="
+                    text-2xl
+                    sm:text-3xl
+                    font-bold
+                    text-gray-800
+                    leading-tight
+                "
+            >
                 Travelbolt AI Assistant
             </h1>
 
-            <p class="text-gray-500 mt-2">
-                Ask questions about Hajj, Umrah, visas, documents and travel planning.
+            <p
+                class="
+                    text-sm
+                    sm:text-base
+                    text-gray-500
+                    mt-2
+                    leading-6
+                "
+            >
+                Ask questions about Hajj, Umrah, visas, documents
+                and travel planning.
             </p>
 
         </div>
 
 
+        <!-- ===================================================== -->
         <!-- CHAT BOX -->
+        <!-- ===================================================== -->
 
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div
+            class="
+                bg-white
+                rounded-2xl
+                border
+                border-gray-200
+                shadow-sm
+                overflow-hidden
+            "
+        >
 
 
+            <!-- ================================================= -->
             <!-- CHAT HEADER -->
+            <!-- ================================================= -->
 
-            <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-5">
+            <div
+                class="
+                    bg-gradient-to-r
+                    from-blue-600
+                    to-blue-800
+                    text-white
+                    p-4
+                    sm:p-5
+                "
+            >
 
                 <div class="flex items-center gap-3">
 
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <div
+                        class="
+                            w-10
+                            h-10
+                            sm:w-12
+                            sm:h-12
+                            bg-white/20
+                            rounded-full
+                            flex
+                            items-center
+                            justify-center
+                            shrink-0
+                        "
+                    >
 
-                        <i class="fa-solid fa-robot text-xl"></i>
+                        <i
+                            class="
+                                fa-solid
+                                fa-robot
+                                text-lg
+                                sm:text-xl
+                            "
+                        ></i>
 
                     </div>
 
-                    <div>
 
-                        <h2 class="font-bold text-lg">
+                    <div class="min-w-0">
+
+                        <h2
+                            class="
+                                font-bold
+                                text-base
+                                sm:text-lg
+                            "
+                        >
                             Travelbolt AI
                         </h2>
 
-                        <p class="text-blue-100 text-sm">
+                        <p
+                            class="
+                                text-blue-100
+                                text-xs
+                                sm:text-sm
+                            "
+                        >
                             Online • Ready to help
                         </p>
 
@@ -143,24 +400,78 @@
             </div>
 
 
+            <!-- ================================================= -->
             <!-- MESSAGES -->
+            <!-- ================================================= -->
 
             <div
                 id="chatMessages"
-                class="h-[450px] overflow-y-auto p-6 space-y-4"
+                class="
+                    h-[400px]
+                    sm:h-[450px]
+                    overflow-y-auto
+                    p-4
+                    sm:p-6
+                    space-y-4
+                "
             >
 
-                <div class="flex items-start gap-3">
+                <!-- INITIAL AI MESSAGE -->
 
-                    <div class="w-9 h-9 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <div
+                    class="
+                        flex
+                        items-start
+                        gap-2
+                        sm:gap-3
+                        min-w-0
+                    "
+                >
+
+                    <div
+                        class="
+                            w-8
+                            h-8
+                            sm:w-9
+                            sm:h-9
+                            bg-purple-100
+                            text-purple-600
+                            rounded-full
+                            flex
+                            items-center
+                            justify-center
+                            flex-shrink-0
+                        "
+                    >
 
                         <i class="fa-solid fa-robot"></i>
 
                     </div>
 
-                    <div class="bg-gray-100 rounded-xl px-4 py-3 max-w-[80%]">
 
-                        <p class="text-gray-700">
+                    <div
+                        class="
+                            bg-gray-100
+                            rounded-xl
+                            px-3
+                            sm:px-4
+                            py-3
+                            max-w-[88%]
+                            sm:max-w-[80%]
+                            min-w-0
+                            break-words
+                        "
+                    >
+
+                        <p
+                            class="
+                                text-gray-700
+                                text-sm
+                                sm:text-base
+                                leading-6
+                                break-words
+                            "
+                        >
                             Hello! I'm your Travelbolt AI Assistant.
                             How can I help you with your travel plans?
                         </p>
@@ -172,30 +483,82 @@
             </div>
 
 
+            <!-- ================================================= -->
             <!-- INPUT -->
+            <!-- ================================================= -->
 
-            <div class="border-t border-gray-200 p-4">
+            <div
+                class="
+                    border-t
+                    border-gray-200
+                    p-3
+                    sm:p-4
+                "
+            >
 
                 <form
                     id="chatForm"
-                    class="flex gap-3"
+                    class="
+                        flex
+                        flex-col
+                        sm:flex-row
+                        gap-2
+                        sm:gap-3
+                    "
                 >
+
+                    <!-- MESSAGE INPUT -->
 
                     <input
                         type="text"
                         id="messageInput"
                         placeholder="Ask about Hajj, Umrah, visa, documents..."
-                        class="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        class="
+                            w-full
+                            sm:flex-1
+                            min-w-0
+                            border
+                            border-gray-300
+                            rounded-xl
+                            px-4
+                            py-3
+                            text-sm
+                            sm:text-base
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-blue-500
+                        "
                         autocomplete="off"
                     >
+
+
+                    <!-- SEND BUTTON -->
 
                     <button
                         type="submit"
                         id="sendButton"
-                        class="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition"
+                        class="
+                            w-full
+                            sm:w-auto
+                            inline-flex
+                            items-center
+                            justify-center
+                            bg-blue-600
+                            text-white
+                            px-6
+                            py-3
+                            rounded-xl
+                            font-semibold
+                            hover:bg-blue-700
+                            transition
+                            whitespace-nowrap
+                        "
                     >
+
                         <i class="fa-solid fa-paper-plane mr-2"></i>
+
                         Send
+
                     </button>
 
                 </form>
@@ -205,40 +568,125 @@
         </div>
 
 
+        <!-- ===================================================== -->
         <!-- SUGGESTIONS -->
+        <!-- ===================================================== -->
 
         <div class="mt-6">
 
-            <p class="text-sm font-semibold text-gray-600 mb-3">
+            <p
+                class="
+                    text-sm
+                    font-semibold
+                    text-gray-600
+                    mb-3
+                "
+            >
                 Try asking:
             </p>
 
-            <div class="flex flex-wrap gap-3">
+
+            <div
+                class="
+                    flex
+                    flex-wrap
+                    gap-2
+                    sm:gap-3
+                "
+            >
+
+                <!-- UMRAH -->
 
                 <button
+                    type="button"
                     onclick="askQuestion('What documents do I need for Umrah?')"
-                    class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm hover:border-blue-400 hover:text-blue-600"
+                    class="
+                        bg-white
+                        border
+                        border-gray-200
+                        rounded-lg
+                        px-3
+                        sm:px-4
+                        py-2
+                        text-sm
+                        text-left
+                        hover:border-blue-400
+                        hover:text-blue-600
+                        transition
+                        break-words
+                    "
                 >
                     Umrah documents
                 </button>
 
+
+                <!-- HAJJ -->
+
                 <button
+                    type="button"
                     onclick="askQuestion('What documents do I need for Hajj?')"
-                    class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm hover:border-blue-400 hover:text-blue-600"
+                    class="
+                        bg-white
+                        border
+                        border-gray-200
+                        rounded-lg
+                        px-3
+                        sm:px-4
+                        py-2
+                        text-sm
+                        text-left
+                        hover:border-blue-400
+                        hover:text-blue-600
+                        transition
+                    "
                 >
                     Hajj documents
                 </button>
 
+
+                <!-- VISA -->
+
                 <button
+                    type="button"
                     onclick="askQuestion('What are the visa requirements?')"
-                    class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm hover:border-blue-400 hover:text-blue-600"
+                    class="
+                        bg-white
+                        border
+                        border-gray-200
+                        rounded-lg
+                        px-3
+                        sm:px-4
+                        py-2
+                        text-sm
+                        text-left
+                        hover:border-blue-400
+                        hover:text-blue-600
+                        transition
+                    "
                 >
                     Visa requirements
                 </button>
 
+
+                <!-- PACKAGES -->
+
                 <button
+                    type="button"
                     onclick="askQuestion('Tell me about your travel packages')"
-                    class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm hover:border-blue-400 hover:text-blue-600"
+                    class="
+                        bg-white
+                        border
+                        border-gray-200
+                        rounded-lg
+                        px-3
+                        sm:px-4
+                        py-2
+                        text-sm
+                        text-left
+                        hover:border-blue-400
+                        hover:text-blue-600
+                        transition
+                    "
                 >
                     Travel packages
                 </button>
@@ -252,55 +700,149 @@
 </main>
 
 
+<!-- ========================================================= -->
+<!-- JAVASCRIPT -->
+<!-- ========================================================= -->
+
 <script>
 
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
 const chatForm = document.getElementById("chatForm");
+
 const messageInput = document.getElementById("messageInput");
+
 const chatMessages = document.getElementById("chatMessages");
+
 const sendButton = document.getElementById("sendButton");
 
+
+/* =========================================================
+   ADD MESSAGE
+========================================================= */
 
 function addMessage(message, sender) {
 
     const wrapper = document.createElement("div");
 
+
     if (sender === "user") {
 
-        wrapper.className = "flex justify-end";
+        wrapper.className =
+            "flex justify-end min-w-0";
+
 
         wrapper.innerHTML = `
-            <div class="bg-blue-600 text-white rounded-xl px-4 py-3 max-w-[80%]">
+
+            <div
+                class="
+                    bg-blue-600
+                    text-white
+                    rounded-xl
+                    px-3
+                    sm:px-4
+                    py-3
+                    max-w-[88%]
+                    sm:max-w-[80%]
+                    min-w-0
+                    break-words
+                    overflow-hidden
+                "
+            >
+
                 ${escapeHtml(message)}
-            </div>
-        `;
 
-    } else {
-
-        wrapper.className = "flex items-start gap-3";
-
-        wrapper.innerHTML = `
-            <div class="w-9 h-9 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                <i class="fa-solid fa-robot"></i>
             </div>
 
-            <div class="bg-gray-100 rounded-xl px-4 py-3 max-w-[80%]">
-                <p class="text-gray-700 whitespace-pre-line">
-                    ${escapeHtml(message)}
-                </p>
-            </div>
         `;
 
     }
 
+
+    else {
+
+        wrapper.className =
+            "flex items-start gap-2 sm:gap-3 min-w-0";
+
+
+        wrapper.innerHTML = `
+
+            <div
+                class="
+                    w-8
+                    h-8
+                    sm:w-9
+                    sm:h-9
+                    bg-purple-100
+                    text-purple-600
+                    rounded-full
+                    flex
+                    items-center
+                    justify-center
+                    flex-shrink-0
+                "
+            >
+
+                <i class="fa-solid fa-robot"></i>
+
+            </div>
+
+
+            <div
+                class="
+                    bg-gray-100
+                    rounded-xl
+                    px-3
+                    sm:px-4
+                    py-3
+                    max-w-[88%]
+                    sm:max-w-[80%]
+                    min-w-0
+                    break-words
+                    overflow-hidden
+                "
+            >
+
+                <p
+                    class="
+                        text-gray-700
+                        text-sm
+                        sm:text-base
+                        whitespace-pre-line
+                        leading-6
+                        break-words
+                    "
+                >
+                    ${escapeHtml(message)}
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+
     chatMessages.appendChild(wrapper);
 
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    chatMessages.scrollTop =
+        chatMessages.scrollHeight;
+
 }
 
 
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
 function escapeHtml(text) {
 
-    const div = document.createElement("div");
+    const div =
+        document.createElement("div");
 
     div.textContent = text;
 
@@ -308,6 +850,10 @@ function escapeHtml(text) {
 
 }
 
+
+/* =========================================================
+   ASK QUESTION
+========================================================= */
 
 async function askQuestion(question) {
 
@@ -318,46 +864,74 @@ async function askQuestion(question) {
 }
 
 
+/* =========================================================
+   SEND MESSAGE
+========================================================= */
+
 async function sendMessage() {
 
-    const message = messageInput.value.trim();
+    const message =
+        messageInput.value.trim();
+
 
     if (!message) {
+
         return;
+
     }
 
 
-    addMessage(message, "user");
+    addMessage(
+        message,
+        "user"
+    );
+
 
     messageInput.value = "";
 
+
     sendButton.disabled = true;
 
+
     sendButton.innerHTML = `
+
         <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+
         Thinking...
+
     `;
 
 
     try {
 
         const response = await fetch(
+
             "{% url 'travel_app:ai_assistant_chat' %}",
+
             {
+
                 method: "POST",
 
                 headers: {
-                    "Content-Type": "application/json"
+
+                    "Content-Type":
+                        "application/json"
+
                 },
 
                 body: JSON.stringify({
+
                     message: message
+
                 })
+
             }
+
         );
 
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
 
         if (data.success) {
@@ -367,23 +941,37 @@ async function sendMessage() {
                 "ai"
             );
 
-        } else {
+        }
+
+
+        else {
 
             addMessage(
-                data.error || "Sorry, I could not process your question.",
+
+                data.error ||
+                "Sorry, I could not process your question.",
+
                 "ai"
+
             );
 
         }
 
 
-    } catch (error) {
+    }
+
+
+    catch (error) {
 
         console.error(error);
 
+
         addMessage(
+
             "Sorry, something went wrong while connecting to the AI Assistant.",
+
             "ai"
+
         );
 
     }
@@ -391,16 +979,26 @@ async function sendMessage() {
 
     sendButton.disabled = false;
 
+
     sendButton.innerHTML = `
+
         <i class="fa-solid fa-paper-plane mr-2"></i>
+
         Send
+
     `;
 
 }
 
 
+/* =========================================================
+   FORM SUBMIT
+========================================================= */
+
 chatForm.addEventListener(
+
     "submit",
+
     function(event) {
 
         event.preventDefault();
@@ -408,6 +1006,7 @@ chatForm.addEventListener(
         sendMessage();
 
     }
+
 );
 
 </script>
