@@ -27,6 +27,8 @@ urlpatterns = [
         name='dashboard'
     ),
 
+    
+
 
     # ============================================================
     # AUTHENTICATION
@@ -416,6 +418,24 @@ path(
     views.paystack_callback,
     name='paystack_callback'
 ),
+
+    path(
+    'notifications/',
+    views.notifications,
+    name='notifications'
+),
+
+path(
+    'notifications/<int:notification_id>/read/',
+    views.mark_notification_read,
+    name='mark_notification_read'
+),
+
+path(
+    'notifications/mark-all-read/',
+    views.mark_all_notifications_read,
+    name='mark_all_notifications_read'
+),
 ]
 
 
@@ -450,76 +470,3 @@ path(
 
 
 
-# from django.urls import path
-# from django.contrib.auth.decorators import login_required
-# from . import views
-
-# app_name = 'travel_app'
-
-# urlpatterns = [
-#     # ==================== DASHBOARD & LANDING ====================
-#     path('', views.landing_page, name='landing_page'),
-#     path('dashboard/', views.dashboard, name='dashboard'),  # Emergency dashboard catch
-
-#     # ==================== AUTHENTICATION ====================
-#     path('logout/', views.custom_logout, name='logout'),
-#     path('agency-secure-login-2026/', views.admin_login, name='admin_login'),  # Secure Admin Login
-
-#     # ==================== EXPORT REPORT ====================
-#     path('export-report/', views.export_report, name='export_report'),
-
-#     # ==================== CLIENTS ====================
-#     path('clients/', views.ClientListView.as_view(), name='clients'),
-#     path('clients/<int:pk>/', views.ClientDetailView.as_view(), name='client_detail'),
-#     path('clients/create/', views.ClientCreateView.as_view(), name='client_create'),
-#     path('clients/<int:pk>/edit/', views.ClientUpdateView.as_view(), name='client_edit'),
-#     path('clients/<int:pk>/delete/', views.ClientDeleteView.as_view(), name='client_delete'),
-    
-#     # ==================== ITINERARIES ====================
-#     path('itineraries/', views.ItineraryListView.as_view(), name='itineraries'),
-#     path('itineraries/<int:pk>/', views.ItineraryDetailView.as_view(), name='itinerary_detail'),
-#     path('itineraries/create/', views.ItineraryCreateView.as_view(), name='itinerary_create'),
-#     path('itineraries/<int:pk>/save/', views.itinerary_save, name='itinerary_save'),
-#     path('itineraries/<int:pk>/export-pdf/', views.itinerary_export_pdf, name='itinerary_export_pdf'),
-
-#     # ==================== ADMIN PAYMENTS ====================
-#     # ✅ SECURE: Added login_required to prevent Clients from accessing this
-#     path('payments/', login_required(views.PaymentView.as_view()), name='payments'),
-#     path('payments/success/', views.payment_success, name='payment_success'),
-#     path('payments/process/', views.process_payment, name='process_payment'),
-
-#     # ==================== CLIENT PAYMENTS ====================
-#     path('client/payments/', views.client_payments, name='client_payments'),
-#     path('client/payment-success/', views.client_payment_success, name='client_payment_success'),
-
-#     # ==================== MESSAGES ====================
-#     path('messages/', views.MessagingView.as_view(), name='messages'),
-#     path('messages/send/', views.send_message, name='send_message'),
-    
-#     # ==================== FLIGHT SEARCH ====================
-#     path('search/', views.flight_search, name='flight_search'),
-#     path('api/flights/search/', views.flight_search_api, name='flight_search_api'),
-    
-#     # ==================== EXPLORE ====================
-#     path('explore/', views.explore, name='explore'),
-    
-#     # ==================== AI ASSISTANT ====================
-#     path('api/ai-assistant/', views.ai_assistant_chat, name='ai_assistant_chat'),
-#     path('test-ai/', views.test_ai, name='test_ai'),
-
-#     # ==================== CLIENT PORTAL ====================
-#     path('client/register/', views.client_register, name='client_register'),
-#     path('client/login/', views.client_login, name='client_login'),
-#     path('client/dashboard/', views.client_dashboard, name='client_dashboard'),
-#     path('client/logout/', views.client_logout, name='client_logout'),
-#     path('client/flight-search/', views.client_flight_search, name='client_flight_search'),
-#     path('client/password-reset/', views.ClientPasswordResetView.as_view(), name='client_password_reset'),
-#     path('client/upload-document/', views.client_upload_document, name='client_upload_document'),
-
-#     # ==================== MAGIC LOGIN (FOR TESTING) ====================
-#     path('client/magic-login/<str:username>/', views.magic_client_login, name='magic_client_login'),
-
-#     path('create-stripe-checkout/', views.create_stripe_checkout, name='create_stripe_checkout'),
-#     path('admin-view-document/<int:doc_id>/', views.admin_view_document, name='admin_view_document'),
-#     path('itineraries/<int:pk>/share/', views.itinerary_share, name='itinerary_share'),
-# ]
