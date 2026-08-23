@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 
+from .models import Notification
+
 from django.contrib.auth import (
     authenticate,
     login,
@@ -222,6 +224,75 @@ def dashboard(request):
         'travel_app/index.html',
         context
     )
+
+
+# ============================================================
+# NOTIFICATION VIEWS
+# ============================================================
+
+@login_required
+def notifications(request):
+    """
+    Display all notifications for the logged-in agent.
+    """
+
+    if not (
+        request.user.is_staff
+        or request.user.role in ('admin', 'staff')
+    ):
+        return redirect('travel_app:client_dashboard')
+
+    notification_list = (
+        Notification.objects
+        .filter(recipient=request.user)
+        .order_by('-created_at')
+    )
+
+    return render(
+        request,
+        'travel_app/notifications.html',
+        {
+            'notifications': notification_list,
+        }
+    )
+
+
+@login_required
+def mark_notification_read(request, notification_id):
+    """
+    Mark one notification as read.
+    """
+
+    notification = get_object_or_404(
+        Notification,
+        id=notification_id,
+        recipient=request.user
+    )
+
+    notification.mark_as_read()
+
+    if notification.link:
+        return redirect(notification.link)
+
+    return redirect('travel_app:dashboard')
+
+
+@login_required
+def mark_all_notifications_read(request):
+    """
+    Mark all notifications belonging to the logged-in
+    agent as read.
+    """
+
+    Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    ).update(
+        is_read=True,
+        read_at=timezone.now()
+    )
+
+    return redirect('travel_app:notifications')
 
 
 def admin_login(request):
