@@ -20,7 +20,7 @@
             <span class="text-[10px] uppercase font-bold text-gray-500">Bot Online</span>
         </div>
         
-      <!-- Notifications -->
+ <!-- Notifications -->
 <a
     href="{% url 'travel_app:notifications' %}"
     class="hover:bg-gray-100 p-2 rounded-full transition-all text-gray-600 relative"
@@ -29,9 +29,11 @@
     <span class="material-symbols-outlined">notifications</span>
 
     {% if notification_count > 0 %}
-    <span class="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white flex items-center justify-center">
-        {{ notification_count }}
-    </span>
+        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+
+        <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+            {{ notification_count }}
+        </span>
     {% endif %}
 </a>
         
