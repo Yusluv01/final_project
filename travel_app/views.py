@@ -2485,61 +2485,94 @@ def admin_download_document(request, doc_id):
         messages.error(request, "The document file could not be found on the server.")
         return redirect('travel_app:dashboard')
 
-# def client_login(request):
+@login_required
+def client_packages(request):
 
-#     # If already logged in
-#     if request.user.is_authenticated:
+    packages = TravelPackage.objects.filter(
+        is_active=True,
+        available_from__lte=timezone.now().date(),
+        available_until__gte=timezone.now().date()
+    ).order_by('-is_featured', 'price')
 
-#         user_role = getattr(request.user, 'role', None)
+    return render(
+        request,
+        'travel_app/client/packages.html',
+        {
+            'packages': packages,
+        }
+    )
+    
+@login_required
+def client_package_detail(request, package_id):
 
-#         if user_role == 'client' and not request.user.is_staff:
-#             return redirect('travel_app:client_dashboard')
+    package = get_object_or_404(
+        TravelPackage,
+        id=package_id,
+        is_active=True
+    )
 
-#         logout(request)
+    return render(
+        request,
+        'travel_app/client/package_detail.html',
+        {
+            'package': package,
+        }
+    )
 
-#     login_error = None
+@login_required
+def select_package(request, package_id):
 
-#     if request.method == 'POST':
+    package = get_object_or_404(
+        TravelPackage,
+        id=package_id,
+        is_active=True
+    )
 
-#         username = request.POST.get('username', '').strip()
-#         password = request.POST.get('password', '')
+    if request.method == 'POST':
 
-#         user = authenticate(
-#             request,
-#             username=username,
-#             password=password
-#         )
+        # Get the logged-in client's profile
+        client = request.user.client
 
-#         user_role = getattr(user, 'role', None) if user else None
+        booking = Booking.objects.create(
+            client=client,
+            package=package,
+            status='pending',
+            total_amount=package.price,
+            paid_amount=0,
+            discount_amount=0,
+            payment_status='pending',
+            travel_date_start=package.available_from,
+            travel_date_end=package.available_until,
+        )
 
-#         if (
-#             user is not None
-#             and user_role == 'client'
-#             and not user.is_staff
-#         ):
-#             login(request, user)
+        # Notify admin/staff
+        admin_users = Agent.objects.filter(
+            role__in=['admin', 'staff'],
+            is_active=True
+        )
 
-#             messages.success(
-#                 request,
-#                 f'Welcome back, {user.get_full_name() or user.username}!'
-#             )
+        for admin in admin_users:
+            Notification.objects.create(
+                recipient=admin,
+                title='New Package Booking',
+                message=(
+                    f'{client.full_name} selected '
+                    f'{package.name}. '
+                    f'Booking: {booking.booking_id}. '
+                    f'Amount: ₦{package.price:,.2f}.'
+                ),
+                notification_type='info'
+            )
 
-#             # IMPORTANT:
-#             # Client always lands on Client Portal Dashboard
-#             return redirect('travel_app:client_dashboard')
+        messages.success(
+            request,
+            'Package selected successfully. You can now proceed with payment.'
+        )
 
-#         login_error = (
-#             'Invalid client username or password. Please try again.'
-#         )
-
-#     return render(
-#         request,
-#         'travel_app/client/login.html',
-#         {
-#             'login_error': login_error
-#         }
-#     )
-
+        return redirect(
+            'travel_app:client_booking_detail',
+            booking_id=booking.id
+        )
 
 @login_required(login_url='travel_app:client_login')
 def client_profile(request):
