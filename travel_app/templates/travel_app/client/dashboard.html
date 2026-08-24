@@ -433,6 +433,39 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-10">
 
 
+                
+<!-- ================================================= -->
+<!-- BROWSE TRAVEL PACKAGES -->
+<!-- ================================================= -->
+
+<a
+    href="{% url 'travel_app:client_packages' %}"
+    class="group bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-green-300 transition"
+>
+
+    <div class="flex items-center justify-between mb-5">
+
+        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
+
+            <i class="fa-solid fa-suitcase-rolling text-xl"></i>
+
+        </div>
+
+        <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-green-600 transition"></i>
+
+    </div>
+
+    <h3 class="text-lg font-bold text-gray-800 mb-2">
+        Browse Travel Packages
+    </h3>
+
+    <p class="text-gray-500 text-sm leading-6">
+        Explore available Hajj, Umrah, visa and other travel packages.
+    </p>
+
+</a>
+
+
                 <!-- ================================================= -->
                 <!-- UPLOAD DOCUMENTS -->
                 <!-- ================================================= -->
@@ -460,38 +493,6 @@
 
                     <p class="text-gray-500 text-sm leading-6">
                         Upload your passport, visa and other travel documents for review.
-                    </p>
-
-                </a>
-
-
-                <!-- ================================================= -->
-                <!-- MAKE PAYMENT -->
-                <!-- ================================================= -->
-
-                <a
-                    href="{% url 'travel_app:client_payments' %}"
-                    class="group bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-green-300 transition"
-                >
-
-                    <div class="flex items-center justify-between mb-5">
-
-                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
-
-                            <i class="fa-solid fa-credit-card text-xl"></i>
-
-                        </div>
-
-                        <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-green-600 transition"></i>
-
-                    </div>
-
-                    <h3 class="text-lg font-bold text-gray-800 mb-2">
-                        Make a Payment
-                    </h3>
-
-                    <p class="text-gray-500 text-sm leading-6">
-                        Make payments for your travel services securely.
                     </p>
 
                 </a>
@@ -653,7 +654,9 @@
                         </h2>
 
                         <p class="text-sm text-gray-500 mt-1">
-                            View your travel bookings and make payments.
+                           <p class="text-sm text-gray-500 mt-1">
+    View your selected travel packages, booking details and payment status.
+</p>
                         </p>
 
                     </div>
