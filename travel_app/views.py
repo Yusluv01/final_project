@@ -1,8 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 
-from .models import Notification
-
 from django.contrib.auth import (
     authenticate,
     login,
@@ -25,7 +23,7 @@ from django.views.generic import (
 )
 
 from django.urls import reverse_lazy, reverse
-from django.db import transaction
+from django.db import models, transaction
 from django.db.models import Q, Sum, Count
 from django.http import JsonResponse, FileResponse, HttpResponse, HttpResponseRedirect
 from django.utils import timezone
@@ -1622,6 +1620,11 @@ def paystack_callback(request):
     """
     Paystack redirects the client here after payment.
     The transaction is verified directly with Paystack.
+
+    When payment is successfully verified:
+    - Payment is marked completed
+    - Booking payment information is updated
+    - Admin/staff users receive a notification
     """
 
     reference = request.GET.get('reference')
@@ -1691,6 +1694,7 @@ def paystack_callback(request):
     )
 
     booking = payment.booking
+    client = booking.client
 
     # ---------------------------------------------------------
     # SUCCESSFUL PAYMENT
@@ -1698,7 +1702,10 @@ def paystack_callback(request):
 
     if payment_status == 'success':
 
-        # Prevent duplicate processing
+        # -----------------------------------------------------
+        # PREVENT DUPLICATE PROCESSING
+        # -----------------------------------------------------
+
         if payment.status == 'completed':
             return redirect(
                 'travel_app:payment_success',
@@ -1706,6 +1713,10 @@ def paystack_callback(request):
             )
 
         with transaction.atomic():
+
+            # -------------------------------------------------
+            # UPDATE PAYMENT
+            # -------------------------------------------------
 
             payment.status = 'completed'
             payment.paid_at = timezone.now()
@@ -1722,7 +1733,10 @@ def paystack_callback(request):
                 ]
             )
 
-            # Update booking payment amount
+            # -------------------------------------------------
+            # UPDATE BOOKING PAYMENT AMOUNT
+            # -------------------------------------------------
+
             booking.paid_amount += payment.amount
 
             if booking.paid_amount >= (
@@ -1747,6 +1761,32 @@ def paystack_callback(request):
                     'updated_at'
                 ]
             )
+
+            # -------------------------------------------------
+            # CREATE ADMIN NOTIFICATIONS
+            # -------------------------------------------------
+
+            admin_users = Agent.objects.filter(
+                models.Q(role='admin') |
+                models.Q(is_staff=True)
+            ).distinct()
+
+            client_name = client.full_name
+
+            for admin in admin_users:
+
+                Notification.objects.create(
+                    recipient=admin,
+                    title='Payment Received',
+                    message=(
+                        f'{client_name} has successfully paid '
+                        f'₦{payment.amount:,.2f} for booking '
+                        f'{booking.booking_id}.'
+                    ),
+                    notification_type='success',
+                    link='/dashboard/',
+                    link_text='View Dashboard'
+                )
 
         return redirect(
             'travel_app:payment_success',
