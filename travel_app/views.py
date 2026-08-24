@@ -2485,14 +2485,32 @@ def admin_download_document(request, doc_id):
         messages.error(request, "The document file could not be found on the server.")
         return redirect('travel_app:dashboard')
 
-@login_required
+@login_required(login_url='travel_app:client_login')
 def client_packages(request):
+    """
+    Display all active travel packages available to clients.
+    """
 
-    packages = TravelPackage.objects.filter(
-        is_active=True,
-        available_from__lte=timezone.now().date(),
-        available_until__gte=timezone.now().date()
-    ).order_by('-is_featured', 'price')
+    # Only clients can access travel packages
+    if (
+        request.user.is_staff
+        or getattr(request.user, 'role', None) != 'client'
+    ):
+        messages.warning(
+            request,
+            'Only clients can browse travel packages.'
+        )
+        return redirect('travel_app:dashboard')
+
+    packages = (
+        TravelPackage.objects
+        .filter(
+            is_active=True,
+            available_from__lte=timezone.now().date(),
+            available_until__gte=timezone.now().date()
+        )
+        .order_by('-is_featured', 'price')
+    )
 
     return render(
         request,
@@ -2501,13 +2519,28 @@ def client_packages(request):
             'packages': packages,
         }
     )
-    
-@login_required
-def client_package_detail(request, package_id):
+
+
+@login_required(login_url='travel_app:client_login')
+def client_package_detail(request, pk):
+    """
+    Display details of one travel package.
+    """
+
+    # Only clients can access package details
+    if (
+        request.user.is_staff
+        or getattr(request.user, 'role', None) != 'client'
+    ):
+        messages.warning(
+            request,
+            'Only clients can view travel packages.'
+        )
+        return redirect('travel_app:dashboard')
 
     package = get_object_or_404(
         TravelPackage,
-        id=package_id,
+        pk=pk,
         is_active=True
     )
 
@@ -2519,60 +2552,145 @@ def client_package_detail(request, package_id):
         }
     )
 
-@login_required
-def select_package(request, package_id):
+
+@login_required(login_url='travel_app:client_login')
+def select_package(request, pk):
+    """
+    Create a booking when a client selects a travel package.
+    """
+
+    # Only clients can select packages
+    if (
+        request.user.is_staff
+        or getattr(request.user, 'role', None) != 'client'
+    ):
+        messages.warning(
+            request,
+            'Only clients can select travel packages.'
+        )
+        return redirect('travel_app:dashboard')
+
+    # Get the client's profile using the same relationship
+    # already used throughout your client portal.
+    try:
+        client = request.user.client_profile
+    except Client.DoesNotExist:
+        messages.error(
+            request,
+            'Your client profile is not linked. Please contact support.'
+        )
+        return redirect('travel_app:client_dashboard')
 
     package = get_object_or_404(
         TravelPackage,
-        id=package_id,
+        pk=pk,
         is_active=True
     )
 
-    if request.method == 'POST':
-
-        # Get the logged-in client's profile
-        client = request.user.client
-
-        booking = Booking.objects.create(
-            client=client,
-            package=package,
-            status='pending',
-            total_amount=package.price,
-            paid_amount=0,
-            discount_amount=0,
-            payment_status='pending',
-            travel_date_start=package.available_from,
-            travel_date_end=package.available_until,
-        )
-
-        # Notify admin/staff
-        admin_users = Agent.objects.filter(
-            role__in=['admin', 'staff'],
-            is_active=True
-        )
-
-        for admin in admin_users:
-            Notification.objects.create(
-                recipient=admin,
-                title='New Package Booking',
-                message=(
-                    f'{client.full_name} selected '
-                    f'{package.name}. '
-                    f'Booking: {booking.booking_id}. '
-                    f'Amount: ₦{package.price:,.2f}.'
-                ),
-                notification_type='info'
-            )
-
-        messages.success(
-            request,
-            'Package selected successfully. You can now proceed with payment.'
-        )
-
+    # Only create the booking after the client submits
+    # the package selection form.
+    if request.method != 'POST':
         return redirect(
-            'travel_app:client_booking_detail',
-            booking_id=booking.id
+            'travel_app:client_package_detail',
+            pk=package.pk
         )
+
+    # ---------------------------------------------------------
+    # CREATE BOOKING
+    # ---------------------------------------------------------
+
+    booking = Booking.objects.create(
+        client=client,
+        package=package,
+        status='pending',
+        total_amount=package.price,
+        paid_amount=0,
+        discount_amount=0,
+        payment_status='pending',
+        travel_date_start=package.available_from,
+        travel_date_end=package.available_until,
+    )
+
+    # ---------------------------------------------------------
+    # NOTIFY ADMIN / STAFF
+    # ---------------------------------------------------------
+
+    admin_users = Agent.objects.filter(
+        models.Q(role__in=['admin', 'staff']) |
+        models.Q(is_staff=True),
+        is_active=True
+    ).distinct()
+
+    for admin in admin_users:
+        Notification.objects.create(
+            recipient=admin,
+            title='New Package Booking',
+            message=(
+                f'{client.full_name} selected '
+                f'{package.name}. '
+                f'Booking: {booking.booking_id}. '
+                f'Amount: ₦{package.price:,.2f}.'
+            ),
+            notification_type='info',
+            link=reverse(
+                'travel_app:client_booking_detail',
+                kwargs={'pk': booking.pk}
+            ),
+            link_text='View Booking'
+        )
+
+    messages.success(
+        request,
+        'Package selected successfully. You can now proceed with payment.'
+    )
+
+    return redirect(
+        'travel_app:client_booking_detail',
+        pk=booking.pk
+    )
+
+@login_required(login_url='travel_app:client_login')
+def client_booking_detail(request, pk):
+    """
+    Display a booking belonging to the currently logged-in client.
+    """
+
+    # Only clients can access booking details
+    if (
+        request.user.is_staff
+        or getattr(request.user, 'role', None) != 'client'
+    ):
+        messages.warning(
+            request,
+            'Only clients can access their bookings.'
+        )
+        return redirect('travel_app:dashboard')
+
+    try:
+        client = request.user.client_profile
+    except Client.DoesNotExist:
+        messages.error(
+            request,
+            'Your client profile is not linked. Please contact support.'
+        )
+        return redirect('travel_app:client_login')
+
+    # IMPORTANT:
+    # The booking must belong to the logged-in client.
+    booking = get_object_or_404(
+        Booking.objects.select_related('package'),
+        pk=pk,
+        client=client
+    )
+
+    return render(
+        request,
+        'travel_app/client/booking_detail.html',
+        {
+            'client': client,
+            'booking': booking,
+        }
+    )
 
 @login_required(login_url='travel_app:client_login')
 def client_profile(request):
