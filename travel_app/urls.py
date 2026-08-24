@@ -461,8 +461,14 @@ path(
     ),
 
     # =========================================================
-    # CLIENT BOOKING DETAIL
+    # CLIENT BOOKING 
     # =========================================================
+
+    path(
+    'client/bookings/',
+    views.client_bookings,
+    name='client_bookings'
+),
 
     path(
         'client/bookings/<int:pk>/',
