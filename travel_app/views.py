@@ -1762,37 +1762,30 @@ def paystack_callback(request):
                 ]
             )
 
-            # -------------------------------------------------
-            # CREATE ADMIN NOTIFICATIONS
-            # -------------------------------------------------
+# ---------------------------------------------------------
+# CREATE NOTIFICATION FOR ADMIN / STAFF
+# ---------------------------------------------------------
 
-            admin_users = Agent.objects.filter(
-                models.Q(role='admin') |
-                models.Q(is_staff=True)
-            ).distinct()
+admin_users = Agent.objects.filter(
+    models.Q(role__in=['admin', 'staff']) |
+    models.Q(is_staff=True),
+    is_active=True
+).distinct()
 
-            client_name = client.full_name
-
-            for admin in admin_users:
-
-                Notification.objects.create(
-                    recipient=admin,
-                    title='Payment Received',
-                    message=(
-                        f'{client_name} has successfully paid '
-                        f'₦{payment.amount:,.2f} for booking '
-                        f'{booking.booking_id}.'
-                    ),
-                    notification_type='success',
-                    link='/dashboard/',
-                    link_text='View Dashboard'
-                )
-
-        return redirect(
-            'travel_app:payment_success',
-            payment_id=payment.id
-        )
-
+for admin in admin_users:
+    Notification.objects.create(
+        recipient=admin,
+        title='Payment Received',
+        message=(
+            f'{booking.client.full_name} successfully paid '
+            f'₦{payment.amount:,.2f} for booking '
+            f'{booking.booking_id}.'
+        ),
+        notification_type='success',
+        link=reverse('travel_app:dashboard'),
+        link_text='View Dashboard'
+    )
+    
     # ---------------------------------------------------------
     # FAILED / DECLINED PAYMENT
     # ---------------------------------------------------------
