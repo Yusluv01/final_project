@@ -2650,6 +2650,63 @@ def select_package(request, pk):
     )
 
 @login_required(login_url='travel_app:client_login')
+def client_bookings(request):
+    """
+    Display all bookings belonging to the currently logged-in client.
+    """
+
+    # ---------------------------------------------------------
+    # ACCESS CONTROL
+    # ---------------------------------------------------------
+
+    if (
+        request.user.is_staff
+        or getattr(request.user, 'role', None) != 'client'
+    ):
+        messages.warning(
+            request,
+            'Only clients can access their bookings.'
+        )
+        return redirect('travel_app:dashboard')
+
+    # ---------------------------------------------------------
+    # GET CLIENT PROFILE
+    # ---------------------------------------------------------
+
+    try:
+        client = request.user.client_profile
+    except Client.DoesNotExist:
+        messages.error(
+            request,
+            'Your client profile is not linked. Please contact support.'
+        )
+        return redirect('travel_app:client_login')
+
+    # ---------------------------------------------------------
+    # GET CLIENT BOOKINGS
+    # ---------------------------------------------------------
+
+    bookings = (
+        Booking.objects
+        .filter(client=client)
+        .select_related('package')
+        .order_by('-created_at')
+    )
+
+    # ---------------------------------------------------------
+    # RENDER
+    # ---------------------------------------------------------
+
+    return render(
+        request,
+        'travel_app/client/bookings.html',
+        {
+            'client': client,
+            'bookings': bookings,
+        }
+    )
+
+@login_required(login_url='travel_app:client_login')
 def client_booking_detail(request, pk):
     """
     Display a booking belonging to the currently logged-in client.
