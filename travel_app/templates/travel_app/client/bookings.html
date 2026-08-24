@@ -1,0 +1,286 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Bookings | TravelBolt AI</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- NAVIGATION -->
+    <header class="bg-white border-b sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="flex items-center justify-between h-16">
+
+                <!-- LOGO -->
+                <a
+                    href="{% url 'travel_app:client_dashboard' %}"
+                    class="text-xl sm:text-2xl font-bold text-blue-600"
+                >
+                    TravelBolt <span class="text-gray-800">AI</span>
+                </a>
+
+                <!-- DESKTOP NAV -->
+                <nav class="hidden md:flex items-center gap-6">
+
+                    <a
+                        href="{% url 'travel_app:client_dashboard' %}"
+                        class="text-gray-600 hover:text-blue-600 transition"
+                    >
+                        Dashboard
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_bookings' %}"
+                        class="text-blue-600 font-semibold"
+                    >
+                        My Bookings
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_profile' %}"
+                        class="text-gray-600 hover:text-blue-600 transition"
+                    >
+                        My Profile
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_logout' %}"
+                        class="text-red-500 hover:text-red-600 transition"
+                    >
+                        Logout
+                    </a>
+
+                </nav>
+
+                <!-- MOBILE BUTTON -->
+                <button
+                    id="menuButton"
+                    type="button"
+                    class="md:hidden text-gray-700 text-2xl"
+                >
+                    ☰
+                </button>
+
+            </div>
+
+            <!-- MOBILE NAV -->
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+
+                <div class="flex flex-col gap-3 pt-3">
+
+                    <a
+                        href="{% url 'travel_app:client_dashboard' %}"
+                        class="text-gray-600 hover:text-blue-600"
+                    >
+                        Dashboard
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_bookings' %}"
+                        class="text-blue-600 font-semibold"
+                    >
+                        My Bookings
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_profile' %}"
+                        class="text-gray-600 hover:text-blue-600"
+                    >
+                        My Profile
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_logout' %}"
+                        class="text-red-500"
+                    >
+                        Logout
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+    </header>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- PAGE HEADER -->
+        <div class="mb-8">
+
+            <h1 class="text-3xl font-bold text-gray-900">
+                My Bookings
+            </h1>
+
+            <p class="text-gray-600 mt-2">
+                View and manage your travel bookings.
+            </p>
+
+        </div>
+
+
+        {% if bookings %}
+
+            <div class="space-y-5">
+
+                {% for booking in bookings %}
+
+                    <div class="bg-white rounded-xl shadow-sm border p-5">
+
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+
+                            <!-- BOOKING INFO -->
+                            <div>
+
+                                <p class="text-sm text-gray-500">
+                                    Booking ID
+                                </p>
+
+                                <h2 class="text-lg font-bold text-gray-900">
+                                    {{ booking.booking_id }}
+                                </h2>
+
+                                {% if booking.package %}
+                                    <p class="text-blue-600 font-medium mt-2">
+                                        {{ booking.package.name }}
+                                    </p>
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- STATUS -->
+                            <div>
+
+                                <p class="text-sm text-gray-500">
+                                    Status
+                                </p>
+
+                                <span
+                                    class="inline-block mt-1 px-3 py-1 rounded-full text-sm font-medium
+                                    {% if booking.status == 'confirmed' %}
+                                        bg-green-100 text-green-700
+                                    {% elif booking.status == 'cancelled' %}
+                                        bg-red-100 text-red-700
+                                    {% elif booking.status == 'completed' %}
+                                        bg-blue-100 text-blue-700
+                                    {% else %}
+                                        bg-yellow-100 text-yellow-700
+                                    {% endif %}"
+                                >
+                                    {{ booking.get_status_display }}
+                                </span>
+
+                            </div>
+
+
+                            <!-- TRAVEL DATE -->
+                            <div>
+
+                                <p class="text-sm text-gray-500">
+                                    Travel Date
+                                </p>
+
+                                <p class="font-medium text-gray-900 mt-1">
+                                    {{ booking.travel_date_start|date:"M d, Y" }}
+                                </p>
+
+                            </div>
+
+
+                            <!-- AMOUNT -->
+                            <div>
+
+                                <p class="text-sm text-gray-500">
+                                    Total Amount
+                                </p>
+
+                                <p class="font-bold text-gray-900 mt-1">
+                                    ₦{{ booking.total_amount|floatformat:2 }}
+                                </p>
+
+                            </div>
+
+
+                            <!-- VIEW BUTTON -->
+                            <div>
+
+                                <a
+                                    href="{% url 'travel_app:client_booking_detail' booking.pk %}"
+                                    class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition"
+                                >
+                                    View Details
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <!-- EMPTY STATE -->
+
+            <div class="bg-white rounded-xl border shadow-sm p-10 text-center">
+
+                <div class="text-5xl mb-4">
+                    ✈️
+                </div>
+
+                <h2 class="text-xl font-bold text-gray-900">
+                    No bookings yet
+                </h2>
+
+                <p class="text-gray-600 mt-2">
+                    You don't have any travel bookings at the moment.
+                </p>
+
+                <a
+                    href="{% url 'travel_app:client_packages' %}"
+                    class="inline-block mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium"
+                >
+                    Browse Packages
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </main>
+
+
+    <!-- MOBILE MENU SCRIPT -->
+    <script>
+
+        const menuButton = document.getElementById('menuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        if (menuButton && mobileMenu) {
+
+            menuButton.addEventListener('click', function () {
+
+                mobileMenu.classList.toggle('hidden');
+
+            });
+
+        }
+
+    </script>
+
+</body>
+</html>
