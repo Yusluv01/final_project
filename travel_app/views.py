@@ -1073,28 +1073,28 @@ def test_ai(request):
 
 # ==================== CLIENT PORTAL VIEWS ===================
 
-@csrf_exempt
-def magic_client_login(request, username):
-    """
-    TESTING ONLY:
-    Log in an existing client by username.
-    """
-    try:
-        user = User.objects.get(username=username)
+# @csrf_exempt
+# def magic_client_login(request, username):
+#     """
+#     TESTING ONLY:
+#     Log in an existing client by username.
+#     """
+#     try:
+#         user = User.objects.get(username=username)
 
-        # Make sure this is actually a client account
-        if user.role != 'client' or user.is_staff:
-            messages.error(request, 'This account is not a valid client account.')
-            return redirect('travel_app:client_login')
+#         # Make sure this is actually a client account
+#         if user.role != 'client' or user.is_staff:
+#             messages.error(request, 'This account is not a valid client account.')
+#             return redirect('travel_app:client_login')
 
-        login(request, user)
-        messages.success(request, f'Welcome back, {user.first_name or username}!')
+#         login(request, user)
+#         messages.success(request, f'Welcome back, {user.first_name or username}!')
 
-        return redirect('travel_app:client_dashboard')
+#         return redirect('travel_app:client_dashboard')
 
-    except User.DoesNotExist:
-        messages.error(request, f'User "{username}" does not exist.')
-        return redirect('travel_app:client_login')
+#     except User.DoesNotExist:
+#         messages.error(request, f'User "{username}" does not exist.')
+#         return redirect('travel_app:client_login')
 
 
 def client_register(request):
