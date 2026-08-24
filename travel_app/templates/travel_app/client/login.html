@@ -3,16 +3,53 @@
 
 {% block title %}Login | Travelbolt_AI{% endblock %}
 
-{% block content %}
-<div class="min-h-[80vh] flex items-center justify-center">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 p-8">
-        <div class="text-center mb-8">
-            <div class="w-16 h-16 bg-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
-                <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">travel_explore</span>
-            </div>
-            <h1 class="text-2xl font-extrabold text-blue-700">Travelbolt_AI</h1>
-            <p class="text-sm text-gray-500 mt-1">Client Portal</p>
+<div class="text-center mb-8">
+
+    <!-- Clickable Travelbolt_AI Logo -->
+    <a href="{% url 'travel_app:landing_page' %}"
+       class="inline-flex flex-col items-center group">
+
+        <!-- Logo Icon -->
+        <div class="w-16 h-16
+                    bg-blue-700
+                    rounded-2xl
+                    flex items-center justify-center
+                    mx-auto mb-4
+                    shadow-lg shadow-blue-200
+                    group-hover:bg-blue-800
+                    group-hover:scale-105
+                    transition-all duration-200">
+
+            <span class="material-symbols-outlined
+                         text-white
+                         text-3xl"
+                  style="font-variation-settings: 'FILL' 1;">
+
+                travel_explore
+
+            </span>
+
         </div>
+
+        <!-- Logo Name -->
+        <h1 class="text-2xl
+                   font-extrabold
+                   text-blue-700
+                   group-hover:text-blue-800
+                   transition-colors">
+
+            Travelbolt_AI
+
+        </h1>
+
+    </a>
+
+    <!-- Portal Label -->
+    <p class="text-sm text-gray-500 mt-1">
+        Client Portal
+    </p>
+
+</div>
         
         <form method="post">
             {% csrf_token %}
