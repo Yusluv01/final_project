@@ -1619,12 +1619,17 @@ def pay_booking(request, booking_id):
 def paystack_callback(request):
     """
     Paystack redirects the client here after payment.
+
     The transaction is verified directly with Paystack.
 
     When payment is successfully verified:
     - Payment is marked completed
     - Booking payment information is updated
     - Admin/staff users receive a notification
+
+    When payment fails:
+    - Payment is marked failed
+    - Client is returned to the dashboard
     """
 
     reference = request.GET.get('reference')
@@ -1739,16 +1744,14 @@ def paystack_callback(request):
 
             booking.paid_amount += payment.amount
 
-            if booking.paid_amount >= (
+            total_due = (
                 booking.total_amount -
                 booking.discount_amount
-            ):
+            )
 
-                booking.paid_amount = (
-                    booking.total_amount -
-                    booking.discount_amount
-                )
+            if booking.paid_amount >= total_due:
 
+                booking.paid_amount = total_due
                 booking.payment_status = 'paid'
 
             else:
@@ -1762,30 +1765,46 @@ def paystack_callback(request):
                 ]
             )
 
-# ---------------------------------------------------------
-# CREATE NOTIFICATION FOR ADMIN / STAFF
-# ---------------------------------------------------------
+            # -------------------------------------------------
+            # CREATE NOTIFICATION FOR ADMIN / STAFF
+            # -------------------------------------------------
 
-admin_users = Agent.objects.filter(
-    models.Q(role__in=['admin', 'staff']) |
-    models.Q(is_staff=True),
-    is_active=True
-).distinct()
+            admin_users = Agent.objects.filter(
+                models.Q(role__in=['admin', 'staff']) |
+                models.Q(is_staff=True),
+                is_active=True
+            ).distinct()
 
-for admin in admin_users:
-    Notification.objects.create(
-        recipient=admin,
-        title='Payment Received',
-        message=(
-            f'{booking.client.full_name} successfully paid '
-            f'₦{payment.amount:,.2f} for booking '
-            f'{booking.booking_id}.'
-        ),
-        notification_type='success',
-        link=reverse('travel_app:dashboard'),
-        link_text='View Dashboard'
-    )
-    
+            for admin in admin_users:
+                Notification.objects.create(
+                    recipient=admin,
+                    title='Payment Received',
+                    message=(
+                        f'{client.full_name} successfully paid '
+                        f'₦{payment.amount:,.2f} for booking '
+                        f'{booking.booking_id}.'
+                    ),
+                    notification_type='success',
+                    link=reverse(
+                        'travel_app:dashboard'
+                    ),
+                    link_text='View Dashboard'
+                )
+
+        # -----------------------------------------------------
+        # PAYMENT SUCCESS
+        # -----------------------------------------------------
+
+        messages.success(
+            request,
+            'Payment successful! Your payment has been confirmed.'
+        )
+
+        return redirect(
+            'travel_app:payment_success',
+            payment_id=payment.id
+        )
+
     # ---------------------------------------------------------
     # FAILED / DECLINED PAYMENT
     # ---------------------------------------------------------
