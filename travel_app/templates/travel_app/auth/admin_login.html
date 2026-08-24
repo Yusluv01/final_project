@@ -55,56 +55,66 @@
 
 <body>
 
-<!-- LOGO -->
-<div class="text-center mb-6">
+<div class="login-container">
 
-    <!-- Clickable Travelbolt_AI Logo -->
-    <a href="{% url 'travel_app:landing_page' %}"
-       class="inline-flex flex-col items-center group">
+    <div id="authContainer"
+         class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 p-8 transition-all duration-300">
 
-        <!-- Logo Icon -->
-        <div class="w-16 h-16
-                    bg-blue-700
-                    rounded-2xl
-                    flex items-center justify-center
-                    mx-auto mb-4
-                    shadow-lg shadow-blue-200
-                    group-hover:bg-blue-800
-                    group-hover:scale-105
-                    transition-all duration-200">
 
-            <span class="material-symbols-outlined
-                         text-white
-                         text-3xl"
-                  style="font-variation-settings: 'FILL' 1;">
+        <!-- ===================================================== -->
+        <!-- LOGO -->
+        <!-- ===================================================== -->
 
-                travel_explore
+        <div class="text-center mb-6">
 
-            </span>
+            <!-- ONLY CHANGE: Logo is now clickable -->
+            <a href="{% url 'travel_app:landing_page' %}"
+               class="inline-flex flex-col items-center group">
+
+                <div class="w-16 h-16
+                            bg-blue-700
+                            rounded-2xl
+                            flex items-center justify-center
+                            mx-auto mb-4
+                            shadow-lg shadow-blue-200
+                            group-hover:bg-blue-800
+                            group-hover:scale-105
+                            transition-all duration-200">
+
+                    <span class="material-symbols-outlined
+                                 text-white
+                                 text-3xl"
+                          style="font-variation-settings: 'FILL' 1;">
+
+                        travel_explore
+
+                    </span>
+
+                </div>
+
+                <h1 class="text-2xl
+                           font-extrabold
+                           text-blue-700
+                           group-hover:text-blue-800
+                           transition-colors">
+
+                    Travelbolt_AI
+
+                </h1>
+
+            </a>
+
+            <p class="text-sm text-gray-500 mt-1">
+                Agency Management Suite
+            </p>
 
         </div>
 
-        <!-- Logo Name -->
-        <h1 class="text-2xl
-                   font-extrabold
-                   text-blue-700
-                   group-hover:text-blue-800
-                   transition-colors">
 
-            Travelbolt_AI
-
-        </h1>
-
-    </a>
-
-    <!-- Portal Description -->
-    <p class="text-sm text-gray-500 mt-1">
-        Agency Management Suite
-    </p>
-
-</div>
-
+        <!-- ===================================================== -->
         <!-- LOGIN / REGISTER TABS -->
+        <!-- ===================================================== -->
+
         <div class="flex gap-2 bg-gray-100 p-1 rounded-xl mb-6">
 
             <button
@@ -139,274 +149,355 @@
         </div>
 
 
-        <!-- ========================= -->
+        <!-- ===================================================== -->
         <!-- LOGIN PANEL -->
-        <!-- ========================= -->
+        <!-- ===================================================== -->
 
-      <div id="loginPanel" class="form-panel active">
+        <div id="loginPanel" class="form-panel active">
 
-    <div class="text-center mb-5">
-        <h2 class="text-xl font-bold text-gray-800">
-            Staff & Admin Login
-        </h2>
+            <div class="text-center mb-5">
 
-        <p class="text-sm text-gray-500 mt-1">
-            Sign in to access the agency dashboard
-        </p>
-    </div>
+                <h2 class="text-xl font-bold text-gray-800">
+                    Staff & Admin Login
+                </h2>
 
-    <form method="post"
-          action="{% url 'travel_app:admin_login' %}">
+                <p class="text-sm text-gray-500 mt-1">
+                    Sign in to access the agency dashboard
+                </p>
 
-        {% csrf_token %}
-
-        <input type="hidden"
-               name="form_type"
-               value="login">
-
-        <!-- PUT THE LOGIN CODE HERE -->
-        <div class="space-y-4">
-
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-1">
-                    Username
-                </label>
-
-                <input
-                    type="text"
-                    name="username"
-                    class="w-full px-4 py-3 bg-gray-50 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Enter your username"
-                    required>
             </div>
 
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-1">
-                    Password
-                </label>
 
-                <input
-                    type="password"
-                    name="password"
-                    class="w-full px-4 py-3 bg-gray-50 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Enter your password"
-                    required>
-            </div>
+            <form method="post"
+                  action="{% url 'travel_app:admin_login' %}">
 
-            {% if login_error %}
-                <div class="bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200">
-                    {{ login_error }}
-                </div>
-            {% endif %}
+                {% csrf_token %}
 
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="bg-blue-50 text-blue-700 p-3 rounded-lg text-sm border border-blue-200">
-                        {{ message }}
+                <input type="hidden"
+                       name="form_type"
+                       value="login">
+
+
+                <div class="space-y-4">
+
+                    <!-- Username -->
+                    <div>
+
+                        <label class="block text-sm font-bold text-gray-700 mb-1">
+                            Username
+                        </label>
+
+                        <input
+                            type="text"
+                            name="username"
+                            class="w-full px-4 py-3 bg-gray-50 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            placeholder="Enter your username"
+                            required>
+
                     </div>
-                {% endfor %}
-            {% endif %}
 
-            <button
-                type="submit"
-                class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
 
-                <span class="material-symbols-outlined">
-                    login
-                </span>
+                    <!-- Password -->
+                    <div>
 
-                Sign In
-            </button>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">
+                            Password
+                        </label>
 
-            <div class="text-center mt-4">
-    <a href="{% url 'travel_app:password_reset' %}"
-       class="text-sm text-blue-700 hover:text-blue-900 font-medium">
-        Forgot Password?
-    </a>
-    </div>
+                        <input
+                            type="password"
+                            name="password"
+                            class="w-full px-4 py-3 bg-gray-50 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            placeholder="Enter your password"
+                            required>
+
+                    </div>
+
+
+                    <!-- Login Error -->
+                    {% if login_error %}
+
+                        <div class="bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200">
+                            {{ login_error }}
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- Messages -->
+                    {% if messages %}
+
+                        {% for message in messages %}
+
+                            <div class="bg-blue-50 text-blue-700 p-3 rounded-lg text-sm border border-blue-200">
+                                {{ message }}
+                            </div>
+
+                        {% endfor %}
+
+                    {% endif %}
+
+
+                    <!-- Login Button -->
+                    <button
+                        type="submit"
+                        class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
+
+                        <span class="material-symbols-outlined">
+                            login
+                        </span>
+
+                        Sign In
+
+                    </button>
+
+
+                    <!-- Forgot Password -->
+                    <div class="text-center mt-4">
+
+                        <a href="{% url 'travel_app:password_reset' %}"
+                           class="text-sm text-blue-700 hover:text-blue-900 font-medium">
+
+                            Forgot Password?
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </form>
 
         </div>
 
-    </form>
 
-</div>
-
-        <!-- ========================= -->
+        <!-- ===================================================== -->
         <!-- REGISTRATION PANEL -->
-        <!-- ========================= -->
+        <!-- ===================================================== -->
 
-<div id="registerPanel" class="form-panel">
+        <div id="registerPanel" class="form-panel">
 
-    <div class="text-center mb-5">
-        <h2 class="text-xl font-bold text-gray-800">
-            Staff Registration
-        </h2>
+            <div class="text-center mb-5">
 
-        <p class="text-sm text-gray-500 mt-1">
-            Create an account to access the agency dashboard
-        </p>
-    </div>
+                <h2 class="text-xl font-bold text-gray-800">
+                    Staff Registration
+                </h2>
 
-    <form method="post"
-          action="{% url 'travel_app:admin_login' %}">
-
-        {% csrf_token %}
-
-        <input type="hidden"
-               name="form_type"
-               value="register">
-
-        <div class="space-y-4">
-
-            <!-- FORM ERRORS -->
-            {% if form.errors %}
-                <div class="bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200">
-                    <p class="font-bold mb-1">
-                        Please correct the following:
-                    </p>
-                    {{ form.errors }}
-                </div>
-            {% endif %}
-
-
-            <!-- ROW 1: FIRST NAME + LAST NAME -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">
-                        First Name
-                    </label>
-
-                    {{ form.first_name }}
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">
-                        Last Name
-                    </label>
-
-                    {{ form.last_name }}
-                </div>
+                <p class="text-sm text-gray-500 mt-1">
+                    Create an account to access the agency dashboard
+                </p>
 
             </div>
 
 
-            <!-- ROW 2: USERNAME + EMAIL -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form method="post"
+                  action="{% url 'travel_app:admin_login' %}">
 
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">
-                        Username
-                    </label>
+                {% csrf_token %}
 
-                    {{ form.username }}
+                <input type="hidden"
+                       name="form_type"
+                       value="register">
+
+
+                <div class="space-y-4">
+
+
+                    <!-- FORM ERRORS -->
+
+                    {% if form.errors %}
+
+                        <div class="bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200">
+
+                            <p class="font-bold mb-1">
+                                Please correct the following:
+                            </p>
+
+                            {{ form.errors }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- ROW 1 -->
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <div>
+
+                            <label class="block text-sm font-bold text-gray-700 mb-1">
+                                First Name
+                            </label>
+
+                            {{ form.first_name }}
+
+                        </div>
+
+
+                        <div>
+
+                            <label class="block text-sm font-bold text-gray-700 mb-1">
+                                Last Name
+                            </label>
+
+                            {{ form.last_name }}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ROW 2 -->
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <div>
+
+                            <label class="block text-sm font-bold text-gray-700 mb-1">
+                                Username
+                            </label>
+
+                            {{ form.username }}
+
+                        </div>
+
+
+                        <div>
+
+                            <label class="block text-sm font-bold text-gray-700 mb-1">
+                                Email
+                            </label>
+
+                            {{ form.email }}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ROW 3 -->
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <div>
+
+                            <label class="block text-sm font-bold text-gray-700 mb-1">
+                                Phone Number
+                            </label>
+
+                            {{ form.phone }}
+
+                        </div>
+
+
+                        <div>
+
+                            <label class="block text-sm font-bold text-gray-700 mb-1">
+                                Nationality
+                            </label>
+
+                            {{ form.nationality }}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ROW 4 -->
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <div>
+
+                            <label class="block text-sm font-bold text-gray-700 mb-1">
+                                Date of Birth
+                            </label>
+
+                            {{ form.date_of_birth }}
+
+                        </div>
+
+
+                        <div>
+
+                            <label class="block text-sm font-bold text-gray-700 mb-1">
+                                Next of Kin Phone Number
+                            </label>
+
+                            {{ form.next_of_kin_phone }}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ROW 5 -->
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <div>
+
+                            <label class="block text-sm font-bold text-gray-700 mb-1">
+                                Password
+                            </label>
+
+                            {{ form.password1 }}
+
+                        </div>
+
+
+                        <div>
+
+                            <label class="block text-sm font-bold text-gray-700 mb-1">
+                                Confirm Password
+                            </label>
+
+                            {{ form.password2 }}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- REGISTER ERROR -->
+
+                    {% if register_error %}
+
+                        <div class="bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200">
+
+                            {{ register_error }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- REGISTER BUTTON -->
+
+                    <button
+                        type="submit"
+                        class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2 mt-5">
+
+                        <span class="material-symbols-outlined">
+                            person_add
+                        </span>
+
+                        Create Staff Account
+
+                    </button>
+
                 </div>
 
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">
-                        Email
-                    </label>
-
-                    {{ form.email }}
-                </div>
-
-            </div>
-
-
-            <!-- ROW 3: PHONE + NATIONALITY -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">
-                        Phone Number
-                    </label>
-
-                    {{ form.phone }}
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">
-                        Nationality
-                    </label>
-
-                    {{ form.nationality }}
-                </div>
-
-            </div>
-
-
-            <!-- ROW 4: DATE OF BIRTH + NEXT OF KIN -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">
-                        Date of Birth
-                    </label>
-
-                    {{ form.date_of_birth }}
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">
-                        Next of Kin Phone Number
-                    </label>
-
-                    {{ form.next_of_kin_phone }}
-                </div>
-
-            </div>
-
-
-            <!-- ROW 5: PASSWORD + CONFIRM PASSWORD -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">
-                        Password
-                    </label>
-
-                    {{ form.password1 }}
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">
-                        Confirm Password
-                    </label>
-
-                    {{ form.password2 }}
-                </div>
-
-            </div>
-
-
-            <!-- REGISTER ERROR -->
-            {% if register_error %}
-                <div class="bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200">
-                    {{ register_error }}
-                </div>
-            {% endif %}
-
-
-            <!-- REGISTER BUTTON -->
-            <button
-                type="submit"
-                class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2 mt-5">
-
-                <span class="material-symbols-outlined">
-                    person_add
-                </span>
-
-                Create Staff Account
-
-            </button>
+            </form>
 
         </div>
 
-    </form>
 
-</div>
-
+        <!-- ===================================================== -->
         <!-- FOOTER -->
+        <!-- ===================================================== -->
+
         <div class="mt-6 text-center text-xs text-gray-400">
 
             <p>
@@ -420,9 +511,9 @@
 </div>
 
 
-<!-- ========================= -->
+<!-- ========================================================= -->
 <!-- TAB JAVASCRIPT -->
-<!-- ========================= -->
+<!-- ========================================================= -->
 
 <script>
 
@@ -452,6 +543,7 @@ function showPanel(panel) {
         authContainer.classList.add('max-w-md');
     }
 
+
     if (panel === 'register') {
 
         registerPanel.classList.add('active');
@@ -470,13 +562,11 @@ function showPanel(panel) {
 
 }
 
-/* ADD THIS LINE */
+
+/* Preserve the active panel after form submission */
 showPanel('{{ active_panel|default:"login" }}');
 
 </script>
 
 </body>
 </html>
-
-
-
