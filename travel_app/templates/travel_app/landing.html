@@ -140,7 +140,22 @@
 
 
         <!-- Authentication Buttons -->
-        <div class="flex gap-2 sm:gap-4 flex-shrink-0">
+<div class="flex gap-2 sm:gap-3 flex-shrink-0">
+
+    <!-- Client Login -->
+    <a href="{% url 'travel_app:client_login' %}"
+       class="px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition-colors text-sm sm:text-base whitespace-nowrap">
+        Client Login
+    </a>
+
+    <!-- Admin / Staff Login -->
+    <a href="{% url 'travel_app:admin_login' %}"
+       class="px-3 sm:px-4 py-2 bg-blue-700 text-white rounded-lg font-bold hover:bg-blue-800 transition-colors shadow-lg shadow-blue-200 text-sm sm:text-base whitespace-nowrap">
+        Admin / Staff
+    </a>
+
+</div>
+        <!-- <div class="flex gap-2 sm:gap-4 flex-shrink-0">
 
             <a href="{% url 'travel_app:client_login' %}"
                class="px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition-colors text-sm sm:text-base whitespace-nowrap">
@@ -152,7 +167,7 @@
                 Get Started
             </a>
 
-        </div>
+        </div> -->
 
     </nav>
 
