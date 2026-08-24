@@ -436,6 +436,40 @@ path(
     views.mark_all_notifications_read,
     name='mark_all_notifications_read'
 ),
+
+    
+    # =========================================================
+    # CLIENT TRAVEL PACKAGES
+    # =========================================================
+
+    path(
+        'client/packages/',
+        views.client_packages,
+        name='client_packages'
+    ),
+
+    path(
+        'client/packages/<int:pk>/',
+        views.client_package_detail,
+        name='client_package_detail'
+    ),
+
+    path(
+        'client/packages/<int:pk>/select/',
+        views.select_package,
+        name='select_package'
+    ),
+
+    # =========================================================
+    # CLIENT BOOKING DETAIL
+    # =========================================================
+
+    path(
+        'client/bookings/<int:pk>/',
+        views.client_booking_detail,
+        name='client_booking_detail'
+    ),
+
 ]
 
 
