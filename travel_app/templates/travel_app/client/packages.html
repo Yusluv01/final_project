@@ -1,0 +1,371 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Travel Packages | Travelbolt_AI</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- HEADER -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="flex items-center justify-between h-16">
+
+                <!-- LOGO -->
+                <a
+                    href="{% url 'travel_app:client_dashboard' %}"
+                    class="flex items-center gap-2"
+                >
+                    <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">T</span>
+                    </div>
+
+                    <span class="font-bold text-xl text-gray-900">
+                        Travelbolt<span class="text-blue-600">_AI</span>
+                    </span>
+                </a>
+
+                <!-- DESKTOP NAV -->
+                <nav class="hidden md:flex items-center gap-6">
+
+                    <a
+                        href="{% url 'travel_app:client_dashboard' %}"
+                        class="text-gray-600 hover:text-blue-600 transition"
+                    >
+                        Dashboard
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_packages' %}"
+                        class="text-blue-600 font-semibold"
+                    >
+                        Packages
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_payments' %}"
+                        class="text-gray-600 hover:text-blue-600 transition"
+                    >
+                        Payments
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_profile' %}"
+                        class="text-gray-600 hover:text-blue-600 transition"
+                    >
+                        Profile
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_logout' %}"
+                        class="text-red-600 hover:text-red-700 transition"
+                    >
+                        Logout
+                    </a>
+
+                </nav>
+
+                <!-- MOBILE MENU BUTTON -->
+                <button
+                    id="mobileMenuButton"
+                    class="md:hidden text-gray-700 text-2xl"
+                    type="button"
+                >
+                    ☰
+                </button>
+
+            </div>
+
+            <!-- MOBILE NAV -->
+            <div
+                id="mobileMenu"
+                class="hidden md:hidden border-t border-gray-100 py-4"
+            >
+
+                <div class="flex flex-col gap-3">
+
+                    <a
+                        href="{% url 'travel_app:client_dashboard' %}"
+                        class="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg"
+                    >
+                        Dashboard
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_packages' %}"
+                        class="px-3 py-2 bg-blue-50 text-blue-600 font-semibold rounded-lg"
+                    >
+                        Packages
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_payments' %}"
+                        class="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg"
+                    >
+                        Payments
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_profile' %}"
+                        class="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg"
+                    >
+                        Profile
+                    </a>
+
+                    <a
+                        href="{% url 'travel_app:client_logout' %}"
+                        class="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    >
+                        Logout
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+    </header>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- PAGE HEADER -->
+        <div class="mb-8">
+
+            <p class="text-sm font-semibold text-blue-600 uppercase tracking-wide">
+                Travel Packages
+            </p>
+
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">
+                Choose Your Travel Package
+            </h1>
+
+            <p class="text-gray-600 mt-3 max-w-2xl">
+                Explore our available Hajj, Umrah and travel packages
+                and choose the option that best suits your journey.
+            </p>
+
+        </div>
+
+
+        <!-- MESSAGES -->
+        {% if messages %}
+            <div class="space-y-3 mb-6">
+
+                {% for message in messages %}
+
+                    <div
+                        class="p-4 rounded-lg
+                        {% if message.tags == 'success' %}
+                            bg-green-50 text-green-700 border border-green-200
+                        {% elif message.tags == 'error' %}
+                            bg-red-50 text-red-700 border border-red-200
+                        {% else %}
+                            bg-blue-50 text-blue-700 border border-blue-200
+                        {% endif %}"
+                    >
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            </div>
+        {% endif %}
+
+
+        <!-- PACKAGES -->
+        {% if packages %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                {% for package in packages %}
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition">
+
+                        <!-- PACKAGE IMAGE -->
+                        <div class="h-48 bg-gradient-to-br from-blue-500 to-indigo-600 relative overflow-hidden">
+
+                            {% if package.image %}
+                                <img
+                                    src="{{ package.image.url }}"
+                                    alt="{{ package.name }}"
+                                    class="w-full h-full object-cover"
+                                >
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <span class="text-white text-5xl">
+                                        ✈️
+                                    </span>
+                                </div>
+                            {% endif %}
+
+                            {% if package.is_featured %}
+                                <div class="absolute top-4 left-4">
+                                    <span class="bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full">
+                                        Featured
+                                    </span>
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- PACKAGE CONTENT -->
+                        <div class="p-6">
+
+                            <h2 class="text-xl font-bold text-gray-900">
+                                {{ package.name }}
+                            </h2>
+
+                            {% if package.destination %}
+                                <p class="text-sm text-gray-500 mt-2">
+                                    📍 {{ package.destination }}
+                                </p>
+                            {% endif %}
+
+
+                            {% if package.description %}
+                                <p class="text-gray-600 text-sm mt-4 line-clamp-3">
+                                    {{ package.description }}
+                                </p>
+                            {% endif %}
+
+
+                            <!-- PACKAGE DETAILS -->
+                            <div class="grid grid-cols-2 gap-3 mt-5">
+
+                                {% if package.available_from %}
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <p class="text-xs text-gray-500">
+                                            Available From
+                                        </p>
+
+                                        <p class="text-sm font-semibold text-gray-800 mt-1">
+                                            {{ package.available_from|date:"M d, Y" }}
+                                        </p>
+                                    </div>
+                                {% endif %}
+
+                                {% if package.available_until %}
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <p class="text-xs text-gray-500">
+                                            Available Until
+                                        </p>
+
+                                        <p class="text-sm font-semibold text-gray-800 mt-1">
+                                            {{ package.available_until|date:"M d, Y" }}
+                                        </p>
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- PRICE -->
+                            <div class="mt-6">
+
+                                <p class="text-xs text-gray-500 uppercase tracking-wide">
+                                    Package Price
+                                </p>
+
+                                <p class="text-2xl font-bold text-blue-600 mt-1">
+                                    ₦{{ package.price|floatformat:2 }}
+                                </p>
+
+                            </div>
+
+
+                            <!-- VIEW DETAILS -->
+                            <div class="mt-6">
+
+                                <a
+                                    href="{% url 'travel_app:client_package_detail' pk=package.pk %}"
+                                    class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition"
+                                >
+                                    View Package Details
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <!-- NO PACKAGES -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-10 text-center">
+
+                <div class="text-5xl mb-4">
+                    ✈️
+                </div>
+
+                <h2 class="text-xl font-bold text-gray-900">
+                    No Packages Available
+                </h2>
+
+                <p class="text-gray-600 mt-2">
+                    There are currently no travel packages available.
+                    Please check again later.
+                </p>
+
+                <a
+                    href="{% url 'travel_app:client_dashboard' %}"
+                    class="inline-block mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition"
+                >
+                    Back to Dashboard
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer class="border-t border-gray-200 bg-white mt-12">
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+            <p class="text-center text-sm text-gray-500">
+                © {% now "Y" %} Travelbolt_AI. All rights reserved.
+            </p>
+
+        </div>
+
+    </footer>
+
+
+    <!-- MOBILE MENU SCRIPT -->
+    <script>
+
+        const mobileMenuButton =
+            document.getElementById('mobileMenuButton');
+
+        const mobileMenu =
+            document.getElementById('mobileMenu');
+
+        mobileMenuButton.addEventListener('click', function () {
+
+            mobileMenu.classList.toggle('hidden');
+
+        });
+
+    </script>
+
+</body>
+</html>
