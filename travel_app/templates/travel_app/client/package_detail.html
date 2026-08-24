@@ -1,0 +1,298 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ package.name }} | TravelBolt AI</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- =========================
+         NAVIGATION
+    ========================== -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="flex items-center justify-between h-16">
+
+                <!-- Logo -->
+                <a href="{% url 'travel_app:client_dashboard' %}"
+                   class="text-xl sm:text-2xl font-bold text-blue-600">
+                    TravelBolt <span class="text-gray-800">AI</span>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center gap-6">
+
+                    <a href="{% url 'travel_app:client_dashboard' %}"
+                       class="text-gray-600 hover:text-blue-600 transition">
+                        Dashboard
+                    </a>
+
+                    <a href="{% url 'travel_app:client_bookings' %}"
+                       class="text-gray-600 hover:text-blue-600 transition">
+                        My Bookings
+                    </a>
+
+                    <a href="{% url 'travel_app:client_profile' %}"
+                       class="text-gray-600 hover:text-blue-600 transition">
+                        My Profile
+                    </a>
+
+                    <a href="{% url 'travel_app:client_logout' %}"
+                       class="text-red-500 hover:text-red-600 transition">
+                        Logout
+                    </a>
+
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button
+                    id="menuButton"
+                    class="md:hidden text-gray-700 text-2xl focus:outline-none">
+                    ☰
+                </button>
+
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+
+                <div class="flex flex-col gap-3 pt-3">
+
+                    <a href="{% url 'travel_app:client_dashboard' %}"
+                       class="text-gray-600 hover:text-blue-600">
+                        Dashboard
+                    </a>
+
+                    <a href="{% url 'travel_app:client_bookings' %}"
+                       class="text-gray-600 hover:text-blue-600">
+                        My Bookings
+                    </a>
+
+                    <a href="{% url 'travel_app:client_profile' %}"
+                       class="text-gray-600 hover:text-blue-600">
+                        My Profile
+                    </a>
+
+                    <a href="{% url 'travel_app:client_logout' %}"
+                       class="text-red-500 hover:text-red-600">
+                        Logout
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+    </nav>
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Back Button -->
+        <div class="mb-6">
+
+            <a href="{% url 'travel_app:client_packages' %}"
+               class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                ← Back to Packages
+            </a>
+
+        </div>
+
+
+        <!-- =========================
+             PACKAGE CARD
+        ========================== -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+
+            <!-- Package Image -->
+            {% if package.image %}
+                <div class="w-full h-64 sm:h-80 md:h-96 overflow-hidden">
+
+                    <img
+                        src="{{ package.image.url }}"
+                        alt="{{ package.name }}"
+                        class="w-full h-full object-cover"
+                    >
+
+                </div>
+            {% endif %}
+
+
+            <!-- Package Information -->
+            <div class="p-6 sm:p-8">
+
+                <!-- Title -->
+                <div class="mb-6">
+
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
+                        {{ package.name }}
+                    </h1>
+
+                    {% if package.destination %}
+                        <p class="mt-2 text-gray-500">
+                            📍 {{ package.destination }}
+                        </p>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Price -->
+                <div class="bg-blue-50 rounded-xl p-5 mb-6">
+
+                    <p class="text-sm text-gray-500 mb-1">
+                        Package Price
+                    </p>
+
+                    <p class="text-3xl sm:text-4xl font-bold text-blue-600">
+                        ₦{{ package.price|floatformat:2 }}
+                    </p>
+
+                </div>
+
+
+                <!-- Package Details -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+
+                    {% if package.duration %}
+                        <div class="border rounded-xl p-4">
+
+                            <p class="text-sm text-gray-500">
+                                Duration
+                            </p>
+
+                            <p class="font-semibold text-gray-800 mt-1">
+                                {{ package.duration }}
+                            </p>
+
+                        </div>
+                    {% endif %}
+
+
+                    {% if package.package_type %}
+                        <div class="border rounded-xl p-4">
+
+                            <p class="text-sm text-gray-500">
+                                Package Type
+                            </p>
+
+                            <p class="font-semibold text-gray-800 mt-1">
+                                {{ package.package_type }}
+                            </p>
+
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Description -->
+                {% if package.description %}
+
+                    <div class="mb-8">
+
+                        <h2 class="text-xl font-bold text-gray-900 mb-3">
+                            About This Package
+                        </h2>
+
+                        <div class="text-gray-600 leading-7 whitespace-pre-line">
+                            {{ package.description }}
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- =========================
+                     SELECT PACKAGE FORM
+                ========================== -->
+
+                <div class="border-t pt-8">
+
+                    <h2 class="text-xl font-bold text-gray-900 mb-2">
+                        Ready to Book?
+                    </h2>
+
+                    <p class="text-gray-500 mb-6">
+                        Select this package to continue with your booking.
+                    </p>
+
+
+                    <form
+                        method="POST"
+                        action=""
+                        class="w-full"
+                    >
+
+                        {% csrf_token %}
+
+                        <!-- Package ID -->
+                        <input
+                            type="hidden"
+                            name="package_id"
+                            value="{{ package.id }}"
+                        >
+
+
+                        <!-- Submit Button -->
+                        <button
+                            type="submit"
+                            class="w-full sm:w-auto inline-flex justify-center items-center
+                                   px-8 py-3 rounded-xl
+                                   bg-blue-600 text-white font-semibold
+                                   hover:bg-blue-700
+                                   active:bg-blue-800
+                                   transition duration-200
+                                   shadow-md hover:shadow-lg"
+                        >
+
+                            Select This Package →
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================
+         MOBILE MENU SCRIPT
+    ========================== -->
+    <script>
+
+        const menuButton = document.getElementById("menuButton");
+        const mobileMenu = document.getElementById("mobileMenu");
+
+        if (menuButton && mobileMenu) {
+
+            menuButton.addEventListener("click", function () {
+
+                mobileMenu.classList.toggle("hidden");
+
+            });
+
+        }
+
+    </script>
+
+</body>
+</html>
