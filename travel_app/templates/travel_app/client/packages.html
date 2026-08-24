@@ -194,19 +194,19 @@
                         <!-- PACKAGE IMAGE -->
                         <div class="h-48 bg-gradient-to-br from-blue-500 to-indigo-600 relative overflow-hidden">
 
-                            {% if package.image %}
-                                <img
-                                    src="{{ package.image.url }}"
-                                    alt="{{ package.name }}"
-                                    class="w-full h-full object-cover"
-                                >
-                            {% else %}
-                                <div class="w-full h-full flex items-center justify-center">
-                                    <span class="text-white text-5xl">
-                                        ✈️
-                                    </span>
-                                </div>
-                            {% endif %}
+                           {% if package.featured_image %}
+    <img
+        src="{{ package.featured_image.url }}"
+        alt="{{ package.name }}"
+        class="w-full h-full object-cover"
+    >
+{% else %}
+    <div class="w-full h-full flex items-center justify-center">
+        <span class="text-white text-5xl">
+            ✈️
+        </span>
+    </div>
+{% endif %}
 
                             {% if package.is_featured %}
                                 <div class="absolute top-4 left-4">
