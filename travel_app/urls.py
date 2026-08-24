@@ -360,11 +360,11 @@ path(
     # TESTING ONLY
     # ============================================================
 
-    path(
-        'client/magic-login/<str:username>/',
-        views.magic_client_login,
-        name='magic_client_login'
-    ),
+    # path(
+    #     'client/magic-login/<str:username>/',
+    #     views.magic_client_login,
+    #     name='magic_client_login'
+    # ),
 
 
     # ============================================================
