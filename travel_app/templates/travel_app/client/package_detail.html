@@ -334,12 +334,11 @@
                     </p>
 
 
-                    <form
-                        method="POST"
-                        action=""
-                        class="space-y-6"
-                    >
-
+                   <form
+    method="POST"
+    action="{% url 'travel_app:select_package' package.pk %}"
+    class="space-y-6"
+>
                         {% csrf_token %}
 
 
