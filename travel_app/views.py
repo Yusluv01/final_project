@@ -2702,10 +2702,14 @@ def client_package_detail(request, pk):
 @login_required(login_url='travel_app:client_login')
 def select_package(request, pk):
     """
-    Create a booking when a client selects a travel package.
+    Allow a client to select/book a travel package.
+    The booking is created from the client's side and
+    admin/staff are notified automatically.
     """
 
-    # Only clients can select packages
+    # ---------------------------------------------------------
+    # ONLY CLIENTS CAN SELECT PACKAGES
+    # ---------------------------------------------------------
     if (
         request.user.is_staff
         or getattr(request.user, 'role', None) != 'client'
@@ -2716,8 +2720,9 @@ def select_package(request, pk):
         )
         return redirect('travel_app:dashboard')
 
-    # Get the client's profile using the same relationship
-    # already used throughout your client portal.
+    # ---------------------------------------------------------
+    # GET CLIENT PROFILE
+    # ---------------------------------------------------------
     try:
         client = request.user.client_profile
     except Client.DoesNotExist:
@@ -2727,15 +2732,40 @@ def select_package(request, pk):
         )
         return redirect('travel_app:client_dashboard')
 
+    # ---------------------------------------------------------
+    # GET PACKAGE
+    # ---------------------------------------------------------
     package = get_object_or_404(
         TravelPackage,
         pk=pk,
         is_active=True
     )
 
-    # Only create the booking after the client submits
-    # the package selection form.
+    # ---------------------------------------------------------
+    # ONLY POST REQUESTS CAN CREATE A BOOKING
+    # ---------------------------------------------------------
     if request.method != 'POST':
+        return redirect(
+            'travel_app:client_package_detail',
+            pk=package.pk
+        )
+
+    # ---------------------------------------------------------
+    # GET FORM DATA
+    # ---------------------------------------------------------
+    travel_date_start = request.POST.get('travel_date_start')
+    travel_date_end = request.POST.get('travel_date_end')
+    travel_class = request.POST.get('travel_class', 'economy')
+    special_requests = request.POST.get('special_requests', '').strip()
+
+    # ---------------------------------------------------------
+    # VALIDATE DATES
+    # ---------------------------------------------------------
+    if not travel_date_start or not travel_date_end:
+        messages.error(
+            request,
+            'Please select both your travel start date and end date.'
+        )
         return redirect(
             'travel_app:client_package_detail',
             pk=package.pk
@@ -2744,7 +2774,6 @@ def select_package(request, pk):
     # ---------------------------------------------------------
     # CREATE BOOKING
     # ---------------------------------------------------------
-
     booking = Booking.objects.create(
         client=client,
         package=package,
@@ -2753,14 +2782,15 @@ def select_package(request, pk):
         paid_amount=0,
         discount_amount=0,
         payment_status='pending',
-        travel_date_start=package.available_from,
-        travel_date_end=package.available_until,
+        travel_date_start=travel_date_start,
+        travel_date_end=travel_date_end,
+        travel_class=travel_class,
+        special_requests=special_requests,
     )
 
     # ---------------------------------------------------------
     # NOTIFY ADMIN / STAFF
     # ---------------------------------------------------------
-
     admin_users = Agent.objects.filter(
         models.Q(role__in=['admin', 'staff']) |
         models.Q(is_staff=True),
@@ -2785,15 +2815,23 @@ def select_package(request, pk):
             link_text='View Booking'
         )
 
+    # ---------------------------------------------------------
+    # SUCCESS MESSAGE
+    # ---------------------------------------------------------
     messages.success(
         request,
-        'Package selected successfully. You can now proceed with payment.'
+        f'{package.name} has been added to your bookings. '
+        'You can now proceed with payment.'
     )
 
-    return redirect(
-        'travel_app:client_booking_detail',
-        pk=booking.pk
-    )
+    # ---------------------------------------------------------
+    # RETURN CLIENT TO DASHBOARD
+    # ---------------------------------------------------------
+    return redirect('travel_app:client_dashboard')
+    # return redirect(
+    #     'travel_app:client_booking_detail',
+    #     pk=booking.pk
+    # )
 
 @login_required(login_url='travel_app:client_login')
 def client_bookings(request):
