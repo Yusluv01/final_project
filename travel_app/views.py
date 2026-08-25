@@ -1642,6 +1642,33 @@ def paystack_callback(request):
         return redirect('travel_app:client_dashboard')
 
     # ---------------------------------------------------------
+    # FIND PAYMENT
+    # ---------------------------------------------------------
+
+    payment = get_object_or_404(
+        Payment,
+        transaction_id=reference,
+        booking__client=request.user.client_profile
+    )
+
+    booking = payment.booking
+    client = booking.client
+
+    # ---------------------------------------------------------
+    # PREVENT DUPLICATE PROCESSING
+    # ---------------------------------------------------------
+
+    if payment.status == 'completed':
+        messages.info(
+            request,
+            'This payment has already been confirmed.'
+        )
+        return redirect(
+            'travel_app:payment_success',
+            payment_id=payment.id
+        )
+
+    # ---------------------------------------------------------
     # VERIFY TRANSACTION WITH PAYSTACK
     # ---------------------------------------------------------
 
@@ -1664,18 +1691,49 @@ def paystack_callback(request):
 
         response_data = response.json()
 
-    except requests.RequestException:
+    except requests.RequestException as e:
+
+        payment.notes = (
+            f'Paystack verification connection error: {str(e)}'
+        )
+
+        payment.save(
+            update_fields=[
+                'notes',
+                'updated_at'
+            ]
+        )
+
         messages.error(
             request,
-            'Unable to verify your payment with Paystack.'
+            'Unable to verify your payment with Paystack. '
+            'Please try again.'
         )
-        return redirect('travel_app:client_dashboard')
+
+        return redirect(
+            'travel_app:client_dashboard'
+        )
 
     # ---------------------------------------------------------
     # CHECK PAYSTACK RESPONSE
     # ---------------------------------------------------------
 
     if not response_data.get('status'):
+
+        payment.payment_gateway_response = response_data
+        payment.notes = response_data.get(
+            'message',
+            'Paystack payment verification failed.'
+        )
+
+        payment.save(
+            update_fields=[
+                'payment_gateway_response',
+                'notes',
+                'updated_at'
+            ]
+        )
+
         messages.error(
             request,
             response_data.get(
@@ -1683,23 +1741,82 @@ def paystack_callback(request):
                 'Payment verification failed.'
             )
         )
-        return redirect('travel_app:client_dashboard')
+
+        return redirect(
+            'travel_app:client_dashboard'
+        )
 
     transaction_data = response_data.get('data', {})
+
     payment_status = transaction_data.get('status')
 
     # ---------------------------------------------------------
-    # FIND PAYMENT
+    # VERIFY PAYMENT REFERENCE
     # ---------------------------------------------------------
 
-    payment = get_object_or_404(
-        Payment,
-        transaction_id=reference,
-        booking__client=request.user.client_profile
+    verified_reference = transaction_data.get('reference')
+
+    if verified_reference != reference:
+
+        payment.payment_gateway_response = response_data
+        payment.notes = (
+            'Paystack reference mismatch during verification.'
+        )
+
+        payment.save(
+            update_fields=[
+                'payment_gateway_response',
+                'notes',
+                'updated_at'
+            ]
+        )
+
+        messages.error(
+            request,
+            'Payment verification failed due to an invalid '
+            'transaction reference.'
+        )
+
+        return redirect(
+            'travel_app:client_dashboard'
+        )
+
+    # ---------------------------------------------------------
+    # VERIFY PAYMENT AMOUNT
+    # ---------------------------------------------------------
+
+    expected_amount = int(
+        payment.amount * 100
     )
 
-    booking = payment.booking
-    client = booking.client
+    paid_amount = transaction_data.get('amount')
+
+    if paid_amount != expected_amount:
+
+        payment.payment_gateway_response = response_data
+        payment.notes = (
+            f'Payment amount mismatch. '
+            f'Expected {expected_amount} kobo, '
+            f'but Paystack reported {paid_amount} kobo.'
+        )
+
+        payment.save(
+            update_fields=[
+                'payment_gateway_response',
+                'notes',
+                'updated_at'
+            ]
+        )
+
+        messages.error(
+            request,
+            'The payment amount could not be verified. '
+            'Please contact support.'
+        )
+
+        return redirect(
+            'travel_app:client_dashboard'
+        )
 
     # ---------------------------------------------------------
     # SUCCESSFUL PAYMENT
@@ -1707,17 +1824,29 @@ def paystack_callback(request):
 
     if payment_status == 'success':
 
-        # -----------------------------------------------------
-        # PREVENT DUPLICATE PROCESSING
-        # -----------------------------------------------------
+        with transaction.atomic():
 
-        if payment.status == 'completed':
-            return redirect(
-                'travel_app:payment_success',
-                payment_id=payment.id
+            # -------------------------------------------------
+            # LOCK PAYMENT AND BOOKING
+            # -------------------------------------------------
+
+            payment = Payment.objects.select_for_update().get(
+                id=payment.id
             )
 
-        with transaction.atomic():
+            booking = Booking.objects.select_for_update().get(
+                id=booking.id
+            )
+
+            # -------------------------------------------------
+            # DOUBLE-CHECK DUPLICATE PROCESSING
+            # -------------------------------------------------
+
+            if payment.status == 'completed':
+                return redirect(
+                    'travel_app:payment_success',
+                    payment_id=payment.id
+                )
 
             # -------------------------------------------------
             # UPDATE PAYMENT
@@ -1749,12 +1878,14 @@ def paystack_callback(request):
                 booking.discount_amount
             )
 
+            # Prevent paid amount from exceeding amount due
             if booking.paid_amount >= total_due:
 
                 booking.paid_amount = total_due
                 booking.payment_status = 'paid'
 
             else:
+
                 booking.payment_status = 'partial'
 
             booking.save(
@@ -1766,16 +1897,21 @@ def paystack_callback(request):
             )
 
             # -------------------------------------------------
-            # CREATE NOTIFICATION FOR ADMIN / STAFF
+            # CREATE ADMIN / STAFF NOTIFICATION
             # -------------------------------------------------
 
             admin_users = Agent.objects.filter(
-                models.Q(role__in=['admin', 'staff']) |
-                models.Q(is_staff=True),
+                models.Q(
+                    role__in=['admin', 'staff']
+                ) |
+                models.Q(
+                    is_staff=True
+                ),
                 is_active=True
             ).distinct()
 
             for admin in admin_users:
+
                 Notification.objects.create(
                     recipient=admin,
                     title='Payment Received',
@@ -1812,10 +1948,15 @@ def paystack_callback(request):
     payment.status = 'failed'
     payment.payment_gateway_response = response_data
 
+    payment.notes = (
+        f'Paystack transaction status: {payment_status}'
+    )
+
     payment.save(
         update_fields=[
             'status',
             'payment_gateway_response',
+            'notes',
             'updated_at'
         ]
     )
@@ -1825,12 +1966,9 @@ def paystack_callback(request):
         'Payment was not successful. You have not been charged.'
     )
 
-    return redirect('travel_app:client_dashboard')
-
-def client_logout(request):
-    logout(request)
-    messages.success(request, 'You have been logged out successfully.')
-    return redirect('travel_app:client_login') 
+    return redirect(
+        'travel_app:client_dashboard'
+    )
 
 @login_required(login_url='travel_app:client_login')
 def client_flight_search(request):
