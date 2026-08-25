@@ -1969,6 +1969,14 @@ def paystack_callback(request):
     return redirect(
         'travel_app:client_dashboard'
     )
+    
+def client_logout(request):
+    logout(request)
+    messages.success(
+        request,
+        'You have been logged out successfully.'
+    )
+    return redirect('travel_app:client_login')
 
 @login_required(login_url='travel_app:client_login')
 def client_flight_search(request):
