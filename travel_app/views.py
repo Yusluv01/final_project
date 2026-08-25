@@ -2703,8 +2703,15 @@ def client_package_detail(request, pk):
 def select_package(request, pk):
     """
     Allow a client to select/book a travel package.
-    The booking is created from the client's side and
-    admin/staff are notified automatically.
+
+    The client chooses:
+    - Travel start date
+    - Travel end date
+    - Travel class
+    - Special requests
+
+    A pending booking is then created and admin/staff
+    are notified automatically.
     """
 
     # ---------------------------------------------------------
@@ -2751,7 +2758,7 @@ def select_package(request, pk):
         )
 
     # ---------------------------------------------------------
-    # GET FORM DATA
+    # GET CLIENT'S BOOKING INFORMATION
     # ---------------------------------------------------------
     travel_date_start = request.POST.get('travel_date_start')
     travel_date_end = request.POST.get('travel_date_end')
@@ -2759,7 +2766,7 @@ def select_package(request, pk):
     special_requests = request.POST.get('special_requests', '').strip()
 
     # ---------------------------------------------------------
-    # VALIDATE DATES
+    # VALIDATE TRAVEL DATES
     # ---------------------------------------------------------
     if not travel_date_start or not travel_date_end:
         messages.error(
@@ -2771,6 +2778,67 @@ def select_package(request, pk):
             pk=package.pk
         )
 
+    # ---------------------------------------------------------
+    # CREATE CLIENT BOOKING
+    # ---------------------------------------------------------
+    booking = Booking.objects.create(
+        client=client,
+        package=package,
+        agent=None,
+        status='pending',
+        travel_class=travel_class,
+        total_amount=package.price,
+        paid_amount=0,
+        discount_amount=0,
+        payment_status='pending',
+        travel_date_start=travel_date_start,
+        travel_date_end=travel_date_end,
+        special_requests=special_requests,
+    )
+
+    # ---------------------------------------------------------
+    # NOTIFY ADMIN / STAFF
+    # ---------------------------------------------------------
+    admin_users = Agent.objects.filter(
+        models.Q(role__in=['admin', 'staff']) |
+        models.Q(is_staff=True),
+        is_active=True
+    ).distinct()
+
+    for admin in admin_users:
+        Notification.objects.create(
+            recipient=admin,
+            title='New Package Booking',
+            message=(
+                f'{client.full_name} selected '
+                f'{package.name}. '
+                f'Booking: {booking.booking_id}. '
+                f'Travel dates: '
+                f'{travel_date_start} to {travel_date_end}. '
+                f'Amount: ₦{package.price:,.2f}.'
+            ),
+            notification_type='info',
+            link=reverse(
+                'travel_app:client_booking_detail',
+                kwargs={'pk': booking.pk}
+            ),
+            link_text='View Booking'
+        )
+
+    # ---------------------------------------------------------
+    # SUCCESS MESSAGE
+    # ---------------------------------------------------------
+    messages.success(
+        request,
+        f'{package.name} has been added to your bookings. '
+        'You can now proceed with payment.'
+    )
+
+    # ---------------------------------------------------------
+    # RETURN CLIENT TO DASHBOARD
+    # ---------------------------------------------------------
+    return redirect('travel_app:client_dashboard')
+    
     # ---------------------------------------------------------
     # CREATE BOOKING
     # ---------------------------------------------------------
