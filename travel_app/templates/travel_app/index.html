@@ -162,33 +162,54 @@
             {% endfor %}
         </div>
     </div>
+<!-- ==================== FINANCIAL SNAPSHOT ==================== -->
+<div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+        <h3 class="font-semibold flex items-center gap-2 text-gray-900">
+            <span class="material-symbols-outlined text-blue-600">payments</span>
+            Financial Snapshot
+        </h3>
+        <span class="text-xs text-gray-400">Last 7 Days</span>
+    </div>
+    
+    <div class="p-6">
+        <div class="flex items-center justify-around">
 
-    <!-- ==================== FINANCIAL SNAPSHOT ==================== -->
-    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-            <h3 class="font-semibold flex items-center gap-2 text-gray-900">
-                <span class="material-symbols-outlined text-blue-600">payments</span>
-                Financial Snapshot
-            </h3>
-            <span class="text-xs text-gray-400">Last 7 Days</span>
-        </div>
-        
-        <div class="p-6">
-            <div class="flex items-center justify-around">
-                <div class="text-center">
-                    <p class="text-xs text-gray-500 mb-1">Total Revenue</p>
-                   <p class="text-3xl font-bold text-blue-700">₦{{ total_revenue|floatformat:0|default:"0" }}</p>
-                    <span class="text-[10px] text-green-600 font-bold">+12% vs LW</span>
-                </div>
-                <div class="w-px h-16 bg-gray-200"></div>
-                <div class="text-center">
-                    <p class="text-xs text-gray-500 mb-1">Pending Invoices</p>
-                    <p class="text-3xl font-bold text-gray-900">${{ pending_invoices|default:"0" }}</p>
-                    <span class="text-[10px] text-red-600 font-bold">4 Overdue</span>
-                </div>
+            <!-- TOTAL REVENUE -->
+            <div class="text-center">
+                <p class="text-xs text-gray-500 mb-1">
+                    Total Revenue
+                </p>
+
+                <p class="text-3xl font-bold text-blue-700">
+                    ₦{{ total_revenue|floatformat:0|default:"0" }}
+                </p>
+
+                <span class="text-[10px] text-green-600 font-bold">
+                    +12% vs LW
+                </span>
             </div>
+
+            <div class="w-px h-16 bg-gray-200"></div>
+
+            <!-- PENDING INVOICES -->
+            <div class="text-center">
+                <p class="text-xs text-gray-500 mb-1">
+                    Pending Invoices
+                </p>
+
+                <p class="text-3xl font-bold text-gray-900">
+                    ₦{{ pending_invoices|default:"0" }}
+                </p>
+
+                <span class="text-[10px] text-red-600 font-bold">
+                    4 Overdue
+                </span>
+            </div>
+
         </div>
     </div>
+</div>
 
     <!-- ==================== DOCUMENTS PENDING REVIEW ==================== -->
     <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden mt-6">
