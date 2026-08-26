@@ -158,7 +158,7 @@
                                     <span class="text-gray-600">{{ flight.stops }} stop{% if flight.stops > 1 %}s{% endif %}</span>
                                     {% endif %}
                                 </td>
-                                <td class="px-4 py-3 text-right font-bold text-blue-700 flight-price">${{ flight.price|floatformat:2 }}</td>
+                                <td class="px-4 py-3 text-right font-bold text-blue-700 flight-price">₦{{ flight.price|floatformat:2 }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -246,7 +246,7 @@
                         const row = el.closest('tr');
                         const originalPrice = parseFloat(row.dataset.originalPrice);
                         const discountedPrice = originalPrice * 0.85; // 15% off
-                        el.textContent = '$' + discountedPrice.toFixed(2);
+                        el.textContent = '₦' + discountedPrice.toFixed(2);
                     });
                     
                     discountBtn.innerHTML = '<span class="material-symbols-outlined text-sm">school</span> Remove Discount';
@@ -258,7 +258,7 @@
                     priceElements.forEach(el => {
                         const row = el.closest('tr');
                         const originalPrice = parseFloat(row.dataset.originalPrice);
-                        el.textContent = '$' + originalPrice.toFixed(2);
+                      el.textContent = '₦' + discountedPrice.toFixed(2);
                     });
                     
                     discountBtn.innerHTML = '<span class="material-symbols-outlined text-sm">school</span> Apply Student Discount';
