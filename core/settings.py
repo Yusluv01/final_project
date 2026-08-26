@@ -72,11 +72,10 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
         'CSRF_TRUSTED_ORIGINS',
-        'http://127.0.0.1:8000,http://localhost:8000'
+        'http://127.0.0.1:8000,http://localhost:8000,https://yusluv.org,https://www.yusluv.org,https://final-project-ioc1.onrender.com'
     ).split(',')
     if origin.strip()
 ]
-
 
 # ============================================================
 # APPLICATION DEFINITION
