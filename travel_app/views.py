@@ -611,7 +611,7 @@ def itinerary_export_pdf(request, pk):
     p.drawString(100, 690, f"Package: {booking.package.name if booking.package else 'N/A'}")
     p.drawString(100, 670, f"Status: {booking.get_status_display()}")
     p.drawString(100, 650, f"Travel Dates: {booking.travel_date_start} to {booking.travel_date_end}")
-    p.drawString(100, 630, f"Total Amount: ${booking.total_amount}")
+   p.drawString(100, 630, f"Total Amount: ₦{booking.total_amount}")
     p.showPage()
     p.save()
     buffer.seek(0)
