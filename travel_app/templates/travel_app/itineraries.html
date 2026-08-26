@@ -66,7 +66,7 @@
                                 {{ booking.get_status_display }}
                             </span>
                         </td>
-                        <td class="px-6 py-3 text-sm font-bold text-gray-900">${{ booking.total_amount|floatformat:0 }}</td>
+                        <td class="px-6 py-3 text-sm font-bold text-gray-900">₦{{ booking.total_amount|floatformat:0 }}</td>
                         <td class="px-6 py-3 text-sm text-gray-700">{{ booking.travel_date_start|date:"M d, Y" }}</td>
                         <td class="px-6 py-3 text-right">
                             <a href="{% url 'travel_app:itinerary_detail' booking.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-bold">View</a>
