@@ -1,8 +1,17 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import (
-    Agent, ClientUser, TravelPackage, Client, Booking, 
-    Document, Message, Payment, Notification, AuditLog, FlightSearchHistory
+   from .models import (
+    Agent,
+    TravelPackage,
+    Client,
+    Booking,
+    Document,
+    Message,
+    Payment,
+    Notification,
+    AuditLog,
+    FlightSearchHistory,
 )
 
 class AgentAdmin(UserAdmin):
@@ -14,11 +23,6 @@ class AgentAdmin(UserAdmin):
             'fields': ('agent_id', 'role', 'phone', 'profile_image', 'bio', 'is_online', 'last_activity')
         }),
     )
-
-@admin.register(ClientUser)
-class ClientUserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'client', 'is_client')
-    search_fields = ('username', 'email')
 
 @admin.register(TravelPackage)
 class TravelPackageAdmin(admin.ModelAdmin):
