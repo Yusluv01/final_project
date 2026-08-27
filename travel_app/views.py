@@ -72,6 +72,8 @@ from .forms import (
     ClientRegistrationForm,
     ClientDocumentUploadForm,
     AgentRegistrationForm,
+    AgentInvitationForm,
+    AcceptAgentInvitationForm,
 )
 
 from django.contrib.auth.views import (
@@ -1016,31 +1018,6 @@ def test_ai(request):
         'api_key_present': False,
     }
     return render(request, 'travel_app/test_ai.html', context)
-
-# ==================== CLIENT PORTAL VIEWS ===================
-
-# @csrf_exempt
-# def magic_client_login(request, username):
-#     """
-#     TESTING ONLY:
-#     Log in an existing client by username.
-#     """
-#     try:
-#         user = User.objects.get(username=username)
-
-#         # Make sure this is actually a client account
-#         if user.role != 'client' or user.is_staff:
-#             messages.error(request, 'This account is not a valid client account.')
-#             return redirect('travel_app:client_login')
-
-#         login(request, user)
-#         messages.success(request, f'Welcome back, {user.first_name or username}!')
-
-#         return redirect('travel_app:client_dashboard')
-
-#     except User.DoesNotExist:
-#         messages.error(request, f'User "{username}" does not exist.')
-#         return redirect('travel_app:client_login')
 
 
 def client_register(request):
@@ -2099,29 +2076,6 @@ class ClientPasswordResetCompleteView(PasswordResetCompleteView):
         return uploaded_file
 
 
-# ============================================================
-# EXISTING DOCUMENT FORM
-# ============================================================
-# class DocumentUploadForm(forms.ModelForm):
-
-#     class Meta:
-
-#         model = Document
-
-#         fields = ['document_type', 'file', 'expiry_date', 'notes']
-
-#         widgets = {
-
-#             'expiry_date': forms.DateInput(
-#                 attrs={'type': 'date'}
-#             ),
-
-#             'notes': forms.Textarea(
-#                 attrs={'rows': 2}
-#             ),
-
-#         }
-
 @login_required(login_url='travel_app:client_login')
 def client_payments(request):
     """
@@ -3067,61 +3021,190 @@ def client_upload_document(request):
 @login_required
 def agent_register(request):
     """
-    Admin-only agent/staff registration.
+    Admin-only invitation page.
+
+    Administrators do not directly create staff accounts.
+    Instead, they create an invitation containing a unique
+    token. The invited person uses that token to create
+    their account.
     """
 
-    # Only existing administrators can create agents
+    # Only administrators can send invitations.
     if not (
         request.user.is_superuser
-        or request.user.role == 'admin'
+        or getattr(request.user, 'role', None) == 'admin'
     ):
         messages.error(
             request,
-            'Only administrators can create agent accounts.'
+            'Only administrators can invite Admin or Staff members.'
         )
-        return redirect('travel_app:dashboard')
+
+        return redirect(
+            'travel_app:dashboard'
+        )
 
     if request.method == 'POST':
 
-        form = AgentRegistrationForm(request.POST)
+        form = AgentInvitationForm(request.POST)
 
         if form.is_valid():
 
-            try:
-                agent = form.save()
+            invitation = form.save(
+                commit=False
+            )
 
-                messages.success(
-                    request,
-                    f'Agent account for {agent.get_full_name() or agent.username} '
-                    f'was created successfully.'
-                )
+            invitation.invited_by = request.user
 
-                return redirect(
-                    'travel_app:dashboard'
-                )
+            # Invitation valid for 7 days.
+            invitation.expires_at = (
+                timezone.now() + timezone.timedelta(days=7)
+            )
 
-            except Exception as exc:
-                logger.exception(
-                    'Agent registration failed: %s',
-                    exc
-                )
+            invitation.save()
 
-                form.add_error(
-                    None,
-                    'We could not create the agent account. '
-                    'Please check the information and try again.'
-                )
+            messages.success(
+                request,
+                f'Invitation created successfully for '
+                f'{invitation.email}.'
+            )
+
+            return redirect(
+                'travel_app:dashboard'
+            )
 
     else:
-        form = AgentRegistrationForm()
+        form = AgentInvitationForm()
 
     return render(
         request,
         'travel_app/agent/register.html',
         {
             'form': form,
+            'invitation_mode': True,
         }
     )
+    
+
+def accept_agent_invitation(request, token):
+    """
+    Allow an invited Admin/Staff member to create their account
+    using the invitation token.
+    """
+
+    try:
+        invitation = AgentInvitation.objects.get(
+            token=token
+        )
+
+    except AgentInvitation.DoesNotExist:
+
+        messages.error(
+            request,
+            'This invitation does not exist or is invalid.'
+        )
+
+        return redirect(
+            'travel_app:admin_login'
+        )
+
+    # Check invitation validity.
+    if not invitation.is_valid():
+
+        if invitation.is_accepted:
+            message = 'This invitation has already been accepted.'
+        else:
+            message = 'This invitation has expired.'
+
+        messages.error(
+            request,
+            message
+        )
+
+        return redirect(
+            'travel_app:admin_login'
+        )
+
+    if request.method == 'POST':
+
+        form = AcceptAgentInvitationForm(
+            request.POST
+        )
+
+        if form.is_valid():
+
+            try:
+
+                # Create the Agent account.
+                agent = Agent(
+                    username=form.cleaned_data['username'],
+                    first_name=form.cleaned_data['first_name'],
+                    last_name=form.cleaned_data['last_name'],
+                    email=invitation.email,
+                    phone=form.cleaned_data.get('phone') or None,
+
+                    # Invitation determines the role.
+                    role=invitation.role,
+
+                    # Admin/Staff accounts can access
+                    # the Django admin area.
+                    is_staff=True,
+                    is_active=True,
+                    is_superuser=(
+                        invitation.role == 'admin'
+                    ),
+                )
+
+                agent.set_password(
+                    form.cleaned_data['password1']
+                )
+
+                agent.save()
+
+                # Mark invitation as accepted.
+                invitation.is_accepted = True
+                invitation.accepted_at = timezone.now()
+                invitation.save(
+                    update_fields=[
+                        'is_accepted',
+                        'accepted_at',
+                    ]
+                )
+
+                messages.success(
+                    request,
+                    'Your account has been created successfully. '
+                    'You can now log in.'
+                )
+
+                return redirect(
+                    'travel_app:admin_login'
+                )
+
+            except Exception as exc:
+
+                logger.exception(
+                    'Agent invitation acceptance failed: %s',
+                    exc
+                )
+
+                form.add_error(
+                    None,
+                    'We could not create your account. '
+                    'Please try again.'
+                )
+
+    else:
+        form = AcceptAgentInvitationForm()
+
+    return render(
+        request,
+        'travel_app/agent/accept_invitation.html',
+        {
+            'form': form,
+            'invitation': invitation,
+        }
+    )
+
 
 def custom_logout(request):
     user_role = getattr(request.user, 'role', None)
