@@ -3,7 +3,15 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import password_validation
-from .models import Client, ClientUser, Booking, Document, Payment, Message,ClientDocument,Agent
+from .models import (
+    Client,
+    Booking,
+    Document,
+    Payment,
+    Message,
+    ClientDocument,
+    Agent,
+)
 
 class ClientForm(forms.ModelForm):
     class Meta:
