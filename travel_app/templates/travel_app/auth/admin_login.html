@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <title>Secure Login | Travelbolt_AI</title>
+    <title>Secure Login | Travelbolt</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
@@ -98,7 +98,7 @@
                            group-hover:text-blue-800
                            transition-colors">
 
-                    Travelbolt_AI
+                    Travelbolt
 
                 </h1>
 
@@ -110,43 +110,6 @@
 
         </div>
 
-
-        <!-- ===================================================== -->
-        <!-- LOGIN / REGISTER TABS -->
-        <!-- ===================================================== -->
-
-        <div class="flex gap-2 bg-gray-100 p-1 rounded-xl mb-6">
-
-            <button
-                type="button"
-                id="loginTab"
-                onclick="showPanel('login')"
-                class="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all tab-active">
-
-                <span class="material-symbols-outlined text-sm align-middle mr-1">
-                    login
-                </span>
-
-                Login
-
-            </button>
-
-
-            <button
-                type="button"
-                id="registerTab"
-                onclick="showPanel('register')"
-                class="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all tab-inactive">
-
-                <span class="material-symbols-outlined text-sm align-middle mr-1">
-                    person_add
-                </span>
-
-                Register
-
-            </button>
-
-        </div>
 
 
         <!-- ===================================================== -->
@@ -272,236 +235,13 @@
 
 
         <!-- ===================================================== -->
-        <!-- REGISTRATION PANEL -->
-        <!-- ===================================================== -->
-
-        <div id="registerPanel" class="form-panel">
-
-            <div class="text-center mb-5">
-
-                <h2 class="text-xl font-bold text-gray-800">
-                    Staff Registration
-                </h2>
-
-                <p class="text-sm text-gray-500 mt-1">
-                    Create an account to access the agency dashboard
-                </p>
-
-            </div>
-
-
-            <form method="post"
-                  action="{% url 'travel_app:admin_login' %}">
-
-                {% csrf_token %}
-
-                <input type="hidden"
-                       name="form_type"
-                       value="register">
-
-
-                <div class="space-y-4">
-
-
-                    <!-- FORM ERRORS -->
-
-                    {% if form.errors %}
-
-                        <div class="bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200">
-
-                            <p class="font-bold mb-1">
-                                Please correct the following:
-                            </p>
-
-                            {{ form.errors }}
-
-                        </div>
-
-                    {% endif %}
-
-
-                    <!-- ROW 1 -->
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        <div>
-
-                            <label class="block text-sm font-bold text-gray-700 mb-1">
-                                First Name
-                            </label>
-
-                            {{ form.first_name }}
-
-                        </div>
-
-
-                        <div>
-
-                            <label class="block text-sm font-bold text-gray-700 mb-1">
-                                Last Name
-                            </label>
-
-                            {{ form.last_name }}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- ROW 2 -->
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        <div>
-
-                            <label class="block text-sm font-bold text-gray-700 mb-1">
-                                Username
-                            </label>
-
-                            {{ form.username }}
-
-                        </div>
-
-
-                        <div>
-
-                            <label class="block text-sm font-bold text-gray-700 mb-1">
-                                Email
-                            </label>
-
-                            {{ form.email }}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- ROW 3 -->
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        <div>
-
-                            <label class="block text-sm font-bold text-gray-700 mb-1">
-                                Phone Number
-                            </label>
-
-                            {{ form.phone }}
-
-                        </div>
-
-
-                        <div>
-
-                            <label class="block text-sm font-bold text-gray-700 mb-1">
-                                Nationality
-                            </label>
-
-                            {{ form.nationality }}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- ROW 4 -->
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        <div>
-
-                            <label class="block text-sm font-bold text-gray-700 mb-1">
-                                Date of Birth
-                            </label>
-
-                            {{ form.date_of_birth }}
-
-                        </div>
-
-
-                        <div>
-
-                            <label class="block text-sm font-bold text-gray-700 mb-1">
-                                Next of Kin Phone Number
-                            </label>
-
-                            {{ form.next_of_kin_phone }}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- ROW 5 -->
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        <div>
-
-                            <label class="block text-sm font-bold text-gray-700 mb-1">
-                                Password
-                            </label>
-
-                            {{ form.password1 }}
-
-                        </div>
-
-
-                        <div>
-
-                            <label class="block text-sm font-bold text-gray-700 mb-1">
-                                Confirm Password
-                            </label>
-
-                            {{ form.password2 }}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- REGISTER ERROR -->
-
-                    {% if register_error %}
-
-                        <div class="bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200">
-
-                            {{ register_error }}
-
-                        </div>
-
-                    {% endif %}
-
-
-                    <!-- REGISTER BUTTON -->
-
-                    <button
-                        type="submit"
-                        class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2 mt-5">
-
-                        <span class="material-symbols-outlined">
-                            person_add
-                        </span>
-
-                        Create Staff Account
-
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-
-        <!-- ===================================================== -->
         <!-- FOOTER -->
         <!-- ===================================================== -->
 
         <div class="mt-6 text-center text-xs text-gray-400">
 
             <p>
-                &copy; 2026 Travelbolt_AI. All rights reserved.
+                &copy; 2026 Travelbolt. All rights reserved.
             </p>
 
         </div>
