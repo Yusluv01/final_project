@@ -11,6 +11,7 @@ from .models import (
     Message,
     ClientDocument,
     Agent,
+    AgentInvitation,
 )
 
 class ClientForm(forms.ModelForm):
@@ -573,3 +574,184 @@ class AgentRegistrationForm(UserCreationForm):
             user.save()
 
         return user
+
+
+# ============================================================
+# AGENT INVITATION FORMS
+# ============================================================
+
+class AgentInvitationForm(forms.ModelForm):
+    """
+    Form used by an administrator to invite a new
+    Admin or Staff member.
+    """
+
+    class Meta:
+        model = AgentInvitation
+        fields = ['email', 'role']
+
+        widgets = {
+            'email': forms.EmailInput(
+                attrs={
+                    'class': (
+                        'w-full px-4 py-3 border border-gray-300 '
+                        'rounded-lg focus:ring-2 focus:ring-blue-500 '
+                        'focus:border-blue-500 outline-none'
+                    ),
+                    'placeholder': 'Email address',
+                }
+            ),
+
+            'role': forms.Select(
+                attrs={
+                    'class': (
+                        'w-full px-4 py-3 border border-gray-300 '
+                        'rounded-lg focus:ring-2 focus:ring-blue-500 '
+                        'focus:border-blue-500 outline-none'
+                    ),
+                }
+            ),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip().lower()
+
+        if Agent.objects.filter(
+            email__iexact=email
+        ).exists():
+            raise ValidationError(
+                'An account with this email address already exists.'
+            )
+
+        if AgentInvitation.objects.filter(
+            email__iexact=email,
+            is_accepted=False,
+        ).exists():
+            raise ValidationError(
+                'There is already an active invitation for this email address.'
+            )
+
+        return email
+
+
+class AcceptAgentInvitationForm(forms.Form):
+    """
+    Form used by an invited Admin/Staff member to
+    complete their account setup.
+    """
+
+    username = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                'class': (
+                    'w-full px-4 py-3 border border-gray-300 '
+                    'rounded-lg focus:ring-2 focus:ring-blue-500 '
+                    'focus:border-blue-500 outline-none'
+                ),
+                'placeholder': 'Username',
+            }
+        )
+    )
+
+    first_name = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                'class': (
+                    'w-full px-4 py-3 border border-gray-300 '
+                    'rounded-lg focus:ring-2 focus:ring-blue-500 '
+                    'focus:border-blue-500 outline-none'
+                ),
+                'placeholder': 'First name',
+            }
+        )
+    )
+
+    last_name = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                'class': (
+                    'w-full px-4 py-3 border border-gray-300 '
+                    'rounded-lg focus:ring-2 focus:ring-blue-500 '
+                    'focus:border-blue-500 outline-none'
+                ),
+                'placeholder': 'Last name',
+            }
+        )
+    )
+
+    phone = forms.CharField(
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': (
+                    'w-full px-4 py-3 border border-gray-300 '
+                    'rounded-lg focus:ring-2 focus:ring-blue-500 '
+                    'focus:border-blue-500 outline-none'
+                ),
+                'placeholder': 'Phone number',
+            }
+        )
+    )
+
+    password1 = forms.CharField(
+        required=True,
+        widget=forms.PasswordInput(
+            attrs={
+                'class': (
+                    'w-full px-4 py-3 border border-gray-300 '
+                    'rounded-lg focus:ring-2 focus:ring-blue-500 '
+                    'focus:border-blue-500 outline-none'
+                ),
+                'placeholder': 'Password',
+            }
+        )
+    )
+
+    password2 = forms.CharField(
+        required=True,
+        widget=forms.PasswordInput(
+            attrs={
+                'class': (
+                    'w-full px-4 py-3 border border-gray-300 '
+                    'rounded-lg focus:ring-2 focus:ring-blue-500 '
+                    'focus:border-blue-500 outline-none'
+                ),
+                'placeholder': 'Confirm password',
+            }
+        )
+    )
+
+    def clean_username(self):
+        username = self.cleaned_data['username'].strip()
+
+        if Agent.objects.filter(
+            username__iexact=username
+        ).exists():
+            raise ValidationError(
+                'This username is already taken.'
+            )
+
+        return username
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+
+        if password1 and password2 and password1 != password2:
+            raise ValidationError(
+                'The passwords do not match.'
+            )
+
+        if password1:
+            validate_password(password1)
+
+        return cleaned_data
