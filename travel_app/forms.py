@@ -1,8 +1,11 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import password_validation
+from django.contrib.auth.password_validation import validate_password
+
 from .models import (
     Client,
     Booking,
@@ -612,26 +615,26 @@ class AgentInvitationForm(forms.ModelForm):
                 }
             ),
         }
+        
+def clean_email(self):
+    email = self.cleaned_data['email'].strip().lower()
 
-    def clean_email(self):
-        email = self.cleaned_data['email'].strip().lower()
-
-        if Agent.objects.filter(
-            email__iexact=email
-        ).exists():
-            raise ValidationError(
-                'An account with this email address already exists.'
-            )
+    if Agent.objects.filter(
+        email__iexact=email
+    ).exists():
+        raise ValidationError(
+            'An account with this email address already exists.'
+        )
 
         if AgentInvitation.objects.filter(
-            email__iexact=email,
-            is_accepted=False,
-        ).exists():
-            raise ValidationError(
-                'There is already an active invitation for this email address.'
-            )
-
-        return email
+    email__iexact=email,
+    is_accepted=False,
+    expires_at__gt=timezone.now(),
+).exists():
+    raise ValidationError(
+        'There is already an active invitation for this email address.'
+    )        
+    return email
 
 
 class AcceptAgentInvitationForm(forms.Form):
