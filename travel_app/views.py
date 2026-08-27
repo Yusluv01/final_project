@@ -292,15 +292,19 @@ def mark_all_notifications_read(request):
 
     return redirect('travel_app:notifications')
 
-
 def admin_login(request):
     """
     Admin/Staff login page.
 
-    Both Admin and Staff accounts use this login and are redirected
-    to the same Admin Dashboard.
+    Admin and Staff accounts use this login and are redirected
+    to the Admin Dashboard.
+
+    Public registration is intentionally disabled.
+    Staff/Admin accounts must be created through the
+    invitation system.
     """
 
+    # If already authenticated, only allow Admin/Staff users
     if request.user.is_authenticated:
         if (
             request.user.is_staff
@@ -308,21 +312,15 @@ def admin_login(request):
         ):
             return redirect('travel_app:dashboard')
 
+        # Prevent clients/other users from accessing this area
         logout(request)
 
     login_error = None
-    register_error = None
-
-    # Default panel
-    active_panel = 'login'
-
-    # Always initialize the registration form
-    form = AgentRegistrationForm()
 
     # ============================
-    # LOGIN
+    # LOGIN ONLY
     # ============================
-    if request.method == 'POST' and request.POST.get('form_type') == 'login':
+    if request.method == 'POST':
 
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
@@ -366,65 +364,14 @@ def admin_login(request):
                 'Please try again.'
             )
 
-            # Keep Login tab active
-            active_panel = 'login'
-
     # ============================
-    # REGISTRATION
+    # DISPLAY LOGIN PAGE
     # ============================
-    elif (
-        request.method == 'POST'
-        and request.POST.get('form_type') == 'register'
-    ):
-
-        # Keep Registration tab active
-        active_panel = 'register'
-
-        # Bind submitted data to the form
-        form = AgentRegistrationForm(request.POST)
-
-        if form.is_valid():
-
-            user = form.save()
-
-            # --------------------------------
-            # SECURITY:
-            # New registrations are STAFF.
-            # They cannot create themselves as
-            # administrators.
-            # --------------------------------
-            user.role = 'staff'
-            user.is_staff = True
-            user.is_superuser = False
-            user.is_active = True
-
-            user.save()
-
-            messages.success(
-                request,
-                'Staff account created successfully! '
-                'You can now log in with your username and password.'
-            )
-
-            return redirect('travel_app:admin_login')
-
-        # Form is invalid
-        register_error = (
-            'Please correct the errors in the registration form.'
-        )
-
-    # ============================
-    # DISPLAY PAGE
-    # ============================
-
     return render(
         request,
         'travel_app/auth/admin_login.html',
         {
-            'form': form,
             'login_error': login_error,
-            'register_error': register_error,
-            'active_panel': active_panel,
         }
     )
 
