@@ -197,7 +197,6 @@ class Agent(AbstractUser):
     @property
     def is_staff_member(self):
         return self.role in ['admin', 'staff']
-
 class AgentInvitation(models.Model):
     """
     Invitation sent by an administrator to create an
