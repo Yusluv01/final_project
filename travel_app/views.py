@@ -62,6 +62,7 @@ from .models import (
     Notification,
     Agent,
     ClientDocument,
+    AgentInvitation,
 )
 
 from .forms import (
@@ -75,7 +76,6 @@ from .forms import (
     AgentInvitationForm,
     AcceptAgentInvitationForm,
 )
-
 from django.contrib.auth.views import (
     LoginView,
     PasswordResetView,
