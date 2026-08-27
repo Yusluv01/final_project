@@ -7,9 +7,8 @@ from django.conf import settings # ✅ Added this import for AUTH_USER_MODEL
 
 
 
-
 class Agent(AbstractUser):
-    """Unified user model for Admins, Staff, and Clients."""
+    """Unified User Model for Admins, Staff and Clients."""
 
     ROLE_CHOICES = [
         ('admin', 'Administrator'),
@@ -23,15 +22,11 @@ class Agent(AbstractUser):
         default='client'
     )
 
-    # ==================== COMMON FIELDS ====================
-
     phone = PhoneNumberField(
         null=True,
         blank=True,
         region='NG'
     )
-
-    # ==================== AGENT / STAFF FIELDS ====================
 
     agent_id = models.CharField(
         max_length=20,
@@ -51,16 +46,12 @@ class Agent(AbstractUser):
         blank=True
     )
 
-    is_online = models.BooleanField(
-        default=False
-    )
+    is_online = models.BooleanField(default=False)
 
     last_activity = models.DateTimeField(
         null=True,
         blank=True
     )
-
-    # ==================== CLIENT FIELDS ====================
 
     passport_number = models.CharField(
         max_length=50,
@@ -120,8 +111,6 @@ class Agent(AbstractUser):
         null=True
     )
 
-    # ==================== SYSTEM FIELDS ====================
-
     created_at = models.DateTimeField(
         auto_now_add=True
     )
@@ -134,16 +123,13 @@ class Agent(AbstractUser):
         default=True
     )
 
-    # ==================== PERMISSION RELATIONSHIPS ====================
-
+    # Prevent reverse accessor clashes with Django's auth models
     groups = models.ManyToManyField(
         'auth.Group',
         related_name='agent_user_set',
         blank=True,
         help_text=(
-            'The groups this user belongs to. '
-            'A user will get all permissions granted '
-            'to each of their groups.'
+            'The groups this user belongs to.'
         ),
         verbose_name='groups',
     )
@@ -152,29 +138,26 @@ class Agent(AbstractUser):
         'auth.Permission',
         related_name='agent_user_set',
         blank=True,
-        help_text='Specific permissions for this user.',
+        help_text=(
+            'Specific permissions for this user.'
+        ),
         verbose_name='user permissions',
     )
 
-    # ==================== SAVE ====================
-
     def save(self, *args, **kwargs):
 
-        # Generate Agent ID ONLY for staff/admin
         if self.role in ['admin', 'staff'] and not self.agent_id:
 
             last_agent = (
-                self.__class__.objects
-                .filter(
-                    role__in=['admin', 'staff'],
-                    agent_id__isnull=False
-                )
-                .order_by('-id')
+                self.__class__
+                .objects
+                .exclude(agent_id__isnull=True)
+                .exclude(agent_id='')
+                .order_by('-agent_id')
                 .first()
             )
 
             if last_agent and last_agent.agent_id:
-
                 try:
                     last_num = int(
                         last_agent.agent_id.split('-')[1]
@@ -202,7 +185,8 @@ class Agent(AbstractUser):
 
         super().save(*args, **kwargs)
 
-    # ==================== PROPERTIES ====================
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.role})"
 
     @property
     def is_client(self):
@@ -211,56 +195,7 @@ class Agent(AbstractUser):
     @property
     def is_staff_member(self):
         return self.role in ['admin', 'staff']
-
-    def __str__(self):
-        return (
-            f"{self.first_name} "
-            f"{self.last_name} "
-            f"({self.role})"
-        )
-
-    
-    
-    # ============ FIX FOR REVERSE ACCESSOR CLASH ============
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='agent_user_set',
-        blank=True,
-        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
-        verbose_name='groups',
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='agent_user_set',
-        blank=True,
-        help_text='Specific permissions for this user.',
-        verbose_name='user permissions',
-    )
-    # =========================================================
-
-    def save(self, *args, **kwargs):
-        if not self.agent_id:
-            # Get the last agent_id and increment it
-            last_agent = self.__class__.objects.order_by('-agent_id').first()
-            if last_agent and last_agent.agent_id:
-                try:
-                    last_num = int(last_agent.agent_id.split('-')[1])
-                    new_num = last_num + 1
-                except (IndexError, ValueError):
-                    new_num = 1
-            else:
-                new_num = 1
-            
-            # Keep trying until we find a unique ID
-            while True:
-                new_id = f"TB-{str(new_num).zfill(4)}"
-                if not self.__class__.objects.filter(agent_id=new_id).exists():
-                    self.agent_id = new_id
-                    break
-                new_num += 1
-    
-            super().save(*args, **kwargs)
-
+        
 class TravelPackage(models.Model):
     """Travel package details"""
     PACKAGE_TYPE = [
@@ -410,33 +345,6 @@ class ClientDocument(models.Model):
     def __str__(self):
         return f"{self.client.full_name} - {self.get_document_type_display()}"
 
-
-# ==================== NEW CLIENT USER MODEL ====================
-class ClientUser(AbstractUser):
-    """Custom user model for Clients to log into the portal"""
-    # ✅ FIXED: Added related_name='auth_user' to prevent clash with Client.user
-    client = models.OneToOneField(Client, on_delete=models.CASCADE, null=True, blank=True, related_name='auth_user')
-    is_client = models.BooleanField(default=True)
-    
-    # ============ FIX FOR REVERSE ACCESSOR CLASH ============
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='client_user_set',
-        blank=True,
-        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
-        verbose_name='groups',
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='client_user_set',
-        blank=True,
-        help_text='Specific permissions for this user.',
-        verbose_name='user permissions',
-    )
-    # =========================================================
-    
-    def __str__(self):
-        return f"Client: {self.username}"
 
 
 class Booking(models.Model):
