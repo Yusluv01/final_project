@@ -5,7 +5,6 @@ from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import password_validation
 from django.contrib.auth.password_validation import validate_password
-
 from .models import (
     Client,
     Booking,
