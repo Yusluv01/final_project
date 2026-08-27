@@ -13,7 +13,6 @@ from .models import (
     AuditLog,
     FlightSearchHistory,
 )
-
 class AgentAdmin(UserAdmin):
     list_display = ('username', 'get_full_name', 'agent_id', 'role', 'email', 'is_online', 'is_active')
     list_filter = ('role', 'is_online', 'is_active', 'is_staff')
