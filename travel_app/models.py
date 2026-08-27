@@ -197,25 +197,10 @@ class Agent(AbstractUser):
 # ============================================================
 # AGENT INVITATION
 # ============================================================
-
 class AgentInvitation(models.Model):
     """
-    Invitation sent by an administrator to create an
-    Admin or Staff account.
-
-    Workflow:
-
-        Admin sends invitation
-                ↓
-        Invitation record created
-                ↓
-        Email sent to invited person
-                ↓
-        Person opens invitation link
-                ↓
-        Person accepts invitation
-                ↓
-        Agent account is created
+    Invitation sent by an administrator to create
+    an Admin or Staff account.
     """
 
     ROLE_CHOICES = [
@@ -258,42 +243,16 @@ class AgentInvitation(models.Model):
     )
 
     def is_expired(self):
-        """Return True when the invitation has expired."""
         return timezone.now() >= self.expires_at
 
     def is_valid(self):
-        """
-        Invitation is valid only when:
-        - it has not already been accepted
-        - it has not expired
-        """
         return (
             not self.is_accepted
             and not self.is_expired()
         )
 
-    def mark_as_accepted(self):
-        """Mark the invitation as accepted."""
-        self.is_accepted = True
-        self.accepted_at = timezone.now()
-        self.save(
-            update_fields=[
-                'is_accepted',
-                'accepted_at'
-            ]
-        )
-
     def __str__(self):
-        return (
-            f"{self.email} - "
-            f"{self.get_role_display()}"
-        )
-
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = 'Agent Invitation'
-        verbose_name_plural = 'Agent Invitations'
-
+        return f"{self.email} - {self.get_role_display()}"
 
 # ============================================================
 # TRAVEL PACKAGE
