@@ -9,89 +9,217 @@ from django.conf import settings # ✅ Added this import for AUTH_USER_MODEL
 
 
 class Agent(AbstractUser):
-    """Unified User Model for both Admins/Staff and Clients"""
-    
-    # ROLE (To separate them in the dashboard)
+    """Unified user model for Admins, Staff, and Clients."""
+
     ROLE_CHOICES = [
         ('admin', 'Administrator'),
         ('staff', 'Staff'),
         ('client', 'Client'),
     ]
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='client')
 
-    # ==================== COMMON FIELDS (Required for everyone) ====================
-    # username, password, email, first_name, last_name are already provided by AbstractUser
-    phone = PhoneNumberField(null=True, blank=True, region='NG')  # Optional phone number field
-    
-    # ==================== FIELDS FOR AGENTS/STAFF ONLY (Accept Null) ====================
-    agent_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
-    profile_image = models.ImageField(upload_to='agents/', null=True, blank=True)
-    bio = models.TextField(null=True, blank=True)
-    is_online = models.BooleanField(default=False)
-    last_activity = models.DateTimeField(null=True, blank=True)
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='client'
+    )
 
-    # ==================== FIELDS FOR CLIENTS ONLY (Accept Null) ====================
-    # Passport info
-    passport_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
-    passport_expiry = models.DateField(null=True, blank=True)
-    
-    # Personal details
-    gender = models.CharField(max_length=10, blank=True, null=True)
-    date_of_birth = models.DateField(null=True, blank=True)
-    address = models.TextField(null=True, blank=True)
-    city = models.CharField(max_length=100, null=True, blank=True)
-    country = models.CharField(max_length=100, null=True, blank=True)
-    nationality = models.CharField(max_length=100, null=True, blank=True)
-    travel_type = models.CharField(max_length=20, null=True, blank=True)
+    # ==================== COMMON FIELDS ====================
+
+    phone = PhoneNumberField(
+        null=True,
+        blank=True,
+        region='NG'
+    )
+
+    # ==================== AGENT / STAFF FIELDS ====================
+
+    agent_id = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True
+    )
+
+    profile_image = models.ImageField(
+        upload_to='agents/',
+        null=True,
+        blank=True
+    )
+
+    bio = models.TextField(
+        null=True,
+        blank=True
+    )
+
+    is_online = models.BooleanField(
+        default=False
+    )
+
+    last_activity = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    # ==================== CLIENT FIELDS ====================
+
+    passport_number = models.CharField(
+        max_length=50,
+        unique=True,
+        null=True,
+        blank=True
+    )
+
+    passport_expiry = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    gender = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True
+    )
+
+    date_of_birth = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    address = models.TextField(
+        null=True,
+        blank=True
+    )
+
+    city = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )
+
+    country = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )
+
+    nationality = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )
+
+    travel_type = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True
+    )
+
     next_of_kin_phone = models.CharField(
         max_length=20,
         blank=True,
-        null=True,
+        null=True
     )
 
     # ==================== SYSTEM FIELDS ====================
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    first_login = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    first_login = models.BooleanField(
+        default=True
+    )
+
+    # ==================== PERMISSION RELATIONSHIPS ====================
+
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='agent_user_set',
+        blank=True,
+        help_text=(
+            'The groups this user belongs to. '
+            'A user will get all permissions granted '
+            'to each of their groups.'
+        ),
+        verbose_name='groups',
+    )
+
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='agent_user_set',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
+
+    # ==================== SAVE ====================
 
     def save(self, *args, **kwargs):
-        # Auto-generate Agent ID only if they are an Admin/Staff
+
+        # Generate Agent ID ONLY for staff/admin
         if self.role in ['admin', 'staff'] and not self.agent_id:
-            # ... (your existing agent_id generation logic here) ...
-            pass
+
+            last_agent = (
+                self.__class__.objects
+                .filter(
+                    role__in=['admin', 'staff'],
+                    agent_id__isnull=False
+                )
+                .order_by('-id')
+                .first()
+            )
+
+            if last_agent and last_agent.agent_id:
+
+                try:
+                    last_num = int(
+                        last_agent.agent_id.split('-')[1]
+                    )
+                    new_num = last_num + 1
+
+                except (IndexError, ValueError):
+                    new_num = 1
+
+            else:
+                new_num = 1
+
+            while True:
+
+                new_id = f"TB-{str(new_num).zfill(4)}"
+
+                if not self.__class__.objects.filter(
+                    agent_id=new_id
+                ).exists():
+
+                    self.agent_id = new_id
+                    break
+
+                new_num += 1
+
         super().save(*args, **kwargs)
 
-    def __str__(self):
-        return f"{self.first_name} {self.last_name} ({self.role})"
-    
+    # ==================== PROPERTIES ====================
+
     @property
     def is_client(self):
         return self.role == 'client'
-    
+
     @property
     def is_staff_member(self):
         return self.role in ['admin', 'staff']
 
-# class Agent(AbstractUser):
-#     """Extended user model for travel agents"""
-#     ROLE_CHOICES = [
-#         ('admin', 'Administrator'),
-#         ('manager', 'Team Manager'),
-#         ('agent', 'Travel Agent'),
-#         ('concierge', 'Concierge'),
-#         ('support', 'Support Staff'),
-#     ]
+    def __str__(self):
+        return (
+            f"{self.first_name} "
+            f"{self.last_name} "
+            f"({self.role})"
+        )
+
     
-#     agent_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
-#     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='agent')
-#     phone = PhoneNumberField(null=True, blank=True, region='SA')
-#     profile_image = models.ImageField(upload_to='agents/', null=True, blank=True)
-#     bio = models.TextField(null=True, blank=True)
-#     is_online = models.BooleanField(default=False)
-#     last_activity = models.DateTimeField(null=True, blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-#     history = HistoricalRecords()
     
     # ============ FIX FOR REVERSE ACCESSOR CLASH ============
     groups = models.ManyToManyField(
