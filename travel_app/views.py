@@ -62,7 +62,6 @@ from .models import (
     Notification,
     Agent,
     ClientDocument,
-    ClientUser,
 )
 
 from .forms import (
