@@ -400,6 +400,12 @@ path(
     views.agent_register,
     name='agent_register'
 ),
+path(
+    'agent/invite/<uuid:token>/',
+    views.accept_agent_invitation,
+    name='accept_agent_invitation
+
+),
 
 path(
     'logout/',
