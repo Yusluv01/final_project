@@ -1,9 +1,11 @@
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 from simple_history.models import HistoricalRecords
-from django.conf import settings # ✅ Added this import for AUTH_USER_MODEL
+from django.conf import settings #
 
 
 
@@ -195,6 +197,60 @@ class Agent(AbstractUser):
     @property
     def is_staff_member(self):
         return self.role in ['admin', 'staff']
+
+class AgentInvitation(models.Model):
+    """
+    Invitation sent by an administrator to create an
+    Admin or Staff account.
+    """
+
+    ROLE_CHOICES = [
+        ('admin', 'Administrator'),
+        ('staff', 'Staff'),
+    ]
+
+    email = models.EmailField()
+
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES
+    )
+
+    token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False
+    )
+
+    invited_by = models.ForeignKey(
+        Agent,
+        on_delete=models.CASCADE,
+        related_name='sent_invitations'
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    expires_at = models.DateTimeField()
+
+    accepted_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    is_accepted = models.BooleanField(
+        default=False
+    )
+
+    def is_expired(self):
+        return timezone.now() >= self.expires_at
+
+    def is_valid(self):
+        return not self.is_accepted and not self.is_expired()
+
+    def __str__(self):
+        return f"{self.email} - {self.get_role_display()}"
         
 class TravelPackage(models.Model):
     """Travel package details"""
