@@ -630,3 +630,10 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = (
 DATA_UPLOAD_MAX_MEMORY_SIZE = (
     10 * 1024 * 1024
 )
+
+RESEND_API_KEY = os.getenv('RESEND_API_KEY')
+
+RESEND_FROM_EMAIL = os.getenv(
+    'RESEND_FROM_EMAIL',
+    'Travelbolt <noreply@yusluv.org>'
+)
