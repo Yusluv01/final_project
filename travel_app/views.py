@@ -3018,6 +3018,7 @@ def client_upload_document(request):
             'client': client
         }
     )
+    
 @login_required
 def agent_register(request):
     """
@@ -3069,12 +3070,14 @@ def agent_register(request):
             invitation_link = request.build_absolute_uri(
                 reverse(
                     'travel_app:accept_agent_invitation',
-                    kwargs={'token': invitation.token}
+                    kwargs={
+                        'token': invitation.token
+                    }
                 )
             )
 
             # ---------------------------------------------------------
-            # SEND INVITATION EMAIL
+            # SEND INVITATION EMAIL USING RESEND
             # ---------------------------------------------------------
 
             subject = 'You have been invited to Travelbolt'
@@ -3098,15 +3101,17 @@ Travelbolt Management Team
 """.strip()
 
             try:
-                
-    resend.api_key = settings.RESEND_API_KEY
 
-        resend.Emails.send({
-            "from": settings.RESEND_FROM_EMAIL,
-            "to": [invitation.email],
-            "subject": subject,
-            "text": email_message,
-        })
+                # Use Resend API.
+                resend.api_key = settings.RESEND_API_KEY
+
+                resend.Emails.send({
+                    'from': settings.RESEND_FROM_EMAIL,
+                    'to': [invitation.email],
+                    'subject': subject,
+                    'text': email_message,
+                })
+
                 messages.success(
                     request,
                     f'Invitation created and email sent successfully to '
@@ -3135,6 +3140,7 @@ Travelbolt Management Team
             )
 
     else:
+
         form = AgentInvitationForm()
 
     return render(
