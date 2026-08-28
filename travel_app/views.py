@@ -3017,7 +3017,6 @@ def client_upload_document(request):
             'client': client
         }
     )
-
 @login_required
 def agent_register(request):
     """
@@ -3062,11 +3061,73 @@ def agent_register(request):
 
             invitation.save()
 
-            messages.success(
-                request,
-                f'Invitation created successfully for '
-                f'{invitation.email}.'
+            # ---------------------------------------------------------
+            # GENERATE INVITATION LINK
+            # ---------------------------------------------------------
+
+            invitation_link = request.build_absolute_uri(
+                reverse(
+                    'travel_app:accept_agent_invitation',
+                    kwargs={'token': invitation.token}
+                )
             )
+
+            # ---------------------------------------------------------
+            # SEND INVITATION EMAIL
+            # ---------------------------------------------------------
+
+            subject = 'You have been invited to Travelbolt'
+
+            email_message = f"""
+Hello,
+
+You have been invited to join Travelbolt as a
+{invitation.get_role_display()}.
+
+Please click the link below to complete your account registration:
+
+{invitation_link}
+
+This invitation is valid for 7 days.
+
+If you did not expect this invitation, you can safely ignore this email.
+
+Regards,
+Travelbolt Management Team
+""".strip()
+
+            try:
+
+                send_mail(
+                    subject,
+                    email_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [invitation.email],
+                    fail_silently=False
+                )
+
+                messages.success(
+                    request,
+                    f'Invitation created and email sent successfully to '
+                    f'{invitation.email}.'
+                )
+
+            except Exception as exc:
+
+                logger.exception(
+                    'Failed to send agent invitation email to %s: %s',
+                    invitation.email,
+                    exc
+                )
+
+                # Remove the invitation because the email was not sent.
+                invitation.delete()
+
+                messages.error(
+                    request,
+                    'The invitation was created, but the email could not be sent. '
+                    'Please check the email configuration.'
+                )
 
             return redirect(
                 'travel_app:dashboard'
@@ -3083,7 +3144,6 @@ def agent_register(request):
             'invitation_mode': True,
         }
     )
-    
 
 def accept_agent_invitation(request, token):
     """
