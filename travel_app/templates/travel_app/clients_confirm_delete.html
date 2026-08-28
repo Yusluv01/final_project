@@ -1,7 +1,7 @@
 {% extends 'travel_app/base.html' %}
 {% load static %}
 
-{% block title %}Delete Client | Travelbolt_AI{% endblock %}
+{% block title %}Delete Client | Travelbolt{% endblock %}
 
 {% block content %}
 <div class="flex items-center justify-center min-h-[60vh]">
@@ -15,7 +15,7 @@
                 Are you sure you want to delete <strong>{{ client.first_name }} {{ client.last_name }}</strong>?
                 <br>This action cannot be undone.
             </p>
-            
+
             <div class="bg-gray-50 rounded-lg p-4 mt-6 text-left text-sm text-gray-700 border border-gray-100">
                 <p><strong>Passport:</strong> {{ client.passport_number }}</p>
                 <p><strong>Email:</strong> {{ client.email }}</p>

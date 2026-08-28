@@ -444,19 +444,19 @@ class ClientUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         return self.request.user.is_staff
-    
+
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         if self.object:
             form.fields['passport_number'].widget.attrs['disabled'] = False
             form.instance = self.object
         form.fields['new_password'] = forms.CharField(
-            required=False, 
+            required=False,
             widget=forms.PasswordInput(attrs={'placeholder': 'Leave blank to keep current password'}),
             label="New Password (Optional)"
         )
         return form
-    
+
     def form_valid(self, form):
         new_password = form.cleaned_data.get('new_password')
         if new_password:
@@ -476,7 +476,7 @@ class ClientDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Client deleted successfully!')
         return super().delete(request, *args, **kwargs)
-    
+
 class ItineraryListView(LoginRequiredMixin, ListView):
     template_name = 'travel_app/itineraries.html'
     context_object_name = 'bookings'
@@ -525,7 +525,7 @@ def itinerary_save(request, pk):
 def itinerary_share(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
     client_email = booking.client.email
-    subject = f"Your Itinerary for {booking.booking_id} - Travelbolt_AI"
+    subject = f"Your Itinerary for {booking.booking_id} - Travelbolt"
     message = f"""
     Dear {booking.client.first_name},
     Your pilgrimage itinerary is now confirmed.
@@ -553,7 +553,7 @@ def itinerary_export_pdf(request, pk):
         return redirect('travel_app:itinerary_detail', pk=pk)
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
-    p.drawString(100, 750, f"Travelbolt_AI - Itinerary Report")
+    p.drawString(100, 750, f"Travelbolt - Itinerary Report")
     p.drawString(100, 730, f"Booking ID: {booking.booking_id}")
     p.drawString(100, 710, f"Client: {booking.client.full_name}")
     p.drawString(100, 690, f"Package: {booking.package.name if booking.package else 'N/A'}")
@@ -684,7 +684,7 @@ def flight_search(request):
                     'title': '📢 Seasonal Charter Service',
                     'message': 'Direct flights from Gateway International Airport (Iperu) to Saudi Arabia are only available during Hajj/Umrah seasons. Would you like to view flights from Lagos (LOS) instead?'
                 }
-                origin_code = "LOS" 
+                origin_code = "LOS"
                 search_performed = True
             flight_routes_db = {
                 "EgyptAir": {"route": ["LOS", "CAI", "JED"], "duration": "10h 40m", "description": "Stop over at Cairo"},
@@ -698,7 +698,7 @@ def flight_search(request):
                 import random
                 airlines_list = list(flight_routes_db.keys())
                 random.shuffle(airlines_list)
-                selected_airlines = airlines_list[:6] 
+                selected_airlines = airlines_list[:6]
                 for i, airline_name in enumerate(selected_airlines):
                     route_data = flight_routes_db[airline_name]
                     stops_list = route_data['route']
@@ -1892,7 +1892,7 @@ def paystack_callback(request):
     return redirect(
         'travel_app:client_dashboard'
     )
-    
+
 def client_logout(request):
     logout(request)
     messages.success(
@@ -2306,7 +2306,7 @@ def admin_approve_document(request, doc_id):
             title='Document Approved',
             message=(
                 f'Your {document_name} has been approved '
-                f'by the Travelbolt_AI travel team.'
+                f'by the Travelbolt travel team.'
             ),
             notification_type='success',
             link=request.build_absolute_uri(
@@ -2324,20 +2324,20 @@ def admin_approve_document(request, doc_id):
     if client_email:
 
         subject = (
-            f'Travelbolt_AI - {document_name} Approved'
+            f'Travelbolt - {document_name} Approved'
         )
 
         email_message = f"""
 Hello {client.first_name},
 
-Your {document_name} has been reviewed and approved by the Travelbolt_AI travel team.
+Your {document_name} has been reviewed and approved by the Travelbolt travel team.
 
 You can log in to your client portal to view your document status.
 
-Thank you for using Travelbolt_AI.
+Thank you for using Travelbolt.
 
 Regards,
-Travelbolt_AI
+Travelbolt
 Travel Management Team
 """.strip()
 
@@ -2453,22 +2453,22 @@ def admin_reject_document(request, doc_id):
     if client_email:
 
         subject = (
-            f'Travelbolt_AI - {document_name} Requires Attention'
+            f'Travelbolt - {document_name} Requires Attention'
         )
 
         email_message = f"""
 Hello {client.first_name},
 
-Your {document_name} was reviewed by the Travelbolt_AI travel team and was not approved.
+Your {document_name} was reviewed by the Travelbolt travel team and was not approved.
 
 Please log in to your client portal and upload a corrected document.
 
 If you need assistance, please contact the travel agency.
 
-Thank you for using Travelbolt_AI.
+Thank you for using Travelbolt.
 
 Regards,
-Travelbolt_AI
+Travelbolt
 Travel Management Team
 """.strip()
 
@@ -3017,7 +3017,7 @@ def client_upload_document(request):
             'client': client
         }
     )
-    
+
 @login_required
 def agent_register(request):
     """

@@ -1,7 +1,7 @@
 {% extends 'travel_app/client/client_base.html' %}
 {% load static %}
 
-{% block title %}Payments | Travelbolt_AI{% endblock %}
+{% block title %}Payments | Travelbolt{% endblock %}
 
 {% block content %}
 <!-- ✅ Added px-4 and py-8 for responsive mobile spacing -->
@@ -16,18 +16,18 @@
             <option value="umrah_4500">Umrah Package (Standard) - ₦450,000</option>
             <option value="umrah_8500">Umrah Package (Premium) - ₦850,000</option>
             <option value="hajj_8000">Hajj Package (Standard) - ₦800,000</option>
-            <option value="hajj_12000">Hajj Package (Premium) - ₦1,200,000</option>       
+            <option value="hajj_12000">Hajj Package (Premium) - ₦1,200,000</option>
         </select>
     </div>
 
     <!-- Payment Options (Two Columns) -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
+
         <!-- LEFT: Bank Transfer -->
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
             <h3 class="font-bold text-gray-900 mb-4">Bank Transfer</h3>
             <p class="text-sm text-gray-500 mb-6">Pay directly via bank transfer to our corporate account.</p>
-            
+
             <button id="pay-bank-btn" class="w-full bg-gray-800 text-white py-3 rounded-xl font-bold hover:bg-gray-900 transition-colors shadow-sm">
                 View Bank Details
             </button>
@@ -48,7 +48,7 @@
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
             <h3 class="font-bold text-gray-900 mb-4">Pay with Bank Card</h3>
             <p class="text-sm text-gray-500 mb-6">Secure payment via Paystack. You will receive a confirmation email immediately.</p>
-            
+
             <button id="paystack-btn" class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition-colors shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
                 <span class="material-symbols-outlined">payments</span>
                 Pay Securely with Paystack
@@ -66,7 +66,7 @@
         const bankBtn = document.getElementById('pay-bank-btn');
         const bankDetails = document.getElementById('bank-details');
         const bankAmount = document.getElementById('bank-amount');
-        
+
         const paystackBtn = document.getElementById('paystack-btn');
         const packageSelect = document.getElementById('package-select');
 
@@ -92,7 +92,7 @@
             }
 
             const selected = packageSelect.value;
-            const amount = selected.split('_')[1]; 
+            const amount = selected.split('_')[1];
             const packageName = packageSelect.options[packageSelect.selectedIndex].text;
 
             if (!amount || amount == 0) {

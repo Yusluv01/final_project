@@ -6,11 +6,11 @@
                 <span class="material-symbols-outlined text-white">travel_explore</span>
             </div>
             <div>
-                <h1 class="text-xl font-extrabold text-blue-700">Travelbolt_AI</h1>
+                <h1 class="text-xl font-extrabold text-blue-700">Travelbolt</h1>
                 <p class="text-[10px] text-gray-500 uppercase tracking-widest">Management Suite</p>
             </div>
         </div>
-        
+
         <nav class="space-y-1">
             <a href="{% url 'travel_app:dashboard' %}" class="flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all {% if request.path == '/' %}bg-blue-50 text-blue-700 font-semibold{% endif %}">
                 <span class="material-symbols-outlined">dashboard</span>
@@ -32,7 +32,7 @@
                 <span class="material-symbols-outlined">flight_takeoff</span>
                 <span class="text-sm">Flight Search</span>
             </a>
-            
+
             <!-- ✅ FIXED PAYMENTS LINK -->
             <a href="{% url 'travel_app:payments' %}" class="flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all {% if 'payments' in request.path %}bg-blue-50 text-blue-700 font-semibold{% endif %}">
                 <span class="material-symbols-outlined">payments</span>
@@ -45,7 +45,7 @@
             </a>
         </nav>
     </div>
-    
+
     <!-- Footer Section -->
     <div class="p-6 border-t border-gray-200 mt-auto">
         <!-- AI Travel Assistant button -->
@@ -65,4 +65,4 @@
             </a>
         </div>
     </div>
-</aside>  
+</aside>

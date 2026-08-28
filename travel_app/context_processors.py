@@ -55,6 +55,6 @@ def notification_context(request):
 def system_context(request):
     """Add system information to all templates."""
     return {
-        'app_name': 'Travelbolt_AI',
+        'app_name': 'Travelbolt',
         'app_version': '1.0.0',
     }

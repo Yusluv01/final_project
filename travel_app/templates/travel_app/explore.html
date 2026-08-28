@@ -1,7 +1,7 @@
 {% extends 'travel_app/base.html' %}
 {% load static %}
 
-{% block title %}Destination Explorer | Travelbolt_AI{% endblock %}
+{% block title %}Destination Explorer | Travelbolt{% endblock %}
 
 {% block content %}
 <div class="space-y-6 h-full w-full">
@@ -19,14 +19,14 @@
             <span class="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-bold rounded-full border border-white/20">Trending Destination</span>
             <h3 class="text-3xl font-extrabold mt-2">{{ featured_destination.name|default:"Positano, Italy" }}</h3>
             <p class="text-white/80 mt-2 max-w-2xl">{{ featured_destination.description|default:"Experience the vertical dream. A cliffside village of pebble beaches and steep, narrow streets lined with boutiques and cafes." }}</p>
-            
+
             <!-- BUTTONS WITH CLASSES FOR JAVASCRIPT -->
             <div class="flex gap-3 mt-4">
                 <button class="explore-now-btn bg-white text-blue-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-100 transition-colors flex items-center gap-2">
                     <span class="material-symbols-outlined">rocket_launch</span>
                     Explore Now
                 </button>
-                
+
                 <button class="save-fav-btn bg-white/20 backdrop-blur-sm text-white px-6 py-2 rounded-lg font-bold hover:bg-white/30 transition-colors border border-white/30 flex items-center gap-2">
                     <span class="material-symbols-outlined">favorite_border</span>
                     Save to Favorites
@@ -50,7 +50,7 @@
         <div id="hotel-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
             {% for hotel in hotels %}
             <div class="hotel-card bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow" data-price="{{ hotel.price }}">
-                
+
                 <!-- Hotel Image -->
                 <div class="h-48 bg-gray-200 flex items-center justify-center text-gray-400 overflow-hidden">
                     <img src="{% static hotel.image %}" alt="{{ hotel.name }}" class="w-full h-full object-cover">
@@ -89,7 +89,7 @@
 {% block extra_scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        
+
         // ==================== EXPLORE NOW BUTTON ====================
         const exploreBtn = document.querySelector('.explore-now-btn');
         if (exploreBtn) {
@@ -97,13 +97,13 @@
                 const originalText = this.innerHTML;
                 this.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Loading...';
                 this.disabled = true;
-                
+
                 setTimeout(() => {
                     // ⚠️ Commented out to prevent accidental page redirect during demo
                     // window.location.href = "{% url 'travel_app:flight_search' %}?origin=LHR&destination=JED&date=2026-08-01";
-                    
+
                     alert('🚀 Redirecting you to the best deals for Makkah, Saudi Arabia!');
-                    
+
                     this.innerHTML = originalText;
                     this.disabled = false;
                 }, 1500);
@@ -115,7 +115,7 @@
         if (favBtn) {
             favBtn.addEventListener('click', function() {
                 const icon = this.querySelector('.material-symbols-outlined');
-                
+
                 if (this.classList.contains('saved')) {
                     this.classList.remove('saved');
                     this.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
@@ -132,18 +132,18 @@
 
         // ==================== SELECT ROOM BUTTON ====================
         const selectButtons = document.querySelectorAll('.select-room-btn');
-        
+
         selectButtons.forEach(btn => {
             btn.addEventListener('click', function() {
                 // Get the hotel name from the card
                 const hotelName = this.closest('.bg-white').querySelector('h4').textContent;
-                
+
                 // Show a confirmation alert
                 const confirmed = confirm(`Are you sure you want to book a room at ${hotelName}?`);
-                
+
                 if (confirmed) {
                     alert(`✅ Room successfully booked at ${hotelName} for your client!`);
-                    
+
                     // Optional: Change button color to show it's booked
                     this.textContent = 'Room Booked';
                     this.classList.remove('border-blue-700', 'text-blue-700');
@@ -169,7 +169,7 @@
 
                 // Re-append the sorted cards to the grid
                 cards.forEach(card => grid.appendChild(card));
-                
+
                 this.dataset.asc = ascending;
                 this.textContent = ascending ? 'Sort: Low to High' : 'Sort: High to Low';
             });

@@ -361,7 +361,7 @@ EMAIL_HOST_PASSWORD = os.getenv(
 
 DEFAULT_FROM_EMAIL = os.getenv(
     'DEFAULT_FROM_EMAIL',
-    'Travelbolt_AI <yusufakinbodeajayi@gmail.com>'
+    'Travelbolt <yusufakinbodeajayi@gmail.com>'
 )
 
 

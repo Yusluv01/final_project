@@ -1,7 +1,7 @@
 {% extends 'travel_app/client/client_base.html' %}
 {% load static %}
 
-{% block head_title %}Create Account | Travelbolt_AI{% endblock %}
+{% block head_title %}Create Account | Travelbolt{% endblock %}
 
 {% block content %}
 <div class="min-h-[80vh] flex items-center justify-center">
@@ -10,7 +10,7 @@
             <div class="w-16 h-16 bg-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
                 <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">travel_explore</span>
             </div>
-            <h1 class="text-2xl font-extrabold text-blue-700">Travelbolt_AI</h1>
+            <h1 class="text-2xl font-extrabold text-blue-700">Travelbolt</h1>
             <p class="text-sm text-gray-500 mt-1">Client Portal</p>
         </div>
 
@@ -24,7 +24,7 @@
             {% endif %}
         </div>
         {% endif %}
-        
+
         <form method="post">
             {% csrf_token %}
 
@@ -91,13 +91,13 @@
                 Create Account
             </button>
         </form>
-        
+
         <div class="mt-6 text-center">
             <p class="text-sm text-gray-500">Already have an account? <a href="{% url 'travel_app:client_login' %}" class="text-blue-700 font-bold hover:underline">Sign In here</a></p>
         </div>
-        
+
         <div class="mt-6 text-center text-xs text-gray-400">
-            <p>&copy; 2026 Travelbolt_AI. All rights reserved.</p>
+            <p>&copy; 2026 Travelbolt. All rights reserved.</p>
         </div>
     </div>
 </div>

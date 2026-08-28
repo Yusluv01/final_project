@@ -1,7 +1,7 @@
 {% extends 'travel_app/base.html' %}
 {% load static %}
 
-{% block title %}{{ client.first_name }} {{ client.last_name }} | Travelbolt_AI{% endblock %}
+{% block title %}{{ client.first_name }} {{ client.last_name }} | Travelbolt{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
@@ -58,7 +58,7 @@
                         <td class="px-6 py-3 text-sm font-bold text-blue-700">{{ booking.booking_id }}</td>
                         <td class="px-6 py-3 text-sm text-gray-700">{{ booking.package.name|default:"N/A" }}</td>
                         <td class="px-6 py-3">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold 
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold
                                 {% if booking.status == 'pending' %}bg-red-100 text-red-700 border border-red-200
                                 {% elif booking.status == 'confirmed' %}bg-green-100 text-green-700 border border-green-200
                                 {% else %}bg-gray-100 text-gray-600 border border-gray-200{% endif %}">

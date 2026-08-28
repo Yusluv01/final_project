@@ -4,12 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>{% block title %}Travelbolt_AI{% endblock %}</title>
-    
+    <title>{% block title %}Travelbolt{% endblock %}</title>
+
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    
+
     <style>
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -22,48 +22,48 @@
         }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
+
         /* Mobile Sidebar Transition */
         #sidebar-overlay { transition: opacity 0.3s ease; }
         #sidebar { transition: transform 0.3s ease; }
     </style>
-    
+
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-gray-50 font-body text-gray-900 h-screen overflow-hidden flex flex-col">
     {% block body %}
     <div class="flex flex-1 h-full overflow-hidden relative">
-        
+
         <!-- Mobile Sidebar Overlay (Hidden by default) -->
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
 
         <!-- Sidebar -->
         {% include 'travel_app/includes/sidebar.html' %}
-        
+
         <!-- Main Content -->
         <main class="flex-1 h-full lg:ml-72 flex flex-col bg-gray-50 relative min-w-0 overflow-y-auto">
             {% include 'travel_app/includes/top_nav.html' %}
-            
+
             <div class="flex-1 w-full">
                 <div class="space-y-6 max-w-7xl mx-auto w-full py-4 md:py-6 px-4 md:px-6">
                     {% block content %}{% endblock %}
                 </div>
             </div>
-            
+
             {% include 'travel_app/includes/footer.html' %}
         </main>
     </div>
     {% endblock %}
-    
+
    {% if messages %}
     <div class="fixed bottom-8 right-8 z-50 space-y-2" id="message-container">
         {% for message in messages %}
-        <div class="px-4 py-3 rounded-lg shadow-lg text-white font-bold flex items-center gap-3 
+        <div class="px-4 py-3 rounded-lg shadow-lg text-white font-bold flex items-center gap-3
             {% if message.tags == 'success' %}bg-blue-600
             {% elif message.tags == 'error' %}bg-red-500
             {% elif message.tags == 'warning' %}bg-yellow-500
             {% else %}bg-blue-500{% endif %}">
-            
+
             <span class="material-symbols-outlined">
                 {% if message.tags == 'success' %}check_circle
                 {% elif message.tags == 'error' %}error
@@ -76,7 +76,7 @@
         {% endfor %}
     </div>
 {% endif %}
-    
+
     <script>
         // Auto-hide messages after 5 seconds
         const messages = document.querySelector('#message-container');
@@ -92,7 +92,7 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
-            
+
             if (sidebar.classList.contains('-translate-x-full')) {
                 sidebar.classList.remove('-translate-x-full');
                 overlay.classList.remove('hidden');
@@ -239,7 +239,7 @@
             }
         });
     </script>
-    
+
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

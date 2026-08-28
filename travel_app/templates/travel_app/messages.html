@@ -1,7 +1,7 @@
 {% extends 'travel_app/base.html' %}
 {% load static %}
 
-{% block title %}Messaging Center | Travelbolt_AI{% endblock %}
+{% block title %}Messaging Center | Travelbolt{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
@@ -65,7 +65,7 @@
                         Attach Image
                     </button>
                 </div>
-                
+
                 <!-- ==================== NEW BUTTONS SECTION ==================== -->
                 <div class="flex gap-2">
                     <!-- 🟢 NEW TEST BUTTON -->
@@ -81,7 +81,7 @@
                     </button>
                 </div>
                 <!-- ==================== END NEW BUTTONS SECTION ==================== -->
-                
+
             </div>
         </div>
     </div>
@@ -108,7 +108,7 @@
                     <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
                         <td class="px-6 py-3 text-sm font-bold text-gray-900">{{ message.recipient_name|default:message.recipient }}</td>
                         <td class="px-6 py-3">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold 
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold
                                 {% if message.message_type == 'whatsapp' %}bg-green-100 text-green-700 border border-green-200
                                 {% elif message.message_type == 'email' %}bg-blue-100 text-blue-700 border border-blue-200
                                 {% else %}bg-gray-100 text-gray-600 border border-gray-200{% endif %}">
@@ -117,7 +117,7 @@
                         </td>
                         <td class="px-6 py-3 text-sm text-gray-700 truncate max-w-xs">{{ message.content|truncatechars:50 }}</td>
                         <td class="px-6 py-3">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold 
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold
                                 {% if message.status == 'delivered' %}bg-green-100 text-green-700 border border-green-200
                                 {% elif message.status == 'sent' %}bg-yellow-100 text-yellow-700 border border-yellow-200
                                 {% elif message.status == 'failed' %}bg-red-100 text-red-700 border border-red-200
@@ -144,16 +144,16 @@
 {% block extra_scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        
+
         // ==================== ATTACH PDF ====================
         const pdfBtn = document.getElementById('attach-pdf-btn');
         const pdfInput = document.getElementById('pdf-upload');
-        
+
         if (pdfBtn && pdfInput) {
             pdfBtn.addEventListener('click', function() {
                 pdfInput.click();
             });
-            
+
             pdfInput.addEventListener('change', function() {
                 if (this.files && this.files.length > 0) {
                     alert('📄 PDF Attached: ' + this.files[0].name);
@@ -164,12 +164,12 @@
         // ==================== ATTACH IMAGE ====================
         const imageBtn = document.getElementById('attach-image-btn');
         const imageInput = document.getElementById('image-upload');
-        
+
         if (imageBtn && imageInput) {
             imageBtn.addEventListener('click', function() {
                 imageInput.click();
             });
-            
+
             imageInput.addEventListener('change', function() {
                 if (this.files && this.files.length > 0) {
                     alert('🖼️ Image Attached: ' + this.files[0].name);
@@ -180,11 +180,11 @@
         // ==================== SEND TEST (SEND TO YOURSELF) ====================
         const testBtn = document.getElementById('send-test-btn');
         const messageContent = document.getElementById('message-content');
-        
+
         if (testBtn) {
             testBtn.addEventListener('click', function() {
                 const message = messageContent.value.trim();
-                
+
                 if (!message) {
                     alert('⚠️ Please type a message before sending.');
                     return;
@@ -242,22 +242,22 @@
         // ==================== SEND TO ALL (REAL VERSION) ====================
         const sendBtn = document.getElementById('send-broadcast');
         const groupSelect = document.getElementById('group-select');
-        
+
         if (sendBtn) {
             sendBtn.addEventListener('click', function() {
                 const group = groupSelect.value;
                 const message = messageContent.value.trim();
-                
+
                 if (!message) {
                     alert('⚠️ Please type a message before sending.');
                     return;
                 }
-                
+
                 // Show loading state
                 const originalText = this.innerHTML;
                 this.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Sending...';
                 this.disabled = true;
-                
+
                 // Prepare FormData (Allows sending files)
                 const formData = new FormData();
                 formData.append('content', message);
