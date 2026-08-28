@@ -49,6 +49,7 @@ import uuid
 import requests
 
 import openai
+import resend
 
 from django.core.mail import send_mail
 
@@ -3097,15 +3098,15 @@ Travelbolt Management Team
 """.strip()
 
             try:
+                
+    resend.api_key = settings.RESEND_API_KEY
 
-                send_mail(
-                    subject,
-                    email_message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [invitation.email],
-                    fail_silently=False
-                )
-
+        resend.Emails.send({
+            "from": settings.RESEND_FROM_EMAIL,
+            "to": [invitation.email],
+            "subject": subject,
+            "text": email_message,
+        })
                 messages.success(
                     request,
                     f'Invitation created and email sent successfully to '
