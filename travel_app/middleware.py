@@ -1,9 +1,5 @@
-from importlib import import_module
-
-from django.conf import settings
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.utils import timezone
-from django.utils.cache import patch_vary_headers
-from django.utils.http import http_date
 
 from .models import Agent
 
@@ -54,114 +50,68 @@ class PortalSessionMiddleware:
 
     Client URLs are identified by /client/.
     All other URLs use the Admin/Staff session.
+
+    Django's official SessionMiddleware is used internally
+    for both portals so normal Django session behavior is
+    preserved.
     """
 
     ADMIN_COOKIE_NAME = 'travelbolt_admin_session'
     CLIENT_COOKIE_NAME = 'travelbolt_client_session'
 
     def __init__(self, get_response):
-        self.get_response = get_response
 
-        engine = import_module(settings.SESSION_ENGINE)
-        self.SessionStore = engine.SessionStore
+        # Create two normal Django SessionMiddleware instances.
+        self.admin_session_middleware = SessionMiddleware(
+            get_response
+        )
 
-    def _is_client_request(self, request):
-        return request.path.startswith('/client/')
+        self.client_session_middleware = SessionMiddleware(
+            get_response
+        )
 
-    def _get_cookie_name(self, request):
-        if self._is_client_request(request):
-            return self.CLIENT_COOKIE_NAME
-
-        return self.ADMIN_COOKIE_NAME
-
-    def process_request(self, request):
-        cookie_name = self._get_cookie_name(request)
-
-        session_key = request.COOKIES.get(cookie_name)
-
-        request.portal_session_cookie_name = cookie_name
-
-        if session_key:
-            request.session = self.SessionStore(
-                session_key=session_key
-            )
-        else:
-            request.session = self.SessionStore()
-
-    def process_response(self, request, response):
-
-        if not hasattr(request, 'session'):
-            return response
-
-        try:
-            accessed = request.session.accessed
-            modified = request.session.modified
-            empty = request.session.is_empty()
-        except AttributeError:
-            return response
-
-        cookie_name = getattr(
-            request,
-            'portal_session_cookie_name',
+        # Give each middleware its own session cookie name.
+        self.admin_session_middleware.cookie_name = (
             self.ADMIN_COOKIE_NAME
         )
 
-        if accessed:
-            patch_vary_headers(
-                response,
-                ('Cookie',)
-            )
+        self.client_session_middleware.cookie_name = (
+            self.CLIENT_COOKIE_NAME
+        )
 
-        # ----------------------------------------------------
-        # SESSION WAS DELETED
-        # ----------------------------------------------------
+    def _is_client_request(self, request):
+        """
+        Client portal URLs all begin with /client/.
+        """
+        return request.path.startswith('/client/')
 
-        if empty:
+    def _get_session_middleware(self, request):
+        """
+        Select the correct Django SessionMiddleware instance.
+        """
 
-            if response.status_code != 500:
+        if self._is_client_request(request):
+            return self.client_session_middleware
 
-                response.delete_cookie(
-                    cookie_name,
-                    path=settings.SESSION_COOKIE_PATH,
-                    domain=settings.SESSION_COOKIE_DOMAIN,
-                    samesite=settings.SESSION_COOKIE_SAMESITE,
-                )
+        return self.admin_session_middleware
 
-            return response
+    def process_request(self, request):
 
-        # ----------------------------------------------------
-        # SESSION NEEDS TO BE SAVED
-        # ----------------------------------------------------
+        middleware = self._get_session_middleware(request)
 
-        if (
-            modified
-            or settings.SESSION_SAVE_EVERY_REQUEST
-        ):
+        request.portal_session_middleware = middleware
 
-            if request.session.session_key is None:
-                request.session.save()
+        return middleware.process_request(request)
 
-            max_age = request.session.get_expiry_age()
+    def process_response(self, request, response):
 
-            if request.session.get_expire_at_browser_close():
-                expires = None
-                max_age = None
-            else:
-                expires = http_date(
-                    timezone.now().timestamp()
-                    + max_age
-                )
+        middleware = getattr(
+            request,
+            'portal_session_middleware',
+            self.admin_session_middleware
+        )
 
-            response.set_cookie(
-                cookie_name,
-                request.session.session_key,
-                max_age=max_age,
-                expires=expires,
-                domain=settings.SESSION_COOKIE_DOMAIN,
-                path=settings.SESSION_COOKIE_PATH,
-                secure=settings.SESSION_COOKIE_SECURE,
-                httponly=settings.SESSION_COOKIE_HTTPONLY,
-                samesite=settings.SESSION_COOKIE_SAMESITE,
-            )
-
-        return response
+        return middleware.process_response(
+            request,
+            response
+        )
