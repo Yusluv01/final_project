@@ -39,6 +39,14 @@ ALLOWED_HOSTS = [
 ]
 
 # ============================================================
+# TRAVELBOLT PORTAL SESSION COOKIES
+# ============================================================
+
+SESSION_COOKIE_NAME = 'travelbolt_session'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# ============================================================
 # PRODUCTION SECURITY
 # ============================================================
 
@@ -133,8 +141,9 @@ MIDDLEWARE = [
     # CORS
     'corsheaders.middleware.CorsMiddleware',
 
-    # Django
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    # Portal-specific sessions
+    'travel_app.middleware.PortalSessionMiddleware',
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
 
@@ -143,11 +152,10 @@ MIDDLEWARE = [
 
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-    # TravelBolt AI middleware
+    # TravelBolt middleware
     'travel_app.middleware.AgentActivityMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
-
 
 # ============================================================
 # URL CONFIGURATION
