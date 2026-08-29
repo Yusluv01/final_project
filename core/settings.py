@@ -33,7 +33,7 @@ ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv(
         'ALLOWED_HOSTS',
-        'localhost,127.0.0.1,0.0.0.0,yusluv.org,www.yusluv.org,final-project-ioc1.onrender.com'
+        'localhost,127.0.0.1,0.0.0.0,yusluv.org,www.yusluv.org,admin.yusluv.org,client.yusluv.org,final-project-ioc1.onrender.com'
     ).split(',')
     if host.strip()
 ]
@@ -73,7 +73,7 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
         'CSRF_TRUSTED_ORIGINS',
-        'http://127.0.0.1:8000,http://localhost:8000,https://yusluv.org,https://www.yusluv.org,https://final-project-ioc1.onrender.com'
+        'http://127.0.0.1:8000,http://localhost:8000,https://yusluv.org,https://www.yusluv.org,https://admin.yusluv.org,https://client.yusluv.org,https://final-project-ioc1.onrender.com'
     ).split(',')
     if origin.strip()
 ]
