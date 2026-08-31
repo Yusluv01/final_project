@@ -7,7 +7,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-```
 <title>Client Dashboard | Travelbolt</title>
 
 <!-- Tailwind CSS -->
@@ -18,19 +17,19 @@
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 >
-```
 
 </head>
 
 <body class="bg-gray-50 overflow-x-hidden">
 
-```
+
 <!-- ========================================================= -->
 <!-- RESPONSIVE TOP NAVIGATION BAR -->
 <!-- ========================================================= -->
 
 <header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
 
+    <!-- MAIN NAVBAR -->
     <div class="flex items-center justify-between px-4 sm:px-6 py-3">
 
         <!-- LOGO -->
@@ -52,7 +51,10 @@
 
         </div>
 
+        <!-- ===================================================== -->
         <!-- DESKTOP NAVIGATION -->
+        <!-- ===================================================== -->
+
         <nav class="hidden md:flex items-center gap-5 lg:gap-6">
 
             <!-- MY PROFILE -->
@@ -67,10 +69,11 @@
             <!-- PAYMENT HISTORY -->
             <a
                 href="{% url 'travel_app:client_payments' %}"
-                class="text-gray-600 hover:text-blue-600 font-medium transition whitespace-nowrap"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg
+                       text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
             >
-                <i class="fa-solid fa-credit-card mr-2"></i>
-                Payment History
+                <i class="fa-solid fa-credit-card w-5"></i>
+                <span>Payment History</span>
             </a>
 
             <!-- DOCUMENTS -->
@@ -93,11 +96,15 @@
 
         </nav>
 
+        <!-- ===================================================== -->
         <!-- MOBILE MENU BUTTON -->
+        <!-- ===================================================== -->
+
         <button
             type="button"
             id="mobileMenuButton"
-            class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition"
+            class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg
+                   text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition"
             aria-label="Open navigation menu"
             aria-expanded="false"
         >
@@ -106,7 +113,10 @@
 
     </div>
 
-    <!-- MOBILE NAVIGATION -->
+    <!-- ========================================================= -->
+    <!-- MOBILE NAVIGATION MENU -->
+    <!-- ========================================================= -->
+
     <div
         id="mobileMenu"
         class="hidden md:hidden border-t border-gray-200 bg-white shadow-sm"
@@ -117,7 +127,8 @@
             <!-- MY PROFILE -->
             <a
                 href="{% url 'travel_app:client_profile' %}"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg
+                       text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
             >
                 <i class="fa-solid fa-user w-5"></i>
                 <span>My Profile</span>
@@ -126,7 +137,8 @@
             <!-- PAYMENT HISTORY -->
             <a
                 href="{% url 'travel_app:client_payments' %}"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg
+                       text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
             >
                 <i class="fa-solid fa-credit-card w-5"></i>
                 <span>Payment History</span>
@@ -135,7 +147,8 @@
             <!-- DOCUMENTS -->
             <a
                 href="{% url 'travel_app:client_upload_document' %}"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg
+                       text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
             >
                 <i class="fa-solid fa-file-arrow-up w-5"></i>
                 <span>Documents</span>
@@ -144,7 +157,8 @@
             <!-- LOGOUT -->
             <a
                 href="{% url 'travel_app:client_logout' %}"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg
+                       text-red-600 hover:bg-red-50 transition"
             >
                 <i class="fa-solid fa-right-from-bracket w-5"></i>
                 <span>Logout</span>
@@ -189,10 +203,13 @@
 
                         {% if message.tags == 'success' %}
                             <i class="fa-solid fa-circle-check text-blue-600 shrink-0"></i>
+
                         {% elif message.tags == 'warning' %}
                             <i class="fa-solid fa-triangle-exclamation text-yellow-600 shrink-0"></i>
+
                         {% elif message.tags == 'error' %}
                             <i class="fa-solid fa-circle-xmark text-red-600 shrink-0"></i>
+
                         {% else %}
                             <i class="fa-solid fa-circle-info text-gray-600 shrink-0"></i>
                         {% endif %}
@@ -235,10 +252,14 @@
 
                 </div>
 
+                <!-- DESKTOP PLANE ICON -->
+
                 <div class="hidden md:flex shrink-0">
 
                     <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center">
+
                         <i class="fa-solid fa-plane text-4xl"></i>
+
                     </div>
 
                 </div>
@@ -281,18 +302,37 @@
 
                     {% for notification in notifications %}
 
-                        <div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-sm">
+                        <div class="
+                            bg-white
+                            rounded-xl
+                            border
+                            border-gray-200
+                            p-4 sm:p-5
+                            shadow-sm
+                        ">
 
                             <div class="flex items-start gap-3 sm:gap-4">
 
+                                <!-- ICON -->
+
                                 <div class="
-                                    w-11 h-11 rounded-lg flex items-center justify-center shrink-0
+                                    w-11
+                                    h-11
+                                    rounded-lg
+                                    flex
+                                    items-center
+                                    justify-center
+                                    shrink-0
+
                                     {% if notification.notification_type == 'success' %}
                                         bg-blue-100 text-blue-600
+
                                     {% elif notification.notification_type == 'error' %}
                                         bg-red-100 text-red-600
+
                                     {% elif notification.notification_type == 'warning' %}
                                         bg-yellow-100 text-yellow-600
+
                                     {% else %}
                                         bg-gray-100 text-gray-600
                                     {% endif %}
@@ -300,15 +340,21 @@
 
                                     {% if notification.notification_type == 'success' %}
                                         <i class="fa-solid fa-circle-check"></i>
+
                                     {% elif notification.notification_type == 'error' %}
                                         <i class="fa-solid fa-circle-xmark"></i>
+
                                     {% elif notification.notification_type == 'warning' %}
                                         <i class="fa-solid fa-triangle-exclamation"></i>
+
                                     {% else %}
                                         <i class="fa-solid fa-circle-info"></i>
                                     {% endif %}
 
                                 </div>
+
+
+                                <!-- CONTENT -->
 
                                 <div class="flex-1 min-w-0">
 
@@ -335,6 +381,7 @@
                                             class="inline-flex items-center mt-3 text-sm font-semibold text-blue-600 hover:text-blue-800"
                                         >
                                             {{ notification.link_text|default:"View" }}
+
                                             <i class="fa-solid fa-arrow-right ml-2"></i>
                                         </a>
 
@@ -366,6 +413,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-10">
 
             <!-- BROWSE TRAVEL PACKAGES -->
+
             <a
                 href="{% url 'travel_app:client_packages' %}"
                 class="group bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-green-300 transition"
@@ -374,7 +422,9 @@
                 <div class="flex items-center justify-between mb-5">
 
                     <div class="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
+
                         <i class="fa-solid fa-suitcase-rolling text-xl"></i>
+
                     </div>
 
                     <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-green-600 transition"></i>
@@ -393,6 +443,7 @@
 
 
             <!-- UPLOAD DOCUMENTS -->
+
             <a
                 href="{% url 'travel_app:client_upload_document' %}"
                 class="group bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-blue-300 transition"
@@ -401,7 +452,9 @@
                 <div class="flex items-center justify-between mb-5">
 
                     <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+
                         <i class="fa-solid fa-file-arrow-up text-xl"></i>
+
                     </div>
 
                     <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-blue-600 transition"></i>
@@ -420,6 +473,7 @@
 
 
             <!-- MY PROFILE -->
+
             <a
                 href="{% url 'travel_app:client_profile' %}"
                 class="group bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-purple-300 transition"
@@ -428,7 +482,9 @@
                 <div class="flex items-center justify-between">
 
                     <div class="w-11 h-11 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center">
+
                         <i class="fa-solid fa-user text-lg"></i>
+
                     </div>
 
                     <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-purple-600 transition"></i>
@@ -459,12 +515,15 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 mb-10">
 
             <!-- DOCUMENTS -->
+
             <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
 
                 <div class="flex items-center gap-4">
 
                     <div class="w-11 h-11 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
+
                         <i class="fa-solid fa-folder-open"></i>
+
                     </div>
 
                     <div class="min-w-0">
@@ -485,12 +544,15 @@
 
 
             <!-- PAYMENTS -->
+
             <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
 
                 <div class="flex items-center gap-4">
 
                     <div class="w-11 h-11 bg-green-100 text-green-600 rounded-lg flex items-center justify-center shrink-0">
+
                         <i class="fa-solid fa-money-check-dollar"></i>
+
                     </div>
 
                     <div class="min-w-0">
@@ -511,12 +573,15 @@
 
 
             <!-- TRAVEL STATUS -->
+
             <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
 
                 <div class="flex items-center gap-4">
 
                     <div class="w-11 h-11 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center shrink-0">
+
                         <i class="fa-solid fa-plane"></i>
+
                     </div>
 
                     <div class="min-w-0">
@@ -575,6 +640,7 @@
                         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6">
 
                             <!-- BOOKING HEADER -->
+
                             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
 
                                 <div class="min-w-0">
@@ -589,16 +655,23 @@
 
                                 </div>
 
+
                                 <!-- BOOKING STATUS -->
+
                                 <span class="inline-flex items-center self-start md:self-auto px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap
+
                                     {% if booking.status == 'confirmed' %}
                                         bg-green-100 text-green-700
+
                                     {% elif booking.status == 'completed' %}
                                         bg-blue-100 text-blue-700
+
                                     {% elif booking.status == 'cancelled' %}
                                         bg-red-100 text-red-700
+
                                     {% elif booking.status == 'processing' %}
                                         bg-yellow-100 text-yellow-700
+
                                     {% else %}
                                         bg-gray-100 text-gray-700
                                     {% endif %}
@@ -612,9 +685,11 @@
 
 
                             <!-- BOOKING DETAILS -->
+
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
 
                                 <!-- SERVICE -->
+
                                 <div class="min-w-0">
 
                                     <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
@@ -624,9 +699,13 @@
                                     <p class="font-semibold text-gray-800 break-words">
 
                                         {% if booking.package %}
+
                                             {{ booking.package.name }}
+
                                         {% else %}
+
                                             Travel Service
+
                                         {% endif %}
 
                                     </p>
@@ -635,6 +714,7 @@
 
 
                                 <!-- TRAVEL DATE -->
+
                                 <div>
 
                                     <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
@@ -642,13 +722,16 @@
                                     </p>
 
                                     <p class="font-semibold text-gray-800">
+
                                         {{ booking.travel_date_start|date:"M d, Y" }}
+
                                     </p>
 
                                 </div>
 
 
                                 <!-- TOTAL -->
+
                                 <div>
 
                                     <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
@@ -656,21 +739,33 @@
                                     </p>
 
                                     <p class="font-semibold text-gray-800">
+
                                         ₦{{ booking.total_amount|floatformat:2 }}
+
                                     </p>
 
                                 </div>
 
 
                                 <!-- BALANCE -->
+
                                 <div>
 
                                     <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
                                         Balance Due
                                     </p>
 
-                                    <p class="font-bold {% if booking.balance_due > 0 %}text-red-600{% else %}text-green-600{% endif %}">
+                                    <p class="font-bold
+
+                                        {% if booking.balance_due > 0 %}
+                                            text-red-600
+                                        {% else %}
+                                            text-green-600
+                                        {% endif %}
+                                    ">
+
                                         ₦{{ booking.balance_due|floatformat:2 }}
+
                                     </p>
 
                                 </div>
@@ -678,7 +773,10 @@
                             </div>
 
 
+                            <!-- ================================================= -->
                             <!-- PAYMENT PROGRESS -->
+                            <!-- ================================================= -->
+
                             <div class="border-t border-gray-100 pt-5">
 
                                 <div class="flex flex-col sm:flex-row sm:justify-between gap-1 text-sm mb-2">
@@ -690,7 +788,9 @@
                                     <span class="font-semibold text-gray-700">
 
                                         ₦{{ booking.paid_amount|floatformat:2 }}
+
                                         /
+
                                         ₦{{ booking.total_amount|floatformat:2 }}
 
                                     </span>
@@ -714,31 +814,45 @@
                             </div>
 
 
+                            <!-- ================================================= -->
                             <!-- ACTIONS -->
+                            <!-- ================================================= -->
+
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6">
 
+
                                 <!-- PAYMENT STATUS -->
+
                                 <div>
 
                                     {% if booking.payment_status == 'paid' %}
 
                                         <span class="inline-flex items-center text-green-600 font-semibold text-sm">
+
                                             <i class="fa-solid fa-circle-check mr-2"></i>
+
                                             Payment Complete
+
                                         </span>
 
                                     {% elif booking.payment_status == 'partial' %}
 
                                         <span class="inline-flex items-center text-yellow-600 font-semibold text-sm">
+
                                             <i class="fa-solid fa-circle-half-stroke mr-2"></i>
+
                                             Partially Paid
+
                                         </span>
 
                                     {% else %}
 
                                         <span class="inline-flex items-center text-red-600 font-semibold text-sm">
+
                                             <i class="fa-solid fa-circle-exclamation mr-2"></i>
+
                                             Payment Pending
+
                                         </span>
 
                                     {% endif %}
@@ -746,37 +860,52 @@
                                 </div>
 
 
-                                <!-- PAY NOW -->
-                                {% if booking.payment_status == 'paid' %}
+                                <!-- ================================================= -->
+                                <!-- PAY NOW BUTTON -->
+                                <!-- ================================================= -->
 
-                                    <span class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-50 text-green-700 font-semibold rounded-lg">
+                                <div>
 
-                                        <i class="fa-solid fa-check mr-2"></i>
-                                        Paid
+                                    {% if booking.payment_status == 'paid' %}
 
-                                    </span>
+                                        <span class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-50 text-green-700 font-semibold rounded-lg">
 
-                                {% elif booking.status == 'cancelled' or booking.status == 'refunded' %}
+                                            <i class="fa-solid fa-check mr-2"></i>
 
-                                    <span class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-gray-100 text-gray-500 font-semibold rounded-lg">
+                                            Paid
 
-                                        Payment Unavailable
+                                        </span>
 
-                                    </span>
 
-                                {% elif booking.balance_due > 0 %}
+                                    {% elif booking.status == 'cancelled' or booking.status == 'refunded' %}
 
-                                    <a
-                                        href="{% url 'travel_app:pay_booking' booking.id %}"
-                                        class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm"
-                                    >
+                                        <span class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-gray-100 text-gray-500 font-semibold rounded-lg">
 
-                                        <i class="fa-solid fa-credit-card mr-2"></i>
-                                        Pay Now
+                                            <i class="fa-solid fa-ban mr-2"></i>
 
-                                    </a>
+                                            Payment Unavailable
 
-                                {% endif %}
+                                        </span>
+
+
+                                    {% else %}
+
+                                        <!-- PAY NOW -->
+
+                                        <a
+                                            href="{% url 'travel_app:pay_booking' booking.id %}"
+                                            class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm"
+                                        >
+
+                                            <i class="fa-solid fa-credit-card mr-2"></i>
+
+                                            Pay Now
+
+                                        </a>
+
+                                    {% endif %}
+
+                                </div>
 
                             </div>
 
@@ -786,9 +915,13 @@
 
                 </div>
 
+
             {% else %}
 
+                <!-- ================================================= -->
                 <!-- NO BOOKINGS -->
+                <!-- ================================================= -->
+
                 <div class="bg-white rounded-xl border border-gray-200 p-8 sm:p-10 text-center">
 
                     <div class="w-16 h-16 mx-auto bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mb-4">
@@ -819,12 +952,15 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
 
             <!-- NEED HELP -->
+
             <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
 
                 <div class="flex items-center gap-4 mb-4">
 
                     <div class="w-11 h-11 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
+
                         <i class="fa-solid fa-headset"></i>
+
                     </div>
 
                     <h2 class="text-lg font-bold text-gray-800">
@@ -842,12 +978,15 @@
 
 
             <!-- AI ASSISTANT -->
+
             <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
 
                 <div class="flex items-center gap-4 mb-4">
 
                     <div class="w-11 h-11 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center shrink-0">
+
                         <i class="fa-solid fa-robot"></i>
+
                     </div>
 
                     <h2 class="text-lg font-bold text-gray-800">
@@ -865,8 +1004,11 @@
                     href="{% url 'travel_app:client_ai_assistant' %}"
                     class="inline-flex items-center text-blue-600 font-semibold text-sm hover:text-blue-800"
                 >
+
                     Open AI Assistant
+
                     <i class="fa-solid fa-arrow-right ml-2"></i>
+
                 </a>
 
             </div>
@@ -944,7 +1086,9 @@
         });
 
 
-        /* CLOSE MOBILE MENU AFTER LINK CLICK */
+        /* =========================================================
+           CLOSE MOBILE MENU AFTER CLICKING A LINK
+        ========================================================= */
 
         mobileMenu.querySelectorAll('a').forEach(function (link) {
 
@@ -989,7 +1133,6 @@
     });
 
 </script>
-```
 
 </body>
 </html>
