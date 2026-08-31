@@ -2603,6 +2603,8 @@ def client_package_detail(request, pk):
 def select_package(request, pk):
     """
     Allow a client to select a travel package and create a booking.
+    After successful booking creation, redirect the client
+    directly to the client dashboard.
     """
 
     # ---------------------------------------------------------
@@ -2654,7 +2656,10 @@ def select_package(request, pk):
     travel_date_start = request.POST.get('travel_date_start')
     travel_date_end = request.POST.get('travel_date_end')
     travel_class = request.POST.get('travel_class', 'economy')
-    special_requests = request.POST.get('special_requests', '').strip()
+    special_requests = request.POST.get(
+        'special_requests',
+        ''
+    ).strip()
 
     # ---------------------------------------------------------
     # VALIDATE DATES
@@ -2784,12 +2789,9 @@ def select_package(request, pk):
     )
 
     # ---------------------------------------------------------
-    # SEND CLIENT TO BOOKING DETAIL
+    # SEND CLIENT DIRECTLY TO DASHBOARD
     # ---------------------------------------------------------
-    return redirect(
-        'travel_app:client_booking_detail',
-        pk=booking.pk
-    )@login_required(login_url='travel_app:client_login')
+    return redirect('travel_app:client_dashboard')
 
 
 def client_bookings(request):
