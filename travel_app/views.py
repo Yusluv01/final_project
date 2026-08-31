@@ -1371,15 +1371,20 @@ def client_dashboard(request):
         'travel_app/client/dashboard.html',
         context
     )
+    
 @login_required(login_url='travel_app:client_login')
 def pay_booking(request, booking_id):
     """
     Initialize a Paystack payment for a client's booking.
     """
 
-    # Get the logged-in client's profile
+    # ============================================================
+    # 1. GET LOGGED-IN CLIENT
+    # ============================================================
+
     try:
         client = request.user.client_profile
+
     except Client.DoesNotExist:
         messages.error(
             request,
@@ -1387,17 +1392,29 @@ def pay_booking(request, booking_id):
         )
         return redirect('travel_app:client_login')
 
-    # Get ONLY this client's booking
+    # ============================================================
+    # 2. GET ONLY THIS CLIENT'S BOOKING
+    # ============================================================
+
     booking = get_object_or_404(
         Booking,
         id=booking_id,
         client=client
     )
 
-    # Calculate amount still owed
+    # ============================================================
+    # 3. CHECK BALANCE
+    # ============================================================
+
     balance = booking.balance_due
 
-    # Prevent payment if already fully paid
+    if balance is None:
+        messages.error(
+            request,
+            'Unable to determine the balance for this booking.'
+        )
+        return redirect('travel_app:client_dashboard')
+
     if balance <= 0:
         messages.info(
             request,
@@ -1405,35 +1422,127 @@ def pay_booking(request, booking_id):
         )
         return redirect('travel_app:client_dashboard')
 
-    # Generate unique Paystack reference
+    # ============================================================
+    # 4. CHECK PAYSTACK SECRET KEY
+    # ============================================================
+
+    paystack_secret_key = getattr(
+        settings,
+        'PAYSTACK_SECRET_KEY',
+        None
+    )
+
+    if not paystack_secret_key:
+        messages.error(
+            request,
+            'Paystack is not configured correctly. Please contact support.'
+        )
+
+        print(
+            'PAYSTACK ERROR: PAYSTACK_SECRET_KEY is missing.'
+        )
+
+        return redirect(
+            'travel_app:client_dashboard'
+        )
+
+    # ============================================================
+    # 5. GENERATE UNIQUE REFERENCE
+    # ============================================================
+
     reference = (
         f"TB-{booking.booking_id}-"
         f"{uuid.uuid4().hex[:12].upper()}"
     )
 
-    # Create Payment record
-    payment = Payment.objects.create(
-        booking=booking,
-        invoice_number=(
-            f"INV-{timezone.now().strftime('%Y%m')}-"
-            f"{uuid.uuid4().hex[:8].upper()}"
-        ),
-        amount=balance,
-        payment_method='paystack',
-        status='pending',
-        transaction_id=reference,
+    # ============================================================
+    # 6. GENERATE INVOICE NUMBER
+    # ============================================================
+
+    invoice_number = (
+        f"INV-{timezone.now().strftime('%Y%m')}-"
+        f"{uuid.uuid4().hex[:8].upper()}"
     )
 
-    # Paystack expects amount in kobo
-    amount_in_kobo = int(balance * 100)
+    # ============================================================
+    # 7. CONVERT BALANCE TO KOBO
+    # ============================================================
 
-    # Paystack initialization endpoint
+    try:
+        amount_in_kobo = int(
+            Decimal(str(balance)) * Decimal('100')
+        )
+
+    except (ValueError, TypeError, InvalidOperation) as e:
+
+        print(
+            f'PAYSTACK AMOUNT ERROR: {str(e)}'
+        )
+
+        messages.error(
+            request,
+            'Invalid payment amount. Please contact support.'
+        )
+
+        return redirect(
+            'travel_app:client_dashboard'
+        )
+
+    # Paystack does not accept zero or negative amounts
+    if amount_in_kobo <= 0:
+        messages.error(
+            request,
+            'The payment amount is invalid. Please contact support.'
+        )
+
+        return redirect(
+            'travel_app:client_dashboard'
+        )
+
+    # ============================================================
+    # 8. CREATE PAYMENT RECORD
+    # ============================================================
+
+    try:
+
+        payment = Payment.objects.create(
+            booking=booking,
+            invoice_number=invoice_number,
+            amount=balance,
+            payment_method='paystack',
+            status='pending',
+            transaction_id=reference,
+        )
+
+    except Exception as e:
+
+        print(
+            f'PAYMENT CREATION ERROR: {str(e)}'
+        )
+
+        messages.error(
+            request,
+            'Unable to create the payment record. Please contact support.'
+        )
+
+        return redirect(
+            'travel_app:client_dashboard'
+        )
+
+    # ============================================================
+    # 9. PAYSTACK API
+    # ============================================================
+
     url = 'https://api.paystack.co/transaction/initialize'
 
     headers = {
-        'Authorization': f'Bearer {settings.PAYSTACK_SECRET_KEY}',
+        'Authorization': f'Bearer {paystack_secret_key}',
         'Content-Type': 'application/json',
     }
+
+    # ============================================================
+    # 10. PAYSTACK DATA
+    # ============================================================
 
     data = {
         'email': client.email,
@@ -1453,6 +1562,10 @@ def pay_booking(request, booking_id):
         }
     }
 
+    # ============================================================
+    # 11. SEND REQUEST TO PAYSTACK
+    # ============================================================
+
     try:
 
         response = requests.post(
@@ -1462,20 +1575,40 @@ def pay_booking(request, booking_id):
             timeout=30
         )
 
-        response_data = response.json()
+        print(
+            'PAYSTACK HTTP STATUS:',
+            response.status_code
+        )
+
+        print(
+            'PAYSTACK RAW RESPONSE:',
+            response.text
+        )
 
     except requests.RequestException as e:
 
-        payment.status = 'failed'
-        payment.notes = f'Paystack connection error: {str(e)}'
-
-        payment.save(
-            update_fields=[
-                'status',
-                'notes',
-                'updated_at'
-            ]
+        print(
+            f'PAYSTACK CONNECTION ERROR: {str(e)}'
         )
+
+        payment.status = 'failed'
+
+        # Only save notes if your Payment model has this field
+        try:
+            payment.notes = (
+                f'Paystack connection error: {str(e)}'
+            )
+
+            payment.save(
+                update_fields=[
+                    'status',
+                    'notes'
+                ]
+            )
+
+        except Exception:
+            payment.status = 'failed'
+            payment.save(update_fields=['status'])
 
         messages.error(
             request,
@@ -1486,10 +1619,62 @@ def pay_booking(request, booking_id):
             'travel_app:client_dashboard'
         )
 
-    # Paystack initialization successful
+    # ============================================================
+    # 12. PARSE PAYSTACK RESPONSE
+    # ============================================================
+
+    try:
+
+        response_data = response.json()
+
+    except ValueError:
+
+        print(
+            'PAYSTACK ERROR: Response was not valid JSON.'
+        )
+
+        print(
+            'PAYSTACK RESPONSE:',
+            response.text
+        )
+
+        payment.status = 'failed'
+
+        try:
+            payment.notes = (
+                'Paystack returned an invalid response.'
+            )
+            payment.save(
+                update_fields=[
+                    'status',
+                    'notes'
+                ]
+            )
+
+        except Exception:
+            payment.save(
+                update_fields=['status']
+            )
+
+        messages.error(
+            request,
+            'Paystack returned an unexpected response. Please try again.'
+        )
+
+        return redirect(
+            'travel_app:client_dashboard'
+        )
+
+    # ============================================================
+    # 13. PAYSTACK SUCCESS
+    # ============================================================
+
     if response_data.get('status') is True:
 
-        paystack_data = response_data.get('data', {})
+        paystack_data = response_data.get(
+            'data',
+            {}
+        )
 
         authorization_url = paystack_data.get(
             'authorization_url'
@@ -1497,41 +1682,80 @@ def pay_booking(request, booking_id):
 
         if authorization_url:
 
-            payment.payment_gateway_response = response_data
+            # Save gateway response if possible
+            try:
 
-            payment.save(
-                update_fields=[
-                    'payment_gateway_response',
-                    'updated_at'
-                ]
+                payment.payment_gateway_response = response_data
+
+                payment.save(
+                    update_fields=[
+                        'payment_gateway_response'
+                    ]
+                )
+
+            except Exception as e:
+
+                print(
+                    f'PAYMENT RESPONSE SAVE ERROR: {str(e)}'
+                )
+
+                # The payment has still been initialized successfully.
+                # Continue to Paystack rather than showing a false error.
+
+            # ====================================================
+            # SEND CLIENT TO PAYSTACK CHECKOUT
+            # ====================================================
+
+            return redirect(
+                authorization_url
             )
 
-            # Send client to Paystack
-            return redirect(authorization_url)
+    # ============================================================
+    # 14. PAYSTACK INITIALIZATION FAILED
+    # ============================================================
 
-    # Paystack initialization failed
+    print(
+        'PAYSTACK INITIALIZATION FAILED:',
+        response_data
+    )
+
     payment.status = 'failed'
-    payment.payment_gateway_response = response_data
-    payment.notes = response_data.get(
+
+    try:
+
+        payment.payment_gateway_response = response_data
+
+    except Exception:
+        pass
+
+    error_message = response_data.get(
         'message',
         'Paystack transaction initialization failed.'
     )
 
-    payment.save(
-        update_fields=[
-            'status',
-            'payment_gateway_response',
-            'notes',
-            'updated_at'
-        ]
-    )
+    try:
+
+        payment.notes = error_message
+
+        payment.save(
+            update_fields=[
+                'status',
+                'payment_gateway_response',
+                'notes'
+            ]
+        )
+
+    except Exception:
+
+        payment.save(
+            update_fields=[
+                'status'
+            ]
+        )
 
     messages.error(
         request,
-        response_data.get(
-            'message',
-            'Payment initialization failed. Please try again.'
-        )
+        error_message
     )
 
     return redirect(
