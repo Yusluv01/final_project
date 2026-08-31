@@ -1,232 +1,348 @@
 {% load static %}
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Client Dashboard | Travelbolt</title>
+```
+<title>Client Dashboard | Travelbolt</title>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome -->
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    >
+<!-- Font Awesome -->
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+>
+```
+
 </head>
 
 <body class="bg-gray-50 overflow-x-hidden">
 
-    <!-- ========================================================= -->
-    <!-- RESPONSIVE TOP NAVIGATION BAR -->
-    <!-- ========================================================= -->
+```
+<!-- ========================================================= -->
+<!-- RESPONSIVE TOP NAVIGATION BAR -->
+<!-- ========================================================= -->
 
-    <header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
 
-        <!-- MAIN NAVBAR -->
-        <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
 
-            <!-- LOGO -->
-            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <!-- LOGO -->
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
 
-                <div class="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shrink-0">
-                    <i class="fa-solid fa-plane-departure"></i>
-                </div>
+            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shrink-0">
+                <i class="fa-solid fa-plane-departure"></i>
+            </div>
+
+            <div class="min-w-0">
+                <h1 class="text-lg sm:text-xl font-bold text-blue-700 truncate">
+                    Travelbolt
+                </h1>
+
+                <p class="text-xs text-gray-400">
+                    Client Portal
+                </p>
+            </div>
+
+        </div>
+
+        <!-- DESKTOP NAVIGATION -->
+        <nav class="hidden md:flex items-center gap-5 lg:gap-6">
+
+            <!-- MY PROFILE -->
+            <a
+                href="{% url 'travel_app:client_profile' %}"
+                class="text-gray-600 hover:text-blue-600 font-medium transition whitespace-nowrap"
+            >
+                <i class="fa-solid fa-user mr-2"></i>
+                My Profile
+            </a>
+
+            <!-- PAYMENT HISTORY -->
+            <a
+                href="{% url 'travel_app:client_payments' %}"
+                class="text-gray-600 hover:text-blue-600 font-medium transition whitespace-nowrap"
+            >
+                <i class="fa-solid fa-credit-card mr-2"></i>
+                Payment History
+            </a>
+
+            <!-- DOCUMENTS -->
+            <a
+                href="{% url 'travel_app:client_upload_document' %}"
+                class="text-gray-600 hover:text-blue-600 font-medium transition whitespace-nowrap"
+            >
+                <i class="fa-solid fa-file-arrow-up mr-2"></i>
+                Documents
+            </a>
+
+            <!-- LOGOUT -->
+            <a
+                href="{% url 'travel_app:client_logout' %}"
+                class="text-red-600 hover:text-red-700 font-medium transition whitespace-nowrap"
+            >
+                <i class="fa-solid fa-right-from-bracket mr-2"></i>
+                Logout
+            </a>
+
+        </nav>
+
+        <!-- MOBILE MENU BUTTON -->
+        <button
+            type="button"
+            id="mobileMenuButton"
+            class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition"
+            aria-label="Open navigation menu"
+            aria-expanded="false"
+        >
+            <i id="menuIcon" class="fa-solid fa-bars text-xl"></i>
+        </button>
+
+    </div>
+
+    <!-- MOBILE NAVIGATION -->
+    <div
+        id="mobileMenu"
+        class="hidden md:hidden border-t border-gray-200 bg-white shadow-sm"
+    >
+
+        <nav class="px-4 py-3 space-y-1">
+
+            <!-- MY PROFILE -->
+            <a
+                href="{% url 'travel_app:client_profile' %}"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+            >
+                <i class="fa-solid fa-user w-5"></i>
+                <span>My Profile</span>
+            </a>
+
+            <!-- PAYMENT HISTORY -->
+            <a
+                href="{% url 'travel_app:client_payments' %}"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+            >
+                <i class="fa-solid fa-credit-card w-5"></i>
+                <span>Payment History</span>
+            </a>
+
+            <!-- DOCUMENTS -->
+            <a
+                href="{% url 'travel_app:client_upload_document' %}"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+            >
+                <i class="fa-solid fa-file-arrow-up w-5"></i>
+                <span>Documents</span>
+            </a>
+
+            <!-- LOGOUT -->
+            <a
+                href="{% url 'travel_app:client_logout' %}"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition"
+            >
+                <i class="fa-solid fa-right-from-bracket w-5"></i>
+                <span>Logout</span>
+            </a>
+
+        </nav>
+
+    </div>
+
+</header>
+
+
+<!-- ========================================================= -->
+<!-- MAIN CONTENT -->
+<!-- ========================================================= -->
+
+<main class="pt-24 px-4 sm:px-6 pb-10">
+
+    <div class="max-w-7xl mx-auto">
+
+        <!-- ===================================================== -->
+        <!-- DJANGO MESSAGES -->
+        <!-- ===================================================== -->
+
+        {% if messages %}
+
+            <div class="mb-6">
+
+                {% for message in messages %}
+
+                    <div class="mb-3 flex items-start sm:items-center gap-3 px-4 py-3 rounded-xl border
+                        {% if message.tags == 'success' %}
+                            bg-blue-50 border-blue-200 text-blue-700
+                        {% elif message.tags == 'warning' %}
+                            bg-yellow-50 border-yellow-200 text-yellow-700
+                        {% elif message.tags == 'error' %}
+                            bg-red-50 border-red-200 text-red-700
+                        {% else %}
+                            bg-gray-50 border-gray-200 text-gray-700
+                        {% endif %}
+                    ">
+
+                        {% if message.tags == 'success' %}
+                            <i class="fa-solid fa-circle-check text-blue-600 shrink-0"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="fa-solid fa-triangle-exclamation text-yellow-600 shrink-0"></i>
+                        {% elif message.tags == 'error' %}
+                            <i class="fa-solid fa-circle-xmark text-red-600 shrink-0"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-info text-gray-600 shrink-0"></i>
+                        {% endif %}
+
+                        <p class="text-sm font-medium">
+                            {{ message }}
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- ===================================================== -->
+        <!-- WELCOME BANNER -->
+        <!-- ===================================================== -->
+
+        <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-5 sm:p-8 text-white shadow-lg mb-8">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 
                 <div class="min-w-0">
-                    <h1 class="text-lg sm:text-xl font-bold text-blue-700 truncate">
-                        Travelbolt
+
+                    <p class="text-blue-200 text-sm font-medium mb-2">
+                        CLIENT PORTAL
+                    </p>
+
+                    <h1 class="text-2xl sm:text-3xl font-bold leading-tight">
+                        Welcome back,
+                        {{ request.user.first_name|default:request.user.username }}!
                     </h1>
 
-                    <p class="text-xs text-gray-400">
-                        Client Portal
+                    <p class="text-blue-100 mt-2 text-sm sm:text-base leading-6">
+                        Manage your travel documents, payments and travel services from your dashboard.
                     </p>
+
+                </div>
+
+                <div class="hidden md:flex shrink-0">
+
+                    <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-plane text-4xl"></i>
+                    </div>
+
                 </div>
 
             </div>
 
-
-            <!-- ===================================================== -->
-            <!-- DESKTOP NAVIGATION -->
-            <!-- ===================================================== -->
-
-            <nav class="hidden md:flex items-center gap-5 lg:gap-6">
-
-                <!-- MY PROFILE -->
-                <a
-                    href="{% url 'travel_app:client_profile' %}"
-                    class="text-gray-600 hover:text-blue-600 font-medium transition whitespace-nowrap"
-                >
-                    <i class="fa-solid fa-user mr-2"></i>
-                    My Profile
-                </a>
-
-                
-                  <!-- PAYMENT HISTORY -->
-                  <a
-                    href="{% url 'travel_app:client_payments' %}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg
-                           text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
-                        >
-                    <i class="fa-solid fa-credit-card w-5"></i>
-                    <span>Payment History</span>
-                    </a>
-
-
-                <!-- DOCUMENTS -->
-                <a
-                    href="{% url 'travel_app:client_upload_document' %}"
-                    class="text-gray-600 hover:text-blue-600 font-medium transition whitespace-nowrap"
-                >
-                    <i class="fa-solid fa-file-arrow-up mr-2"></i>
-                    Documents
-                </a>
-
-
-                <!-- LOGOUT -->
-                <a
-                    href="{% url 'travel_app:client_logout' %}"
-                    class="text-red-600 hover:text-red-700 font-medium transition whitespace-nowrap"
-                >
-                    <i class="fa-solid fa-right-from-bracket mr-2"></i>
-                    Logout
-                </a>
-
-            </nav>
-
-
-            <!-- ===================================================== -->
-            <!-- MOBILE MENU BUTTON -->
-            <!-- ===================================================== -->
-
-            <button
-                type="button"
-                id="mobileMenuButton"
-                class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg
-                       text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition"
-                aria-label="Open navigation menu"
-                aria-expanded="false"
-            >
-                <i id="menuIcon" class="fa-solid fa-bars text-xl"></i>
-            </button>
-
         </div>
 
 
         <!-- ========================================================= -->
-        <!-- MOBILE NAVIGATION MENU -->
+        <!-- NOTIFICATIONS -->
         <!-- ========================================================= -->
 
-        <div
-            id="mobileMenu"
-            class="hidden md:hidden border-t border-gray-200 bg-white shadow-sm"
-        >
+        {% if notifications %}
 
-            <nav class="px-4 py-3 space-y-1">
+            <div class="mb-8">
 
-                <!-- MY PROFILE -->
-                <a
-                    href="{% url 'travel_app:client_profile' %}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg
-                           text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
-                >
-                    <i class="fa-solid fa-user w-5"></i>
-                    <span>My Profile</span>
-                </a>
-                
-                <!-- PAYMENT HISTORY -->
-                <a
-                    href="{% url 'travel_app:client_payments' %}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg
-                           text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
-                >
-                    <i class="fa-solid fa-credit-card w-5"></i>
-                    <span>Payment History</span>
-                </a>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
 
-                <!-- DOCUMENTS -->
-                <a
-                    href="{% url 'travel_app:client_upload_document' %}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg
-                           text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
-                >
-                    <i class="fa-solid fa-file-arrow-up w-5"></i>
-                    <span>Documents</span>
-                </a>
+                    <div>
 
+                        <h2 class="text-xl font-bold text-gray-800">
+                            Notifications
+                        </h2>
 
-                <!-- LOGOUT -->
-                <a
-                    href="{% url 'travel_app:client_logout' %}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg
-                           text-red-600 hover:bg-red-50 transition"
-                >
-                    <i class="fa-solid fa-right-from-bracket w-5"></i>
-                    <span>Logout</span>
-                </a>
+                        <p class="text-sm text-gray-500 mt-1">
+                            Updates from the Travelbolt travel team.
+                        </p>
 
-            </nav>
+                    </div>
 
-        </div>
+                    <span class="text-sm text-gray-500">
+                        {{ notifications_count }}
+                        update{{ notifications_count|pluralize }}
+                    </span>
 
-    </header>
+                </div>
 
+                <div class="space-y-3">
 
-    <!-- ========================================================= -->
-    <!-- MAIN CONTENT -->
-    <!-- ========================================================= -->
+                    {% for notification in notifications %}
 
-    <main class="pt-24 px-4 sm:px-6 pb-10">
+                        <div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-sm">
 
-        <div class="max-w-7xl mx-auto">
+                            <div class="flex items-start gap-3 sm:gap-4">
 
+                                <div class="
+                                    w-11 h-11 rounded-lg flex items-center justify-center shrink-0
+                                    {% if notification.notification_type == 'success' %}
+                                        bg-blue-100 text-blue-600
+                                    {% elif notification.notification_type == 'error' %}
+                                        bg-red-100 text-red-600
+                                    {% elif notification.notification_type == 'warning' %}
+                                        bg-yellow-100 text-yellow-600
+                                    {% else %}
+                                        bg-gray-100 text-gray-600
+                                    {% endif %}
+                                ">
 
-            <!-- ===================================================== -->
-            <!-- DJANGO MESSAGES -->
-            <!-- ===================================================== -->
+                                    {% if notification.notification_type == 'success' %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% elif notification.notification_type == 'error' %}
+                                        <i class="fa-solid fa-circle-xmark"></i>
+                                    {% elif notification.notification_type == 'warning' %}
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-circle-info"></i>
+                                    {% endif %}
 
-            {% if messages %}
+                                </div>
 
-                <div class="mb-6">
+                                <div class="flex-1 min-w-0">
 
-                    {% for message in messages %}
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
 
-                        <div class="mb-3 flex items-start sm:items-center gap-3 px-4 py-3 rounded-xl border
-                            {% if message.tags == 'success' %}
-                                bg-blue-50 border-blue-200 text-blue-700
-                            {% elif message.tags == 'warning' %}
-                                bg-yellow-50 border-yellow-200 text-yellow-700
-                            {% elif message.tags == 'error' %}
-                                bg-red-50 border-red-200 text-red-700
-                            {% else %}
-                                bg-gray-50 border-gray-200 text-gray-700
-                            {% endif %}
-                        ">
+                                        <h3 class="font-bold text-gray-800 break-words">
+                                            {{ notification.title }}
+                                        </h3>
 
-                            {% if message.tags == 'success' %}
+                                        <span class="text-xs text-gray-400 shrink-0">
+                                            {{ notification.created_at|date:"M d, Y H:i" }}
+                                        </span>
 
-                                <i class="fa-solid fa-circle-check text-blue-600 shrink-0"></i>
+                                    </div>
 
-                            {% elif message.tags == 'warning' %}
+                                    <p class="text-sm text-gray-500 mt-1 leading-6">
+                                        {{ notification.message }}
+                                    </p>
 
-                                <i class="fa-solid fa-triangle-exclamation text-yellow-600 shrink-0"></i>
+                                    {% if notification.link %}
 
-                            {% elif message.tags == 'error' %}
+                                        <a
+                                            href="{{ notification.link }}"
+                                            class="inline-flex items-center mt-3 text-sm font-semibold text-blue-600 hover:text-blue-800"
+                                        >
+                                            {{ notification.link_text|default:"View" }}
+                                            <i class="fa-solid fa-arrow-right ml-2"></i>
+                                        </a>
 
-                                <i class="fa-solid fa-circle-xmark text-red-600 shrink-0"></i>
+                                    {% endif %}
 
-                            {% else %}
+                                </div>
 
-                                <i class="fa-solid fa-circle-info text-gray-600 shrink-0"></i>
-
-                            {% endif %}
-
-                            <p class="text-sm font-medium">
-                                {{ message }}
-                            </p>
+                            </div>
 
                         </div>
 
@@ -234,44 +350,132 @@
 
                 </div>
 
-            {% endif %}
+            </div>
+
+        {% endif %}
 
 
-            <!-- ===================================================== -->
-            <!-- WELCOME BANNER -->
-            <!-- ===================================================== -->
+        <!-- ================================================= -->
+        <!-- QUICK ACTIONS -->
+        <!-- ================================================= -->
 
-            <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-5 sm:p-8 text-white shadow-lg mb-8">
+        <h2 class="text-xl font-bold text-gray-800 mb-5">
+            Quick Actions
+        </h2>
 
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-10">
+
+            <!-- BROWSE TRAVEL PACKAGES -->
+            <a
+                href="{% url 'travel_app:client_packages' %}"
+                class="group bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-green-300 transition"
+            >
+
+                <div class="flex items-center justify-between mb-5">
+
+                    <div class="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-suitcase-rolling text-xl"></i>
+                    </div>
+
+                    <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-green-600 transition"></i>
+
+                </div>
+
+                <h3 class="text-lg font-bold text-gray-800 mb-2">
+                    Browse Travel Packages
+                </h3>
+
+                <p class="text-gray-500 text-sm leading-6">
+                    Explore available Hajj, Umrah, visa and other travel packages.
+                </p>
+
+            </a>
+
+
+            <!-- UPLOAD DOCUMENTS -->
+            <a
+                href="{% url 'travel_app:client_upload_document' %}"
+                class="group bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-blue-300 transition"
+            >
+
+                <div class="flex items-center justify-between mb-5">
+
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-file-arrow-up text-xl"></i>
+                    </div>
+
+                    <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-blue-600 transition"></i>
+
+                </div>
+
+                <h3 class="text-lg font-bold text-gray-800 mb-2">
+                    Upload Documents
+                </h3>
+
+                <p class="text-gray-500 text-sm leading-6">
+                    Upload your passport, visa and other travel documents for review.
+                </p>
+
+            </a>
+
+
+            <!-- MY PROFILE -->
+            <a
+                href="{% url 'travel_app:client_profile' %}"
+                class="group bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-purple-300 transition"
+            >
+
+                <div class="flex items-center justify-between">
+
+                    <div class="w-11 h-11 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-user text-lg"></i>
+                    </div>
+
+                    <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-purple-600 transition"></i>
+
+                </div>
+
+                <h3 class="text-lg font-bold text-gray-900 mt-4">
+                    My Profile
+                </h3>
+
+                <p class="text-sm text-gray-500 mt-2 leading-6">
+                    View and manage your personal travel information.
+                </p>
+
+            </a>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- ACCOUNT OVERVIEW -->
+        <!-- ================================================= -->
+
+        <h2 class="text-xl font-bold text-gray-800 mb-5">
+            Account Overview
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 mb-10">
+
+            <!-- DOCUMENTS -->
+            <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
+
+                <div class="flex items-center gap-4">
+
+                    <div class="w-11 h-11 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
 
                     <div class="min-w-0">
 
-                        <p class="text-blue-200 text-sm font-medium mb-2">
-                            CLIENT PORTAL
+                        <p class="text-sm text-gray-500">
+                            Travel Documents
                         </p>
 
-                        <h1 class="text-2xl sm:text-3xl font-bold leading-tight">
-                            Welcome back,
-                            {{ request.user.first_name|default:request.user.username }}!
-                        </h1>
-
-                        <p class="text-blue-100 mt-2 text-sm sm:text-base leading-6">
-                            Manage your travel documents, payments and travel services from your dashboard.
-                        </p>
-
-                    </div>
-
-
-                    <!-- DESKTOP PLANE ICON -->
-
-                    <div class="hidden md:flex shrink-0">
-
-                        <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center">
-
-                            <i class="fa-solid fa-plane text-4xl"></i>
-
-                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800">
+                            {{ documents_count }}
+                        </h3>
 
                     </div>
 
@@ -280,895 +484,438 @@
             </div>
 
 
-            <!-- ========================================================= -->
-            <!-- NOTIFICATIONS -->
-            <!-- ========================================================= -->
+            <!-- PAYMENTS -->
+            <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
 
-            {% if notifications %}
+                <div class="flex items-center gap-4">
 
-                <div class="mb-8">
+                    <div class="w-11 h-11 bg-green-100 text-green-600 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-money-check-dollar"></i>
+                    </div>
 
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                    <div class="min-w-0">
 
-                        <div>
+                        <p class="text-sm text-gray-500">
+                            Payments
+                        </p>
 
-                            <h2 class="text-xl font-bold text-gray-800">
-                                Notifications
-                            </h2>
-
-                            <p class="text-sm text-gray-500 mt-1">
-                                Updates from the Travelbolt travel team.
-                            </p>
-
-                        </div>
-
-                        <span class="text-sm text-gray-500">
-                            {{ notifications_count }}
-                            update{{ notifications_count|pluralize }}
-                        </span>
+                        <h3 class="text-2xl font-bold text-gray-800">
+                            {{ payments_count }}
+                        </h3>
 
                     </div>
 
+                </div>
 
-                    <div class="space-y-3">
+            </div>
 
-                        {% for notification in notifications %}
 
-                            <div class="
-                                bg-white
-                                rounded-xl
-                                border
-                                border-gray-200
-                                p-4 sm:p-5
-                                shadow-sm
-                            ">
+            <!-- TRAVEL STATUS -->
+            <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
 
-                                <div class="flex items-start gap-3 sm:gap-4">
+                <div class="flex items-center gap-4">
 
-                                    <!-- ICON -->
+                    <div class="w-11 h-11 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-plane"></i>
+                    </div>
 
-                                    <div class="
-                                        w-11
-                                        h-11
-                                        rounded-lg
-                                        flex
-                                        items-center
-                                        justify-center
-                                        shrink-0
+                    <div class="min-w-0">
 
-                                        {% if notification.notification_type == 'success' %}
-                                            bg-blue-100 text-blue-600
+                        <p class="text-sm text-gray-500">
+                            Travel Status
+                        </p>
 
-                                        {% elif notification.notification_type == 'error' %}
-                                            bg-red-100 text-red-600
+                        <h3 class="text-lg font-bold text-gray-800">
+                            In Progress
+                        </h3>
 
-                                        {% elif notification.notification_type == 'warning' %}
-                                            bg-yellow-100 text-yellow-600
+                    </div>
 
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- MY BOOKINGS -->
+        <!-- ================================================= -->
+
+        <div class="mb-10">
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
+
+                <div>
+
+                    <h2 class="text-xl font-bold text-gray-800">
+                        My Bookings
+                    </h2>
+
+                    <p class="text-sm text-gray-500 mt-1">
+                        View your selected travel packages, booking details and payment status.
+                    </p>
+
+                </div>
+
+                <span class="text-sm text-gray-500">
+                    {{ bookings_count }}
+                    booking{{ bookings_count|pluralize }}
+                </span>
+
+            </div>
+
+
+            {% if bookings %}
+
+                <div class="space-y-5">
+
+                    {% for booking in bookings %}
+
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6">
+
+                            <!-- BOOKING HEADER -->
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+
+                                <div class="min-w-0">
+
+                                    <p class="text-xs text-gray-400 uppercase font-semibold">
+                                        Booking Reference
+                                    </p>
+
+                                    <h3 class="text-lg font-bold text-gray-800 break-words">
+                                        {{ booking.booking_id }}
+                                    </h3>
+
+                                </div>
+
+                                <!-- BOOKING STATUS -->
+                                <span class="inline-flex items-center self-start md:self-auto px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap
+                                    {% if booking.status == 'confirmed' %}
+                                        bg-green-100 text-green-700
+                                    {% elif booking.status == 'completed' %}
+                                        bg-blue-100 text-blue-700
+                                    {% elif booking.status == 'cancelled' %}
+                                        bg-red-100 text-red-700
+                                    {% elif booking.status == 'processing' %}
+                                        bg-yellow-100 text-yellow-700
+                                    {% else %}
+                                        bg-gray-100 text-gray-700
+                                    {% endif %}
+                                ">
+
+                                    {{ booking.get_status_display }}
+
+                                </span>
+
+                            </div>
+
+
+                            <!-- BOOKING DETAILS -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+
+                                <!-- SERVICE -->
+                                <div class="min-w-0">
+
+                                    <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
+                                        Service
+                                    </p>
+
+                                    <p class="font-semibold text-gray-800 break-words">
+
+                                        {% if booking.package %}
+                                            {{ booking.package.name }}
                                         {% else %}
-                                            bg-gray-100 text-gray-600
-                                        {% endif %}
-                                    ">
-
-                                        {% if notification.notification_type == 'success' %}
-
-                                            <i class="fa-solid fa-circle-check"></i>
-
-                                        {% elif notification.notification_type == 'error' %}
-
-                                            <i class="fa-solid fa-circle-xmark"></i>
-
-                                        {% elif notification.notification_type == 'warning' %}
-
-                                            <i class="fa-solid fa-triangle-exclamation"></i>
-
-                                        {% else %}
-
-                                            <i class="fa-solid fa-circle-info"></i>
-
+                                            Travel Service
                                         {% endif %}
 
-                                    </div>
+                                    </p>
+
+                                </div>
 
 
-                                    <!-- CONTENT -->
+                                <!-- TRAVEL DATE -->
+                                <div>
 
-                                    <div class="flex-1 min-w-0">
+                                    <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
+                                        Travel Date
+                                    </p>
 
-                                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
+                                    <p class="font-semibold text-gray-800">
+                                        {{ booking.travel_date_start|date:"M d, Y" }}
+                                    </p>
 
-                                            <h3 class="font-bold text-gray-800 break-words">
-                                                {{ notification.title }}
-                                            </h3>
-
-                                            <span class="text-xs text-gray-400 shrink-0">
-                                                {{ notification.created_at|date:"M d, Y H:i" }}
-                                            </span>
-
-                                        </div>
-
-                                        <p class="text-sm text-gray-500 mt-1 leading-6">
-                                            {{ notification.message }}
-                                        </p>
+                                </div>
 
 
-                                        {% if notification.link %}
+                                <!-- TOTAL -->
+                                <div>
 
-                                            <a
-                                                href="{{ notification.link }}"
-                                                class="inline-flex items-center mt-3 text-sm font-semibold text-blue-600 hover:text-blue-800"
-                                            >
-                                                {{ notification.link_text|default:"View" }}
+                                    <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
+                                        Total Amount
+                                    </p>
 
-                                                <i class="fa-solid fa-arrow-right ml-2"></i>
-                                            </a>
+                                    <p class="font-semibold text-gray-800">
+                                        ₦{{ booking.total_amount|floatformat:2 }}
+                                    </p>
 
-                                        {% endif %}
+                                </div>
 
-                                    </div>
+
+                                <!-- BALANCE -->
+                                <div>
+
+                                    <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
+                                        Balance Due
+                                    </p>
+
+                                    <p class="font-bold {% if booking.balance_due > 0 %}text-red-600{% else %}text-green-600{% endif %}">
+                                        ₦{{ booking.balance_due|floatformat:2 }}
+                                    </p>
 
                                 </div>
 
                             </div>
 
-                        {% endfor %}
 
-                    </div>
+                            <!-- PAYMENT PROGRESS -->
+                            <div class="border-t border-gray-100 pt-5">
 
-                </div>
+                                <div class="flex flex-col sm:flex-row sm:justify-between gap-1 text-sm mb-2">
 
-            {% endif %}
+                                    <span class="text-gray-500">
+                                        Payment
+                                    </span>
 
+                                    <span class="font-semibold text-gray-700">
 
-            <!-- ================================================= -->
-            <!-- QUICK ACTIONS -->
-            <!-- ================================================= -->
-
-            <h2 class="text-xl font-bold text-gray-800 mb-5">
-                Quick Actions
-            </h2>
-
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-10">
-
-
-
-<!-- ================================================= -->
-<!-- BROWSE TRAVEL PACKAGES -->
-<!-- ================================================= -->
-
-<a
-    href="{% url 'travel_app:client_packages' %}"
-    class="group bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-green-300 transition"
->
-
-    <div class="flex items-center justify-between mb-5">
-
-        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
-
-            <i class="fa-solid fa-suitcase-rolling text-xl"></i>
-
-        </div>
-
-        <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-green-600 transition"></i>
-
-    </div>
-
-    <h3 class="text-lg font-bold text-gray-800 mb-2">
-        Browse Travel Packages
-    </h3>
-
-    <p class="text-gray-500 text-sm leading-6">
-        Explore available Hajj, Umrah, visa and other travel packages.
-    </p>
-
-</a>
-
-
-                <!-- ================================================= -->
-                <!-- UPLOAD DOCUMENTS -->
-                <!-- ================================================= -->
-
-                <a
-                    href="{% url 'travel_app:client_upload_document' %}"
-                    class="group bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-blue-300 transition"
-                >
-
-                    <div class="flex items-center justify-between mb-5">
-
-                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
-
-                            <i class="fa-solid fa-file-arrow-up text-xl"></i>
-
-                        </div>
-
-                        <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-blue-600 transition"></i>
-
-                    </div>
-
-                    <h3 class="text-lg font-bold text-gray-800 mb-2">
-                        Upload Documents
-                    </h3>
-
-                    <p class="text-gray-500 text-sm leading-6">
-                        Upload your passport, visa and other travel documents for review.
-                    </p>
-
-                </a>
-
-
-                <!-- ================================================= -->
-                <!-- MY PROFILE -->
-                <!-- ================================================= -->
-
-                <a
-                    href="{% url 'travel_app:client_profile' %}"
-                    class="group bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-purple-300 transition"
-                >
-
-                    <div class="flex items-center justify-between">
-
-                        <div class="w-11 h-11 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center">
-
-                            <i class="fa-solid fa-user text-lg"></i>
-
-                        </div>
-
-                        <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-purple-600 transition"></i>
-
-                    </div>
-
-                    <h3 class="text-lg font-bold text-gray-900 mt-4">
-                        My Profile
-                    </h3>
-
-                    <p class="text-sm text-gray-500 mt-2 leading-6">
-                        View and manage your personal travel information.
-                    </p>
-
-                </a>
-
-            </div>
-
-
-            <!-- ================================================= -->
-            <!-- ACCOUNT OVERVIEW -->
-            <!-- ================================================= -->
-
-            <h2 class="text-xl font-bold text-gray-800 mb-5">
-                Account Overview
-            </h2>
-
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 mb-10">
-
-
-                <!-- ================================================= -->
-                <!-- DOCUMENTS -->
-                <!-- ================================================= -->
-
-                <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
-
-                    <div class="flex items-center gap-4">
-
-                        <div class="w-11 h-11 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
-
-                            <i class="fa-solid fa-folder-open"></i>
-
-                        </div>
-
-                        <div class="min-w-0">
-
-                            <p class="text-sm text-gray-500">
-                                Travel Documents
-                            </p>
-
-                            <h3 class="text-2xl font-bold text-gray-800">
-                                {{ documents_count }}
-                            </h3>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ================================================= -->
-                <!-- PAYMENTS -->
-                <!-- ================================================= -->
-
-                <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
-
-                    <div class="flex items-center gap-4">
-
-                        <div class="w-11 h-11 bg-green-100 text-green-600 rounded-lg flex items-center justify-center shrink-0">
-
-                            <i class="fa-solid fa-money-check-dollar"></i>
-
-                        </div>
-
-                        <div class="min-w-0">
-
-                            <p class="text-sm text-gray-500">
-                                Payments
-                            </p>
-
-                            <h3 class="text-2xl font-bold text-gray-800">
-                                {{ payments_count }}
-                            </h3>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ================================================= -->
-                <!-- TRAVEL STATUS -->
-                <!-- ================================================= -->
-
-                <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
-
-                    <div class="flex items-center gap-4">
-
-                        <div class="w-11 h-11 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center shrink-0">
-
-                            <i class="fa-solid fa-plane"></i>
-
-                        </div>
-
-                        <div class="min-w-0">
-
-                            <p class="text-sm text-gray-500">
-                                Travel Status
-                            </p>
-
-                            <h3 class="text-lg font-bold text-gray-800">
-                                In Progress
-                            </h3>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- ================================================= -->
-            <!-- MY BOOKINGS -->
-            <!-- ================================================= -->
-
-            <div class="mb-10">
-
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
-
-                    <div>
-
-                        <h2 class="text-xl font-bold text-gray-800">
-                            My Bookings
-                        </h2>
-
-                        <p class="text-sm text-gray-500 mt-1">
-                           <p class="text-sm text-gray-500 mt-1">
-    View your selected travel packages, booking details and payment status.
-</p>
-                        </p>
-
-                    </div>
-
-                    <span class="text-sm text-gray-500">
-                        {{ bookings_count }}
-                        booking{{ bookings_count|pluralize }}
-                    </span>
-
-                </div>
-
-
-                {% if bookings %}
-
-                    <div class="space-y-5">
-
-                        {% for booking in bookings %}
-
-                            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6">
-
-                                <!-- BOOKING HEADER -->
-
-                                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
-
-                                    <div class="min-w-0">
-
-                                        <p class="text-xs text-gray-400 uppercase font-semibold">
-                                            Booking Reference
-                                        </p>
-
-                                        <h3 class="text-lg font-bold text-gray-800 break-words">
-                                            {{ booking.booking_id }}
-                                        </h3>
-
-                                    </div>
-
-
-                                    <!-- BOOKING STATUS -->
-
-                                    <span class="inline-flex items-center self-start md:self-auto px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap
-
-                                        {% if booking.status == 'confirmed' %}
-                                            bg-green-100 text-green-700
-
-                                        {% elif booking.status == 'completed' %}
-                                            bg-blue-100 text-blue-700
-
-                                        {% elif booking.status == 'cancelled' %}
-                                            bg-red-100 text-red-700
-
-                                        {% elif booking.status == 'processing' %}
-                                            bg-yellow-100 text-yellow-700
-
-                                        {% else %}
-                                            bg-gray-100 text-gray-700
-                                        {% endif %}
-                                    ">
-
-                                        {{ booking.get_status_display }}
+                                        ₦{{ booking.paid_amount|floatformat:2 }}
+                                        /
+                                        ₦{{ booking.total_amount|floatformat:2 }}
 
                                     </span>
 
                                 </div>
 
-<!-- ================================================= -->
-<!-- MY BOOKINGS -->
-<!-- ================================================= -->
 
-<div class="mb-10">
+                                <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
 
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
+                                    {% if booking.total_amount > 0 %}
 
-        <div>
+                                        <div
+                                            class="bg-green-500 h-2 rounded-full progress-fill"
+                                            data-progress="{% widthratio booking.paid_amount booking.total_amount 100 %}"
+                                        ></div>
 
-            <h2 class="text-xl font-bold text-gray-800">
-                My Bookings
-            </h2>
+                                    {% endif %}
 
-            <p class="text-sm text-gray-500 mt-1">
-                View your selected travel packages, booking details and payment status.
-            </p>
+                                </div>
+
+                            </div>
+
+
+                            <!-- ACTIONS -->
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6">
+
+                                <!-- PAYMENT STATUS -->
+                                <div>
+
+                                    {% if booking.payment_status == 'paid' %}
+
+                                        <span class="inline-flex items-center text-green-600 font-semibold text-sm">
+                                            <i class="fa-solid fa-circle-check mr-2"></i>
+                                            Payment Complete
+                                        </span>
+
+                                    {% elif booking.payment_status == 'partial' %}
+
+                                        <span class="inline-flex items-center text-yellow-600 font-semibold text-sm">
+                                            <i class="fa-solid fa-circle-half-stroke mr-2"></i>
+                                            Partially Paid
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="inline-flex items-center text-red-600 font-semibold text-sm">
+                                            <i class="fa-solid fa-circle-exclamation mr-2"></i>
+                                            Payment Pending
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <!-- PAY NOW -->
+                                {% if booking.payment_status == 'paid' %}
+
+                                    <span class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-50 text-green-700 font-semibold rounded-lg">
+
+                                        <i class="fa-solid fa-check mr-2"></i>
+                                        Paid
+
+                                    </span>
+
+                                {% elif booking.status == 'cancelled' or booking.status == 'refunded' %}
+
+                                    <span class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-gray-100 text-gray-500 font-semibold rounded-lg">
+
+                                        Payment Unavailable
+
+                                    </span>
+
+                                {% elif booking.balance_due > 0 %}
+
+                                    <a
+                                        href="{% url 'travel_app:pay_booking' booking.id %}"
+                                        class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm"
+                                    >
+
+                                        <i class="fa-solid fa-credit-card mr-2"></i>
+                                        Pay Now
+
+                                    </a>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <!-- NO BOOKINGS -->
+                <div class="bg-white rounded-xl border border-gray-200 p-8 sm:p-10 text-center">
+
+                    <div class="w-16 h-16 mx-auto bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mb-4">
+
+                        <i class="fa-solid fa-plane text-2xl"></i>
+
+                    </div>
+
+                    <h3 class="text-lg font-bold text-gray-800">
+                        No Bookings Yet
+                    </h3>
+
+                    <p class="text-sm text-gray-500 mt-2">
+                        You don't have any travel bookings at the moment.
+                    </p>
+
+                </div>
+
+            {% endif %}
 
         </div>
 
-        <span class="text-sm text-gray-500">
-            {{ bookings_count }}
-            booking{{ bookings_count|pluralize }}
-        </span>
+
+        <!-- ================================================= -->
+        <!-- INFORMATION SECTION -->
+        <!-- ================================================= -->
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+
+            <!-- NEED HELP -->
+            <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
+
+                <div class="flex items-center gap-4 mb-4">
+
+                    <div class="w-11 h-11 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+
+                    <h2 class="text-lg font-bold text-gray-800">
+                        Need Assistance?
+                    </h2>
+
+                </div>
+
+                <p class="text-gray-500 text-sm leading-6">
+                    If you need help with your visa, flight booking, accommodation,
+                    Hajj, Umrah or any other travel service, contact the agency.
+                </p>
+
+            </div>
+
+
+            <!-- AI ASSISTANT -->
+            <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
+
+                <div class="flex items-center gap-4 mb-4">
+
+                    <div class="w-11 h-11 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+
+                    <h2 class="text-lg font-bold text-gray-800">
+                        Travelbolt AI Assistant
+                    </h2>
+
+                </div>
+
+                <p class="text-gray-500 text-sm leading-6 mb-4">
+                    Get assistance with your travel planning and find answers
+                    to common travel questions.
+                </p>
+
+                <a
+                    href="{% url 'travel_app:client_ai_assistant' %}"
+                    class="inline-flex items-center text-blue-600 font-semibold text-sm hover:text-blue-800"
+                >
+                    Open AI Assistant
+                    <i class="fa-solid fa-arrow-right ml-2"></i>
+                </a>
+
+            </div>
+
+        </div>
 
     </div>
 
+</main>
 
-    {% if bookings %}
 
-        <div class="space-y-5">
+<!-- ========================================================= -->
+<!-- FOOTER -->
+<!-- ========================================================= -->
 
-            {% for booking in bookings %}
+<footer class="border-t border-gray-200 bg-white py-6">
 
-                <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
 
-                    <!-- BOOKING HEADER -->
+        <p class="text-sm text-gray-400">
+            © 2026 Travelbolt. All rights reserved.
+        </p>
 
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+    </div>
 
-                        <div class="min-w-0">
+</footer>
 
-                            <p class="text-xs text-gray-400 uppercase font-semibold">
-                                Booking Reference
-                            </p>
 
-                            <h3 class="text-lg font-bold text-gray-800 break-words">
-                                {{ booking.booking_id }}
-                            </h3>
+<!-- ========================================================= -->
+<!-- JAVASCRIPT -->
+<!-- ========================================================= -->
 
-                        </div>
+<script>
 
+    /* =========================================================
+       MOBILE MENU
+    ========================================================= */
 
-                        <!-- BOOKING STATUS -->
+    const mobileMenuButton = document.getElementById('mobileMenuButton');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const menuIcon = document.getElementById('menuIcon');
 
-                        <span class="inline-flex items-center self-start md:self-auto px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap
-
-                            {% if booking.status == 'confirmed' %}
-                                bg-green-100 text-green-700
-
-                            {% elif booking.status == 'completed' %}
-                                bg-blue-100 text-blue-700
-
-                            {% elif booking.status == 'cancelled' %}
-                                bg-red-100 text-red-700
-
-                            {% elif booking.status == 'processing' %}
-                                bg-yellow-100 text-yellow-700
-
-                            {% else %}
-                                bg-gray-100 text-gray-700
-                            {% endif %}
-                        ">
-
-                            {{ booking.get_status_display }}
-
-                        </span>
-
-                    </div>
-
-
-                    <!-- BOOKING DETAILS -->
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-
-                        <!-- SERVICE -->
-
-                        <div class="min-w-0">
-
-                            <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
-                                Service
-                            </p>
-
-                            <p class="font-semibold text-gray-800 break-words">
-
-                                {% if booking.package %}
-
-                                    {{ booking.package.name }}
-
-                                {% else %}
-
-                                    Travel Service
-
-                                {% endif %}
-
-                            </p>
-
-                        </div>
-
-
-                        <!-- TRAVEL DATE -->
-
-                        <div>
-
-                            <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
-                                Travel Date
-                            </p>
-
-                            <p class="font-semibold text-gray-800">
-                                {{ booking.travel_date_start|date:"M d, Y" }}
-                            </p>
-
-                        </div>
-
-
-                        <!-- TOTAL -->
-
-                        <div>
-
-                            <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
-                                Total Amount
-                            </p>
-
-                            <p class="font-semibold text-gray-800">
-                                ₦{{ booking.total_amount|floatformat:2 }}
-                            </p>
-
-                        </div>
-
-
-                        <!-- BALANCE -->
-
-                        <div>
-
-                            <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
-                                Balance Due
-                            </p>
-
-                            <p class="font-bold
-                                {% if booking.balance_due > 0 %}
-                                    text-red-600
-                                {% else %}
-                                    text-green-600
-                                {% endif %}
-                            ">
-
-                                ₦{{ booking.balance_due|floatformat:2 }}
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- ================================================= -->
-                    <!-- PAYMENT PROGRESS -->
-                    <!-- ================================================= -->
-
-                    <div class="border-t border-gray-100 pt-5">
-
-                        <div class="flex flex-col sm:flex-row sm:justify-between gap-1 text-sm mb-2">
-
-                            <span class="text-gray-500">
-                                Payment
-                            </span>
-
-                            <span class="font-semibold text-gray-700">
-
-                                ₦{{ booking.paid_amount|floatformat:2 }}
-
-                                /
-
-                                ₦{{ booking.total_amount|floatformat:2 }}
-
-                            </span>
-
-                        </div>
-
-
-                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-
-                            {% if booking.total_amount > 0 %}
-
-                                <div
-                                    class="bg-green-500 h-2 rounded-full progress-fill"
-                                    data-progress="{% widthratio booking.paid_amount booking.total_amount 100 %}"
-                                ></div>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- ================================================= -->
-                    <!-- ACTIONS -->
-                    <!-- ================================================= -->
-
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6">
-
-
-                        <!-- PAYMENT STATUS -->
-
-                        <div>
-
-                            {% if booking.payment_status == 'paid' %}
-
-                                <span class="inline-flex items-center text-green-600 font-semibold text-sm">
-
-                                    <i class="fa-solid fa-circle-check mr-2"></i>
-
-                                    Payment Complete
-
-                                </span>
-
-                            {% elif booking.payment_status == 'partial' %}
-
-                                <span class="inline-flex items-center text-yellow-600 font-semibold text-sm">
-
-                                    <i class="fa-solid fa-circle-half-stroke mr-2"></i>
-
-                                    Partially Paid
-
-                                </span>
-
-                            {% else %}
-
-                                <span class="inline-flex items-center text-red-600 font-semibold text-sm">
-
-                                    <i class="fa-solid fa-circle-exclamation mr-2"></i>
-
-                                    Payment Pending
-
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-
-                        <!-- ================================================= -->
-                        <!-- PAY NOW -->
-                        <!-- ================================================= -->
-
-                        {% if booking.payment_status == 'paid' %}
-
-                            <span class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-50 text-green-700 font-semibold rounded-lg">
-
-                                <i class="fa-solid fa-check mr-2"></i>
-
-                                Paid
-
-                            </span>
-
-
-                        {% elif booking.status == 'cancelled' or booking.status == 'refunded' %}
-
-                            <span class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-gray-100 text-gray-500 font-semibold rounded-lg">
-
-                                Payment Unavailable
-
-                            </span>
-
-
-                        {% elif booking.balance_due > 0 %}
-
-                            <a
-                                href="{% url 'travel_app:pay_booking' booking.id %}"
-                                class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm"
-                            >
-
-                                <i class="fa-solid fa-credit-card mr-2"></i>
-
-                                Pay Now
-
-                            </a>
-
-                        {% endif %}
-
-
-                    </div>
-
-                </div>
-
-            {% endfor %}
-
-        </div>
-
-
-    {% else %}
-
-
-        <!-- ================================================= -->
-        <!-- NO BOOKINGS -->
-        <!-- ================================================= -->
-
-        <div class="bg-white rounded-xl border border-gray-200 p-8 sm:p-10 text-center">
-
-            <div class="w-16 h-16 mx-auto bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mb-4">
-
-                <i class="fa-solid fa-plane text-2xl"></i>
-
-            </div>
-
-            <h3 class="text-lg font-bold text-gray-800">
-                No Bookings Yet
-            </h3>
-
-            <p class="text-sm text-gray-500 mt-2">
-                You don't have any travel bookings at the moment.
-            </p>
-
-        </div>
-
-    {% endif %}
-
-</div>
-
-
-            <!-- ================================================= -->
-            <!-- INFORMATION SECTION -->
-            <!-- ================================================= -->
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
-
-
-                <!-- ================================================= -->
-                <!-- NEED HELP -->
-                <!-- ================================================= -->
-
-                <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
-
-                    <div class="flex items-center gap-4 mb-4">
-
-                        <div class="w-11 h-11 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
-
-                            <i class="fa-solid fa-headset"></i>
-
-                        </div>
-
-                        <h2 class="text-lg font-bold text-gray-800">
-                            Need Assistance?
-                        </h2>
-
-                    </div>
-
-                    <p class="text-gray-500 text-sm leading-6">
-                        If you need help with your visa, flight booking, accommodation,
-                        Hajj, Umrah or any other travel service, contact the agency.
-                    </p>
-
-                </div>
-
-
-                <!-- ================================================= -->
-                <!-- AI ASSISTANT -->
-                <!-- ================================================= -->
-
-                <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-sm">
-
-                    <div class="flex items-center gap-4 mb-4">
-
-                        <div class="w-11 h-11 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center shrink-0">
-
-                            <i class="fa-solid fa-robot"></i>
-
-                        </div>
-
-                        <h2 class="text-lg font-bold text-gray-800">
-                            Travelbolt AI Assistant
-                        </h2>
-
-                    </div>
-
-                    <p class="text-gray-500 text-sm leading-6 mb-4">
-                        Get assistance with your travel planning and find answers
-                        to common travel questions.
-                    </p>
-
-                    <a
-                        href="{% url 'travel_app:client_ai_assistant' %}"
-                        class="inline-flex items-center text-blue-600 font-semibold text-sm hover:text-blue-800"
-                    >
-                        Open AI Assistant
-
-                        <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </a>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </main>
-
-
-    <!-- ========================================================= -->
-    <!-- FOOTER -->
-    <!-- ========================================================= -->
-
-    <footer class="border-t border-gray-200 bg-white py-6">
-
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-
-            <p class="text-sm text-gray-400">
-                © 2026 Travelbolt. All rights reserved.
-            </p>
-
-        </div>
-
-    </footer>
-
-
-    <!-- ========================================================= -->
-    <!-- JAVASCRIPT -->
-    <!-- ========================================================= -->
-
-    <script>
-
-        /* =========================================================
-           MOBILE MENU
-        ========================================================= */
-
-        const mobileMenuButton = document.getElementById('mobileMenuButton');
-        const mobileMenu = document.getElementById('mobileMenu');
-        const menuIcon = document.getElementById('menuIcon');
-
+    if (mobileMenuButton && mobileMenu && menuIcon) {
 
         mobileMenuButton.addEventListener('click', function () {
 
             const isHidden = mobileMenu.classList.contains('hidden');
 
-
             if (isHidden) {
-
-                /* Open menu */
 
                 mobileMenu.classList.remove('hidden');
 
@@ -1181,8 +928,6 @@
                 );
 
             } else {
-
-                /* Close menu */
 
                 mobileMenu.classList.add('hidden');
 
@@ -1199,9 +944,7 @@
         });
 
 
-        /* =========================================================
-           CLOSE MOBILE MENU AFTER CLICKING A LINK
-        ========================================================= */
+        /* CLOSE MOBILE MENU AFTER LINK CLICK */
 
         mobileMenu.querySelectorAll('a').forEach(function (link) {
 
@@ -1221,33 +964,32 @@
 
         });
 
+    }
 
-        /* =========================================================
-           PAYMENT PROGRESS BARS
-        ========================================================= */
 
-        document.querySelectorAll(
-            '.progress-fill[data-progress]'
-        ).forEach(function (bar) {
+    /* =========================================================
+       PAYMENT PROGRESS BARS
+    ========================================================= */
 
-            const progress = parseFloat(
-                bar.dataset.progress
-            ) || 0;
+    document.querySelectorAll(
+        '.progress-fill[data-progress]'
+    ).forEach(function (bar) {
 
-            /*
-             * Prevent the progress bar from exceeding 100%.
-             */
+        const progress = parseFloat(
+            bar.dataset.progress
+        ) || 0;
 
-            const safeProgress = Math.min(
-                Math.max(progress, 0),
-                100
-            );
+        const safeProgress = Math.min(
+            Math.max(progress, 0),
+            100
+        );
 
-            bar.style.width = `${safeProgress}%`;
+        bar.style.width = `${safeProgress}%`;
 
-        });
+    });
 
-    </script>
+</script>
+```
 
 </body>
 </html>
