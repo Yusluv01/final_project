@@ -675,27 +675,42 @@ class Booking(models.Model):
 
     history = HistoricalRecords()
 
-    def save(self, *args, **kwargs):
+def save(self, *args, **kwargs):
 
-        if not self.booking_id:
+    if not self.booking_id:
 
-            year_month = timezone.now().strftime('%Y%m')
+        year_month = timezone.now().strftime('%Y%m')
 
-            count = (
-                Booking.objects
-                .filter(
-                    created_at__year=timezone.now().year
+        # Find the highest booking number already used
+        existing_ids = (
+            Booking.objects
+            .filter(
+                booking_id__startswith=f'TB-{year_month}-'
+            )
+            .values_list('booking_id', flat=True)
+        )
+
+        highest_number = 0
+
+        for existing_id in existing_ids:
+            try:
+                number = int(existing_id.split('-')[-1])
+                highest_number = max(
+                    highest_number,
+                    number
                 )
-                .count()
-                + 1
-            )
+            except (ValueError, IndexError):
+                continue
 
-            self.booking_id = (
-                f"TB-{year_month}-"
-                f"{str(count).zfill(4)}"
-            )
+        # Generate the next booking number
+        next_number = highest_number + 1
 
-        super().save(*args, **kwargs)
+        self.booking_id = (
+            f'TB-{year_month}-'
+            f'{str(next_number).zfill(4)}'
+        )
+
+    super().save(*args, **kwargs)
 
     def __str__(self):
         return (
