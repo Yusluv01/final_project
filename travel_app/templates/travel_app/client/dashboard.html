@@ -797,7 +797,7 @@
                                             {% endif %}
                                         ">
 
-                                            ₦{{ booking.balance_due|floatformat:2 }}
+                                           ₦{{ booking.balance_due|floatformat:"2" }}
 
                                         </p>
 
@@ -888,33 +888,26 @@
                                         {% endif %}
 
                                     </div>
-
-
+                                    
                                     <!-- PAY NOW -->
-
-                                    {% if booking.balance_due > 0 and booking.status != 'cancelled' %}
-
+                                    
+                                    {% if booking.can_pay %}
+                                    
                                         <a
                                             href="{% url 'travel_app:pay_booking' booking.id %}"
                                             class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition"
                                         >
-
                                             <i class="fa-solid fa-credit-card mr-2"></i>
-
                                             Pay Now
-
                                         </a>
-
+                                    
                                     {% elif booking.payment_status == 'paid' %}
-
+                                    
                                         <span class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-50 text-green-700 font-semibold rounded-lg">
-
                                             <i class="fa-solid fa-check mr-2"></i>
-
                                             Paid
-
                                         </span>
-
+                                    
                                     {% endif %}
 
                                 </div>
