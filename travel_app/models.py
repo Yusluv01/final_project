@@ -719,12 +719,31 @@ def save(self, *args, **kwargs):
             f"{self.client.last_name}"
         )
 
+    def __str__(self):
+        return (
+            f"{self.booking_id} - "
+            f"{self.client.first_name} "
+            f"{self.client.last_name}"
+        )
+
     @property
     def balance_due(self):
         return (
             self.total_amount
             - self.paid_amount
             - self.discount_amount
+        )
+
+    @property
+    def can_pay(self):
+        """
+        Return True when the booking has an outstanding balance
+        and is not cancelled or refunded.
+        """
+        return (
+            self.balance_due > 0
+            and self.status not in ('cancelled', 'refunded')
+            and self.payment_status != 'paid'
         )
 
 
