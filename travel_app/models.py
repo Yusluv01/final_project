@@ -531,7 +531,6 @@ class ClientDocument(models.Model):
             f"{self.get_document_type_display()}"
         )
 
-
 # ============================================================
 # BOOKING
 # ============================================================
@@ -675,64 +674,86 @@ class Booking(models.Model):
 
     history = HistoricalRecords()
 
-def save(self, *args, **kwargs):
+    # ============================================================
+    # SAVE
+    # ============================================================
 
-    if not self.booking_id:
+    def save(self, *args, **kwargs):
 
-        year_month = timezone.now().strftime('%Y%m')
+        if not self.booking_id:
 
-        # Find the highest booking number already used
-        existing_ids = (
-            Booking.objects
-            .filter(
-                booking_id__startswith=f'TB-{year_month}-'
-            )
-            .values_list('booking_id', flat=True)
-        )
+            year_month = timezone.now().strftime('%Y%m')
 
-        highest_number = 0
-
-        for existing_id in existing_ids:
-            try:
-                number = int(existing_id.split('-')[-1])
-                highest_number = max(
-                    highest_number,
-                    number
+            # Find existing booking IDs for this month
+            existing_ids = (
+                Booking.objects
+                .filter(
+                    booking_id__startswith=f'TB-{year_month}-'
                 )
-            except (ValueError, IndexError):
-                continue
+                .values_list(
+                    'booking_id',
+                    flat=True
+                )
+            )
 
-        # Generate the next booking number
-        next_number = highest_number + 1
+            highest_number = 0
 
-        self.booking_id = (
-            f'TB-{year_month}-'
-            f'{str(next_number).zfill(4)}'
-        )
+            for existing_id in existing_ids:
 
-    super().save(*args, **kwargs)
+                try:
+                    number = int(
+                        existing_id.split('-')[-1]
+                    )
+
+                    highest_number = max(
+                        highest_number,
+                        number
+                    )
+
+                except (ValueError, IndexError):
+                    continue
+
+            # Generate next booking number
+            next_number = highest_number + 1
+
+            self.booking_id = (
+                f'TB-{year_month}-'
+                f'{str(next_number).zfill(4)}'
+            )
+
+        super().save(*args, **kwargs)
+
+    # ============================================================
+    # STRING REPRESENTATION
+    # ============================================================
 
     def __str__(self):
+
         return (
             f"{self.booking_id} - "
             f"{self.client.first_name} "
             f"{self.client.last_name}"
         )
 
-    def __str__(self):
-        return (
-            f"{self.booking_id} - "
-            f"{self.client.first_name} "
-            f"{self.client.last_name}"
-        )
+    # ============================================================
+    # BALANCE DUE
+    # ============================================================
 
     @property
     def balance_due(self):
-        return (
+
+        balance = (
             self.total_amount
             - self.paid_amount
             - self.discount_amount
         )
+
+        # Never return a negative balance
+        return max(balance, 0)
+
+    # ============================================================
+    # CAN PAY
+    # ============================================================
 
     @property
     def can_pay(self):
@@ -740,9 +761,13 @@ def save(self, *args, **kwargs):
         Return True when the booking has an outstanding balance
         and is not cancelled or refunded.
         """
+
         return (
             self.balance_due > 0
-            and self.status not in ('cancelled', 'refunded')
+            and self.status not in (
+                'cancelled',
+                'refunded'
+            )
             and self.payment_status != 'paid'
         )
 
