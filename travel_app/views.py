@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import (
     authenticate,
@@ -46,7 +47,6 @@ import importlib
 import os
 import io
 import uuid
-import requests
 
 import openai
 import resend
