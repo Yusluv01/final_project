@@ -64,15 +64,16 @@
                     My Profile
                 </a>
 
-
-                <!-- PAYMENTS -->
-                <a
+                
+                  <<!-- PAYMENT HISTORY -->
+                  <a
                     href="{% url 'travel_app:client_payments' %}"
-                    class="text-gray-600 hover:text-blue-600 font-medium transition whitespace-nowrap"
-                >
-                    <i class="fa-solid fa-credit-card mr-2"></i>
-                    Payments
-                </a>
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg
+                           text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+                        >
+                    <i class="fa-solid fa-credit-card w-5"></i>
+                    <span>Payment History</span>
+                    </a>
 
 
                 <!-- DOCUMENTS -->
@@ -135,18 +136,16 @@
                     <i class="fa-solid fa-user w-5"></i>
                     <span>My Profile</span>
                 </a>
-
-
-                <!-- PAYMENTS -->
+                
+                <!-- PAYMENT HISTORY -->
                 <a
                     href="{% url 'travel_app:client_payments' %}"
                     class="flex items-center gap-3 px-4 py-3 rounded-lg
                            text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
                 >
                     <i class="fa-solid fa-credit-card w-5"></i>
-                    <span>Payments</span>
+                    <span>Payment History</span>
                 </a>
-
 
                 <!-- DOCUMENTS -->
                 <a
