@@ -564,20 +564,106 @@ def itinerary_export_pdf(request, pk):
     p.save()
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename=f'itinerary_{booking.booking_id}.pdf')
+    
 
 class PaymentView(LoginRequiredMixin, TemplateView):
-    template_name = 'travel_app/payments.html'
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['payment_history'] = Payment.objects.all().select_related('booking').order_by('-created_at')[:20]
-        confirmed_bookings = Booking.objects.filter(status='confirmed').order_by('-created_at')
-        if confirmed_bookings:
-            context['bookings'] = confirmed_bookings
-        else:
-            context['bookings'] = Booking.objects.all().order_by('-created_at')[:5]
-        context['paystack_public_key'] = settings.PAYSTACK_PUBLIC_KEY
-        return context
 
+    template_name = 'travel_app/payments.html'
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+        # ========================================================
+        # PAYMENT HISTORY
+        # ========================================================
+
+        payment_history = (
+            Payment.objects
+            .select_related('booking', 'booking__client')
+            .order_by('-created_at')
+        )
+
+        context['payment_history'] = payment_history[:20]
+
+        # ========================================================
+        # TOTAL REVENUE
+        # Only COMPLETED payments count as actual revenue
+        # ========================================================
+
+        total_revenue = (
+            Payment.objects
+            .filter(status='completed')
+            .aggregate(
+                total=Sum('amount')
+            )['total']
+            or 0
+        )
+
+        context['total_revenue'] = total_revenue
+
+        # ========================================================
+        # PENDING INVOICES
+        # ========================================================
+
+        pending_payments = Payment.objects.filter(
+            status='pending'
+        )
+
+        context['pending_invoices'] = pending_payments.count()
+
+        pending_amount = (
+            pending_payments
+            .aggregate(
+                total=Sum('amount')
+            )['total']
+            or 0
+        )
+
+        context['pending_amount'] = pending_amount
+
+        # ========================================================
+        # COMPLETED PAYMENTS
+        # ========================================================
+
+        context['completed_payments'] = (
+            Payment.objects
+            .filter(status='completed')
+            .count()
+        )
+
+        # ========================================================
+        # BOOKINGS
+        # ========================================================
+
+        confirmed_bookings = (
+            Booking.objects
+            .filter(status='confirmed')
+            .order_by('-created_at')
+        )
+
+        if confirmed_bookings.exists():
+
+            context['bookings'] = confirmed_bookings
+
+        else:
+
+            context['bookings'] = (
+                Booking.objects
+                .all()
+                .order_by('-created_at')[:5]
+            )
+
+        # ========================================================
+        # PAYSTACK
+        # ========================================================
+
+        context['paystack_public_key'] = (
+            settings.PAYSTACK_PUBLIC_KEY
+        )
+
+        return context
+        
 @login_required
 def process_payment(request):
     if request.method == 'POST':
