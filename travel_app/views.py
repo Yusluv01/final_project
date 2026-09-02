@@ -750,105 +750,841 @@ def send_message(request):
     except Exception as e:
         logger.error(f"Send message error: {e}")
         return JsonResponse({'success': False, 'error': str(e)})
-
 @login_required
 def flight_search(request):
+
     try:
-        origin_code = request.GET.get('origin', '').upper()
-        destination_code = request.GET.get('destination', '').upper()
-        date = request.GET.get('date', '')
-        return_date = request.GET.get('return_date', '')
-        adults = int(request.GET.get('adults', 1))
-        search_performed = bool(origin_code and destination_code and date)
+
+        origin_code = request.GET.get(
+            'origin',
+            ''
+        ).upper().strip()
+
+        destination_code = request.GET.get(
+            'destination',
+            ''
+        ).upper().strip()
+
+        date = request.GET.get(
+            'date',
+            ''
+        )
+
+        return_date = request.GET.get(
+            'return_date',
+            ''
+        )
+
+        adults = int(
+            request.GET.get(
+                'adults',
+                1
+            )
+        )
+
+        search_performed = bool(
+            origin_code
+            and destination_code
+            and date
+        )
+
         search_results = []
+
         total_results = 0
+
         seasonal_warning = None
+
+
+        # =========================================================
+        # OGUN STATE / IPERU SEARCH HANDLING
+        # =========================================================
+
         if search_performed:
-            is_ogun_state_search = (origin_code == "IPERU" or origin_code == "OGUN")
+
+            is_ogun_state_search = (
+                origin_code == "IPERU"
+                or origin_code == "OGUN"
+            )
+
             if is_ogun_state_search:
+
                 seasonal_warning = {
-                    'title': '📢 Seasonal Charter Service',
-                    'message': 'Direct flights from Gateway International Airport (Iperu) to Saudi Arabia are only available during Hajj/Umrah seasons. Would you like to view flights from Lagos (LOS) instead?'
+                    'title': 'Seasonal Charter Service',
+                    'message': (
+                        'Direct flights from Gateway International '
+                        'Airport (Iperu) to Saudi Arabia are only '
+                        'available during Hajj/Umrah seasons. '
+                        'Flights from Lagos (LOS) are being shown.'
+                    )
                 }
+
                 origin_code = "LOS"
-                search_performed = True
+
+
+            # =====================================================
+            # FLIGHT ROUTE DATABASE
+            # =====================================================
+
             flight_routes_db = {
-                "EgyptAir": {"route": ["LOS", "CAI", "JED"], "duration": "10h 40m", "description": "Stop over at Cairo"},
-                "Emirates": {"route": ["LOS", "DXB", "JED"], "duration": "9h 30m", "description": "Stop over at Dubai"},
-                "Turkish Airlines": {"route": ["LOS", "IST", "JED"], "duration": "10h 15m", "description": "Stop over at Istanbul"},
-                "Saudia": {"route": ["LOS", "NBO", "JED"], "duration": "14h 30m", "description": "Connection via Nairobi"},
-                "Ethiopian Airlines": {"route": ["LOS", "ADD", "JED"], "duration": "8h 55m", "description": "Stop over at Addis Ababa"},
-                "Qatar Airways": {"route": ["LOS", "DOH", "JED"], "duration": "9h 45m", "description": "Stop over at Doha"}
+
+                "EgyptAir": {
+                    "route": ["LOS", "CAI", "JED"],
+                    "duration": "10h 40m",
+                    "description": "Stop over at Cairo",
+                    "service_score": 7.8,
+                    "punctuality_score": 7.6,
+                    "comfort_score": 7.5,
+                    "transit_score": 7.8,
+                    "historical_summary": (
+                        "Historically known for providing a practical "
+                        "connection between Africa, the Middle East "
+                        "and Saudi Arabia through Cairo."
+                    ),
+                    "strengths": [
+                        "Competitive route availability",
+                        "Convenient Cairo connection",
+                        "Suitable for regional travel"
+                    ],
+                    "concerns": [
+                        "Connection times may vary",
+                        "Service experience can vary by aircraft"
+                    ]
+                },
+
+                "Emirates": {
+                    "route": ["LOS", "DXB", "JED"],
+                    "duration": "9h 30m",
+                    "description": "Stop over at Dubai",
+                    "service_score": 9.1,
+                    "punctuality_score": 8.7,
+                    "comfort_score": 9.0,
+                    "transit_score": 9.2,
+                    "historical_summary": (
+                        "Historically recognised for strong cabin "
+                        "service, modern aircraft and a well-developed "
+                        "Dubai transit experience."
+                    ),
+                    "strengths": [
+                        "Strong cabin service reputation",
+                        "Modern aircraft experience",
+                        "Well-developed Dubai transit hub"
+                    ],
+                    "concerns": [
+                        "Often more expensive",
+                        "Longer total journey depending on connection"
+                    ]
+                },
+
+                "Turkish Airlines": {
+                    "route": ["LOS", "IST", "JED"],
+                    "duration": "10h 15m",
+                    "description": "Stop over at Istanbul",
+                    "service_score": 8.7,
+                    "punctuality_score": 8.1,
+                    "comfort_score": 8.5,
+                    "transit_score": 8.6,
+                    "historical_summary": (
+                        "Historically offers extensive international "
+                        "connections through Istanbul and is known "
+                        "for broad destination coverage."
+                    ),
+                    "strengths": [
+                        "Extensive international network",
+                        "Strong onboard service",
+                        "Good Istanbul connectivity"
+                    ],
+                    "concerns": [
+                        "Transit time can vary",
+                        "Airport navigation may be busy"
+                    ]
+                },
+
+                "Saudia": {
+                    "route": ["LOS", "NBO", "JED"],
+                    "duration": "14h 30m",
+                    "description": "Connection via Nairobi",
+                    "service_score": 8.2,
+                    "punctuality_score": 7.9,
+                    "comfort_score": 8.0,
+                    "transit_score": 7.5,
+                    "historical_summary": (
+                        "A Saudi-focused airline option that can be "
+                        "particularly relevant for passengers travelling "
+                        "for Hajj and Umrah."
+                    ),
+                    "strengths": [
+                        "Saudi Arabia travel experience",
+                        "Relevant for Hajj and Umrah passengers",
+                        "Strong regional focus"
+                    ],
+                    "concerns": [
+                        "Longer journey in this route configuration",
+                        "Connection convenience may vary"
+                    ]
+                },
+
+                "Ethiopian Airlines": {
+                    "route": ["LOS", "ADD", "JED"],
+                    "duration": "8h 55m",
+                    "description": "Stop over at Addis Ababa",
+                    "service_score": 8.0,
+                    "punctuality_score": 8.2,
+                    "comfort_score": 7.8,
+                    "transit_score": 8.0,
+                    "historical_summary": (
+                        "Historically provides strong African route "
+                        "connectivity through Addis Ababa with broad "
+                        "regional coverage."
+                    ),
+                    "strengths": [
+                        "Strong African connectivity",
+                        "Competitive routing",
+                        "Extensive regional network"
+                    ],
+                    "concerns": [
+                        "Transit experience depends on connection time",
+                        "Service consistency may vary"
+                    ]
+                },
+
+                "Qatar Airways": {
+                    "route": ["LOS", "DOH", "JED"],
+                    "duration": "9h 45m",
+                    "description": "Stop over at Doha",
+                    "service_score": 9.2,
+                    "punctuality_score": 8.9,
+                    "comfort_score": 9.1,
+                    "transit_score": 9.3,
+                    "historical_summary": (
+                        "Historically recognised for premium service "
+                        "standards and a strong Doha transit experience."
+                    ),
+                    "strengths": [
+                        "High service reputation",
+                        "Strong cabin comfort",
+                        "Efficient Doha transit hub"
+                    ],
+                    "concerns": [
+                        "Often positioned at a higher price",
+                        "Connection time still needs consideration"
+                    ]
+                }
+
             }
+
+
+            # =====================================================
+            # SAUDI ARABIA DESTINATIONS
+            # =====================================================
+
             if destination_code in ["JED", "MED"]:
-                import random
-                airlines_list = list(flight_routes_db.keys())
-                random.shuffle(airlines_list)
+
+                airlines_list = list(
+                    flight_routes_db.keys()
+                )
+
+                random.shuffle(
+                    airlines_list
+                )
+
                 selected_airlines = airlines_list[:6]
-                for i, airline_name in enumerate(selected_airlines):
-                    route_data = flight_routes_db[airline_name]
-                    stops_list = route_data['route']
-                    duration = route_data['duration']
-                    description = route_data['description']
-                    route_display = " ✈ ".join(stops_list)
-                    base_price = 750 if destination_code == "JED" else 850
-                    price = base_price + (i * 60) - random.randint(0, 30)
+
+
+                # =================================================
+                # GENERATE CONNECTING FLIGHTS
+                # =================================================
+
+                for i, airline_name in enumerate(
+                    selected_airlines
+                ):
+
+                    route_data = flight_routes_db[
+                        airline_name
+                    ]
+
+                    stops_list = route_data[
+                        'route'
+                    ]
+
+                    duration = route_data[
+                        'duration'
+                    ]
+
+                    description = route_data[
+                        'description'
+                    ]
+
+                    route_display = " → ".join(
+                        stops_list
+                    )
+
+                    base_price = (
+                        750
+                        if destination_code == "JED"
+                        else 850
+                    )
+
+                    price = (
+                        base_price
+                        + (i * 60)
+                        - random.randint(0, 30)
+                    )
+
+                    flight_id = (
+                        f"FL-"
+                        f"{origin_code}-"
+                        f"{destination_code}-"
+                        f"{i + 1:03d}"
+                    )
+
                     search_results.append({
-                        'id': f"FL-{origin_code}-{destination_code}-{i+1:03d}",
+
+                        'id': flight_id,
+
                         'airline': airline_name,
-                        'price': round(price, 2),
-                        'currency': 'USD',
-                        'departure': f"{origin_code} at {random.choice(['13:40', '14:00', '10:15'])}",
-                        'arrival': f"{origin_code} → {stops_list[1]} → {destination_code}",
+
+                        'price': round(
+                            price,
+                            2
+                        ),
+
+                        'currency': 'NGN',
+
+                        'departure': (
+                            f"{origin_code} at "
+                            f"{random.choice([
+                                '13:40',
+                                '14:00',
+                                '10:15'
+                            ])}"
+                        ),
+
+                        'arrival': (
+                            f"{origin_code} → "
+                            f"{stops_list[1]} → "
+                            f"{destination_code}"
+                        ),
+
                         'duration': duration,
-                        'stops': len(stops_list) - 1,
-                        'badge': "Connecting",
-                        'route_display': route_display,
-                        'route_description': description,
-                        'protocols': 'Standard Economy',
-                        'description': f'Operated by {airline_name} for Al-Iklas Hajj & Umrah Services.',
+
+                        'stops': (
+                            len(stops_list) - 1
+                        ),
+
+                        'badge': (
+                            "Connecting"
+                        ),
+
+                        'route_display': (
+                            route_display
+                        ),
+
+                        'route_description': (
+                            description
+                        ),
+
+                        'protocols': (
+                            'Standard Economy'
+                        ),
+
+                        'description': (
+                            f'Operated by '
+                            f'{airline_name} '
+                            f'for Al-Iklas Hajj '
+                            f'& Umrah Services.'
+                        ),
+
                         'booking_url': '#',
+
+                        # AI / HISTORICAL DATA
+
+                        'service_score': (
+                            route_data[
+                                'service_score'
+                            ]
+                        ),
+
+                        'punctuality_score': (
+                            route_data[
+                                'punctuality_score'
+                            ]
+                        ),
+
+                        'comfort_score': (
+                            route_data[
+                                'comfort_score'
+                            ]
+                        ),
+
+                        'transit_score': (
+                            route_data[
+                                'transit_score'
+                            ]
+                        ),
+
+                        'historical_summary': (
+                            route_data[
+                                'historical_summary'
+                            ]
+                        ),
+
+                        'strengths': (
+                            route_data[
+                                'strengths'
+                            ]
+                        ),
+
+                        'concerns': (
+                            route_data[
+                                'concerns'
+                            ]
+                        ),
+
                     })
+
+
+                # =================================================
+                # DIRECT SAUDIA FLIGHT
+                # =================================================
+
+                direct_price = (
+                    base_price + 150
+                )
+
                 search_results.append({
-                        'id': f"FL-{origin_code}-{destination_code}-{i+2:03d}",
-                        'airline': 'Saudia Direct',
-                        'price': round(base_price + 150, 2),
-                        'currency': 'USD',
-                        'departure': f"{origin_code} at {random.choice(['12:00', '09:30'])}",
-                        'arrival': f"{origin_code} → {destination_code}",
-                        'duration': '5h 15m',
-                        'stops': 0,
-                        'badge': "Direct",
-                        'route_display': f"{origin_code} ✈ {destination_code}",
-                        'route_description': 'Direct flight to Saudi Arabia',
-                        'protocols': 'Standard Economy',
-                        'description': 'Direct flight operated by Saudia for Al-Iklas Hajj & Umrah Services.',
-                        'booking_url': '#',
-                    })
-                total_results = len(search_results)
+
+                    'id': (
+                        f"FL-"
+                        f"{origin_code}-"
+                        f"{destination_code}-"
+                        f"{len(search_results) + 1:03d}"
+                    ),
+
+                    'airline': (
+                        'Saudia Direct'
+                    ),
+
+                    'price': round(
+                        direct_price,
+                        2
+                    ),
+
+                    'currency': 'NGN',
+
+                    'departure': (
+                        f"{origin_code} at "
+                        f"{random.choice([
+                            '12:00',
+                            '09:30'
+                        ])}"
+                    ),
+
+                    'arrival': (
+                        f"{origin_code} → "
+                        f"{destination_code}"
+                    ),
+
+                    'duration': (
+                        '5h 15m'
+                    ),
+
+                    'stops': 0,
+
+                    'badge': (
+                        "Direct"
+                    ),
+
+                    'route_display': (
+                        f"{origin_code} → "
+                        f"{destination_code}"
+                    ),
+
+                    'route_description': (
+                        'Direct flight to '
+                        'Saudi Arabia'
+                    ),
+
+                    'protocols': (
+                        'Standard Economy'
+                    ),
+
+                    'description': (
+                        'Direct flight operated '
+                        'by Saudia for Al-Iklas '
+                        'Hajj & Umrah Services.'
+                    ),
+
+                    'booking_url': '#',
+
+                    'service_score': 8.5,
+
+                    'punctuality_score': 8.2,
+
+                    'comfort_score': 8.3,
+
+                    'transit_score': 10.0,
+
+                    'historical_summary': (
+                        'A direct route eliminates '
+                        'transit requirements and may '
+                        'be particularly convenient for '
+                        'Hajj and Umrah travellers.'
+                    ),
+
+                    'strengths': [
+
+                        'No transit required',
+
+                        'Shorter total journey',
+
+                        'Convenient for Saudi travel'
+
+                    ],
+
+                    'concerns': [
+
+                        'Direct flights may have limited availability',
+
+                        'Pricing can be higher during peak seasons'
+
+                    ]
+
+                })
+
+
+                total_results = len(
+                    search_results
+                )
+
+
             else:
+
                 search_performed = False
+
                 total_results = 0
+
+
+        # =========================================================
+        # CONTEXT
+        # =========================================================
+
         context = {
+
+            # Keep BOTH names so your existing template works.
+
+            'origin': origin_code,
+
+            'destination': destination_code,
+
             'origin_code': origin_code,
+
             'destination_code': destination_code,
+
             'date': date,
+
             'return_date': return_date,
+
             'adults': adults,
+
             'search_results': search_results,
+
             'total_results': total_results,
+
             'search_performed': search_performed,
+
             'seasonal_warning': seasonal_warning,
+
         }
-        return render(request, 'travel_app/search.html', context)
+
+
+        return render(
+            request,
+            'travel_app/search.html',
+            context
+        )
+
+
     except Exception as e:
-        logger.error(f"Flight Search Error: {e}")
-        return render(request, 'travel_app/search.html', {
-            'error': 'An error occurred while searching for flights.',
-            'search_performed': False,
-            'search_results': [],
-            'total_results': 0,
-        })
+
+        logger.error(
+            f"Flight Search Error: {e}"
+        )
+
+        return render(
+            request,
+            'travel_app/search.html',
+            {
+
+                'error': (
+                    'An error occurred while '
+                    'searching for flights.'
+                ),
+
+                'search_performed': False,
+
+                'search_results': [],
+
+                'total_results': 0,
+
+            }
+        )
+
+@login_required
+def flight_details(request):
+
+    airline = request.GET.get(
+        'airline',
+        ''
+    )
+
+    origin = request.GET.get(
+        'origin',
+        ''
+    )
+
+    destination = request.GET.get(
+        'destination',
+        ''
+    )
+
+    flight_id = request.GET.get(
+        'flight_id',
+        ''
+    )
+
+    duration = request.GET.get(
+        'duration',
+        ''
+    )
+
+    stops = request.GET.get(
+        'stops',
+        ''
+    )
+
+    price = request.GET.get(
+        'price',
+        ''
+    )
+
+    departure = request.GET.get(
+        'departure',
+        ''
+    )
+
+    arrival = request.GET.get(
+        'arrival',
+        ''
+    )
+
+    service_score = request.GET.get(
+        'service_score',
+        ''
+    )
+
+    punctuality_score = request.GET.get(
+        'punctuality_score',
+        ''
+    )
+
+    comfort_score = request.GET.get(
+        'comfort_score',
+        ''
+    )
+
+    transit_score = request.GET.get(
+        'transit_score',
+        ''
+    )
+
+    historical_summary = request.GET.get(
+        'historical_summary',
+        ''
+    )
+
+
+    strengths = request.GET.getlist(
+        'strength'
+    )
+
+    concerns = request.GET.getlist(
+        'concern'
+    )
+
+
+    # =========================================================
+    # AI ANALYSIS
+    # =========================================================
+
+    ai_analysis = None
+
+    ai_error = None
+
+
+    try:
+
+        from google import genai
+
+
+        client = genai.Client(
+
+            api_key=settings.GEMINI_API_KEY
+
+        )
+
+
+        prompt = f"""
+You are the Travelbolt AI Flight Intelligence Assistant.
+
+Analyse the following flight information.
+
+Airline:
+{airline}
+
+Flight ID:
+{flight_id}
+
+Route:
+{origin} to {destination}
+
+Departure:
+{departure}
+
+Arrival:
+{arrival}
+
+Duration:
+{duration}
+
+Stops:
+{stops}
+
+Price:
+₦{price}
+
+Historical Service Score:
+{service_score}/10
+
+Historical Punctuality Score:
+{punctuality_score}/10
+
+Historical Comfort Score:
+{comfort_score}/10
+
+Transit Score:
+{transit_score}/10
+
+Historical Summary:
+{historical_summary}
+
+Known Strengths:
+{", ".join(strengths)}
+
+Possible Concerns:
+{", ".join(concerns)}
+
+Provide a professional flight intelligence report.
+
+Include these sections:
+
+1. Overall Assessment
+2. Service Experience
+3. Punctuality Insight
+4. Comfort Insight
+5. Transit Experience
+6. Best For
+7. Important Considerations
+8. Final AI Recommendation
+
+Important rules:
+
+- Do not claim access to live flight tracking.
+- Base the analysis only on the supplied information.
+- Clearly describe the information as historical or available service data.
+- Do not invent statistics.
+- Give practical advice for a travel agency selecting flights for clients.
+"""
+
+
+        response = client.models.generate_content(
+
+            model=getattr(
+                settings,
+                'GEMINI_MODEL',
+                'gemini-3.7-flash'
+            ),
+
+            contents=prompt
+
+        )
+
+
+        ai_analysis = response.text
+
+
+    except Exception as e:
+
+        logger.error(
+            f"Flight AI Analysis Error: {e}"
+        )
+
+        ai_error = (
+            'AI analysis is temporarily unavailable. '
+            'The historical flight information is '
+            'still available below.'
+        )
+
+
+    context = {
+
+        'flight_id': flight_id,
+
+        'airline': airline,
+
+        'origin': origin,
+
+        'destination': destination,
+
+        'duration': duration,
+
+        'stops': stops,
+
+        'price': price,
+
+        'departure': departure,
+
+        'arrival': arrival,
+
+        'service_score': service_score,
+
+        'punctuality_score': punctuality_score,
+
+        'comfort_score': comfort_score,
+
+        'transit_score': transit_score,
+
+        'historical_summary': historical_summary,
+
+        'strengths': strengths,
+
+        'concerns': concerns,
+
+        'ai_analysis': ai_analysis,
+
+        'ai_error': ai_error,
+
+    }
+
+
+    return render(
+
+        request,
+
+        'travel_app/flight_details.html',
+
+        context
+
+    )
 
 @login_required
 def flight_search_api(request):
