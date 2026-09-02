@@ -761,32 +761,26 @@ document.addEventListener('DOMContentLoaded', function () {
     // OPEN FLIGHT INTELLIGENCE
     // ==========================================================
 
-    window.openFlightIntelligence = function (flightId) {
+   window.openFlightIntelligence = function (flightId) {
 
-        if (!flightId) {
+    if (!flightId) {
+        alert('Unable to open flight details.');
+        return;
+    }
 
-            alert('Unable to open flight details.');
+    const baseUrl =
+        "{% url 'travel_app:flight_details' flight_id='__FLIGHT_ID__' %}";
 
-            return;
+    const detailsUrl =
+        baseUrl.replace(
+            '__FLIGHT_ID__',
+            encodeURIComponent(flightId)
+        );
 
-        }
+    window.location.href = detailsUrl;
+};
 
-        /*
-         * The flight ID is the ONLY information passed through
-         * the URL.
-         *
-         * Django will retrieve the actual flight information
-         * server-side on the Flight Intelligence page.
-         */
-
-        const baseUrl = "{% url 'travel_app:flight_details' %}";
-
-        window.location.href =
-            baseUrl + "?flight_id=" + encodeURIComponent(flightId);
-
-    };
-
-
+    
     // ==========================================================
     // STUDENT DISCOUNT
     // ==========================================================
