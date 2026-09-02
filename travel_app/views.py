@@ -1061,16 +1061,22 @@ def flight_search(request):
                         - random.randint(0, 30)
                     )
 
+
+                    # =================================================
+                    # UNIQUE FLIGHT ID
+                    # =================================================
+
                     flight_id = (
                         f"FL-{origin_code}-"
                         f"{destination_code}-"
+                        f"{date.replace('-', '')}-"
                         f"{i + 1:03d}"
                     )
 
-                    # FIX:
-                    # Generate the random departure time
-                    # separately instead of placing the list
-                    # inside the f-string.
+
+                    # =================================================
+                    # DEPARTURE TIME
+                    # =================================================
 
                     departure_time = random.choice(
                         [
@@ -1081,7 +1087,27 @@ def flight_search(request):
                     )
 
 
-                    search_results.append({
+                    # =================================================
+                    # PARSE DEPARTURE DATE
+                    # =================================================
+
+                    try:
+
+                        departure_date = datetime.strptime(
+                            date,
+                            '%Y-%m-%d'
+                        ).date()
+
+                    except (ValueError, TypeError):
+
+                        departure_date = None
+
+
+                    # =================================================
+                    # FLIGHT DATA
+                    # =================================================
+
+                    flight_data = {
 
                         'id': flight_id,
 
@@ -1130,9 +1156,9 @@ def flight_search(request):
 
                         'booking_url': '#',
 
-                        # =========================================
-                        # HISTORICAL / AI DATA
-                        # =========================================
+                        # =============================================
+                        # SERVICE INTELLIGENCE
+                        # =============================================
 
                         'service_score': (
                             route_data[
@@ -1176,7 +1202,121 @@ def flight_search(request):
                             ]
                         ),
 
-                    })
+                    }
+
+
+                    # =================================================
+                    # SAVE CONNECTING FLIGHT TO DATABASE
+                    # =================================================
+
+                    Flight.objects.update_or_create(
+
+                        flight_id=flight_id,
+
+                        defaults={
+
+                            'airline': airline_name,
+
+                            'origin': origin_code,
+
+                            'destination': destination_code,
+
+                            'departure_date': departure_date,
+
+                            'departure': flight_data[
+                                'departure'
+                            ],
+
+                            'arrival': flight_data[
+                                'arrival'
+                            ],
+
+                            'duration': duration,
+
+                            'stops': (
+                                len(stops_list) - 1
+                            ),
+
+                            'price': round(
+                                price,
+                                2
+                            ),
+
+                            'currency': 'NGN',
+
+                            'badge': 'Connecting',
+
+                            'route_display': route_display,
+
+                            'route_description': description,
+
+                            'protocols': (
+                                'Standard Economy'
+                            ),
+
+                            'description': (
+                                f'Operated by '
+                                f'{airline_name} '
+                                f'for Al-Iklas Hajj '
+                                f'& Umrah Services.'
+                            ),
+
+                            'booking_url': '#',
+
+                            'service_score': (
+                                route_data[
+                                    'service_score'
+                                ]
+                            ),
+
+                            'punctuality_score': (
+                                route_data[
+                                    'punctuality_score'
+                                ]
+                            ),
+
+                            'comfort_score': (
+                                route_data[
+                                    'comfort_score'
+                                ]
+                            ),
+
+                            'transit_score': (
+                                route_data[
+                                    'transit_score'
+                                ]
+                            ),
+
+                            'historical_summary': (
+                                route_data[
+                                    'historical_summary'
+                                ]
+                            ),
+
+                            'strengths': (
+                                route_data[
+                                    'strengths'
+                                ]
+                            ),
+
+                            'concerns': (
+                                route_data[
+                                    'concerns'
+                                ]
+                            ),
+
+                        }
+
+                    )
+
+
+                    # =================================================
+                    # ADD TO SEARCH RESULTS
+                    # =================================================
+
+                    search_results.append(
+                        flight_data
+                    )
 
 
                 # =================================================
@@ -1195,17 +1335,134 @@ def flight_search(request):
                 )
 
 
+                # =================================================
+                # DIRECT FLIGHT ID
+                # =================================================
+
+                direct_flight_id = (
+                    f"FL-{origin_code}-"
+                    f"{destination_code}-"
+                    f"{date.replace('-', '')}-"
+                    f"{len(search_results) + 1:03d}"
+                )
+
+
+                # =================================================
+                # SAVE DIRECT FLIGHT DATE
+                # =================================================
+
+                try:
+
+                    departure_date = datetime.strptime(
+                        date,
+                        '%Y-%m-%d'
+                    ).date()
+
+                except (ValueError, TypeError):
+
+                    departure_date = None
+
+
+                # =================================================
+                # SAVE DIRECT SAUDIA FLIGHT
+                # =================================================
+
+                Flight.objects.update_or_create(
+
+                    flight_id=direct_flight_id,
+
+                    defaults={
+
+                        'airline': 'Saudia Direct',
+
+                        'origin': origin_code,
+
+                        'destination': destination_code,
+
+                        'departure_date': departure_date,
+
+                        'departure': (
+                            f"{origin_code} at "
+                            f"{direct_departure_time}"
+                        ),
+
+                        'arrival': (
+                            f"{origin_code} → "
+                            f"{destination_code}"
+                        ),
+
+                        'duration': '5h 15m',
+
+                        'stops': 0,
+
+                        'price': round(
+                            direct_price,
+                            2
+                        ),
+
+                        'currency': 'NGN',
+
+                        'badge': 'Direct',
+
+                        'route_display': (
+                            f"{origin_code} → "
+                            f"{destination_code}"
+                        ),
+
+                        'route_description': (
+                            'Direct flight to Saudi Arabia'
+                        ),
+
+                        'protocols': (
+                            'Standard Economy'
+                        ),
+
+                        'description': (
+                            'Direct flight operated by Saudia '
+                            'for Al-Iklas Hajj & Umrah Services.'
+                        ),
+
+                        'booking_url': '#',
+
+                        'service_score': 8.5,
+
+                        'punctuality_score': 8.2,
+
+                        'comfort_score': 8.3,
+
+                        'transit_score': 10.0,
+
+                        'historical_summary': (
+                            'A direct route eliminates transit '
+                            'requirements and may be particularly '
+                            'convenient for Hajj and Umrah travellers.'
+                        ),
+
+                        'strengths': [
+                            'No transit required',
+                            'Shorter total journey',
+                            'Convenient for Saudi travel'
+                        ],
+
+                        'concerns': [
+                            'Direct flights may have limited availability',
+                            'Pricing can be higher during peak seasons'
+                        ],
+
+                    }
+
+                )
+
+
+                # =================================================
+                # ADD DIRECT FLIGHT TO SEARCH RESULTS
+                # =================================================
+
                 search_results.append({
 
-                    'id': (
-                        f"FL-{origin_code}-"
-                        f"{destination_code}-"
-                        f"{len(search_results) + 1:03d}"
-                    ),
+                    'id': direct_flight_id,
 
-                    'airline': (
-                        'Saudia Direct'
-                    ),
+                    'airline': 'Saudia Direct',
 
                     'price': round(
                         direct_price,
@@ -1224,15 +1481,11 @@ def flight_search(request):
                         f"{destination_code}"
                     ),
 
-                    'duration': (
-                        '5h 15m'
-                    ),
+                    'duration': '5h 15m',
 
                     'stops': 0,
 
-                    'badge': (
-                        "Direct"
-                    ),
+                    'badge': 'Direct',
 
                     'route_display': (
                         f"{origin_code} → "
@@ -1240,8 +1493,7 @@ def flight_search(request):
                     ),
 
                     'route_description': (
-                        'Direct flight to '
-                        'Saudi Arabia'
+                        'Direct flight to Saudi Arabia'
                     ),
 
                     'protocols': (
@@ -1249,15 +1501,14 @@ def flight_search(request):
                     ),
 
                     'description': (
-                        'Direct flight operated '
-                        'by Saudia for Al-Iklas '
-                        'Hajj & Umrah Services.'
+                        'Direct flight operated by Saudia '
+                        'for Al-Iklas Hajj & Umrah Services.'
                     ),
 
                     'booking_url': '#',
 
                     # =============================================
-                    # HISTORICAL / AI DATA
+                    # SERVICE INTELLIGENCE
                     # =============================================
 
                     'service_score': 8.5,
@@ -1269,10 +1520,9 @@ def flight_search(request):
                     'transit_score': 10.0,
 
                     'historical_summary': (
-                        'A direct route eliminates '
-                        'transit requirements and may '
-                        'be particularly convenient for '
-                        'Hajj and Umrah travellers.'
+                        'A direct route eliminates transit '
+                        'requirements and may be particularly '
+                        'convenient for Hajj and Umrah travellers.'
                     ),
 
                     'strengths': [
@@ -1295,6 +1545,10 @@ def flight_search(request):
 
                 })
 
+
+                # =================================================
+                # TOTAL RESULTS
+                # =================================================
 
                 total_results = len(
                     search_results
@@ -1370,6 +1624,7 @@ def flight_search(request):
 
             }
         )
+    
         
 @login_required
 def flight_details(request, flight_id):
