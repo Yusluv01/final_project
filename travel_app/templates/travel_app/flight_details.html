@@ -1,0 +1,339 @@
+{% extends 'travel_app/base.html' %}
+
+{% block title %}
+Flight Intelligence | Travelbolt
+{% endblock %}
+
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto space-y-6">
+
+
+    <!-- BACK BUTTON -->
+
+    <a
+        href="{% url 'travel_app:flight_search' %}"
+        class="inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800"
+    >
+
+        ← Back to Flight Search
+
+    </a>
+
+
+    <!-- FLIGHT HEADER -->
+
+    <div class="bg-gradient-to-r from-blue-700 to-indigo-700 rounded-2xl p-8 text-white shadow-lg">
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+
+            <div>
+
+                <p class="text-blue-200 text-sm font-semibold">
+
+                    FLIGHT INTELLIGENCE
+
+                </p>
+
+                <h1 class="text-3xl font-bold mt-2">
+
+                    {{ airline }}
+
+                </h1>
+
+                <p class="text-blue-100 mt-2">
+
+                    {{ origin }} → {{ destination }}
+
+                </p>
+
+                <p class="text-blue-200 text-sm mt-1">
+
+                    Flight ID: {{ flight_id }}
+
+                </p>
+
+            </div>
+
+
+            <div class="text-left md:text-right">
+
+                <p class="text-blue-200 text-sm">
+
+                    Estimated Price
+
+                </p>
+
+                <p class="text-3xl font-bold">
+
+                    ₦{{ price }}
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- FLIGHT DETAILS -->
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+
+        <div class="bg-white border rounded-xl p-5">
+
+            <p class="text-xs text-gray-400 uppercase">
+
+                Duration
+
+            </p>
+
+            <p class="font-bold text-lg text-gray-900 mt-2">
+
+                {{ duration }}
+
+            </p>
+
+        </div>
+
+
+        <div class="bg-white border rounded-xl p-5">
+
+            <p class="text-xs text-gray-400 uppercase">
+
+                Stops
+
+            </p>
+
+            <p class="font-bold text-lg text-gray-900 mt-2">
+
+                {% if stops == "0" %}
+
+                    Direct
+
+                {% else %}
+
+                    {{ stops }} Stop{{ stops|pluralize }}
+
+                {% endif %}
+
+            </p>
+
+        </div>
+
+
+        <div class="bg-white border rounded-xl p-5">
+
+            <p class="text-xs text-gray-400 uppercase">
+
+                Service Score
+
+            </p>
+
+            <p class="font-bold text-lg text-green-600 mt-2">
+
+                {{ service_score }}/10
+
+            </p>
+
+        </div>
+
+
+        <div class="bg-white border rounded-xl p-5">
+
+            <p class="text-xs text-gray-400 uppercase">
+
+                Punctuality
+
+            </p>
+
+            <p class="font-bold text-lg text-blue-600 mt-2">
+
+                {{ punctuality_score }}/10
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- HISTORICAL INFORMATION -->
+
+    <div class="bg-white border border-gray-200 rounded-xl p-6">
+
+        <h2 class="text-xl font-bold text-gray-900">
+
+            Historical Service Information
+
+        </h2>
+
+
+        <p class="text-gray-600 leading-7 mt-4">
+
+            {{ historical_summary }}
+
+        </p>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+
+
+            <!-- STRENGTHS -->
+
+            <div>
+
+                <h3 class="font-bold text-green-700 mb-3">
+
+                    Strengths
+
+                </h3>
+
+
+                <ul class="space-y-2">
+
+                    {% for item in strengths %}
+
+                        <li class="flex gap-2 text-gray-700">
+
+                            <span class="text-green-600">
+
+                                ✓
+
+                            </span>
+
+                            {{ item }}
+
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+
+            <!-- CONCERNS -->
+
+            <div>
+
+                <h3 class="font-bold text-orange-600 mb-3">
+
+                    Things to Consider
+
+                </h3>
+
+
+                <ul class="space-y-2">
+
+                    {% for item in concerns %}
+
+                        <li class="flex gap-2 text-gray-700">
+
+                            <span class="text-orange-500">
+
+                                !
+
+                            </span>
+
+                            {{ item }}
+
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- AI ANALYSIS -->
+
+    <div class="bg-white border border-purple-200 rounded-xl shadow-sm overflow-hidden">
+
+
+        <div class="bg-purple-50 border-b border-purple-200 p-5 flex items-center gap-3">
+
+            <div class="w-11 h-11 bg-purple-600 rounded-lg flex items-center justify-center text-white text-xl">
+
+                ✨
+
+            </div>
+
+
+            <div>
+
+                <h2 class="font-bold text-purple-900">
+
+                    Travelbolt AI Flight Intelligence
+
+                </h2>
+
+                <p class="text-sm text-purple-700">
+
+                    AI analysis based on available flight and historical service information.
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="p-6">
+
+
+            {% if ai_analysis %}
+
+                <div class="text-gray-700 leading-7 whitespace-pre-line">
+
+                    {{ ai_analysis }}
+
+                </div>
+
+
+            {% else %}
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+
+                    <p class="font-semibold text-yellow-800">
+
+                        AI Analysis Temporarily Unavailable
+
+                    </p>
+
+                    <p class="text-sm text-yellow-700 mt-1">
+
+                        {{ ai_error }}
+
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+
+        </div>
+
+    </div>
+
+
+    <!-- DATA NOTICE -->
+
+    <div class="text-xs text-gray-400 text-center pb-8">
+
+        Travelbolt AI provides decision-support insights based on available flight and historical service information. Live flight status should be confirmed with the airline or a connected flight-data provider.
+
+    </div>
+
+
+</div>
+
+{% endblock %}
