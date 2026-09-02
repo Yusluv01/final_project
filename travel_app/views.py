@@ -750,6 +750,7 @@ def send_message(request):
     except Exception as e:
         logger.error(f"Send message error: {e}")
         return JsonResponse({'success': False, 'error': str(e)})
+        
 @login_required
 def flight_search(request):
 
@@ -831,139 +832,168 @@ def flight_search(request):
                     "route": ["LOS", "CAI", "JED"],
                     "duration": "10h 40m",
                     "description": "Stop over at Cairo",
+
                     "service_score": 7.8,
                     "punctuality_score": 7.6,
                     "comfort_score": 7.5,
                     "transit_score": 7.8,
+
                     "historical_summary": (
                         "Historically known for providing a practical "
                         "connection between Africa, the Middle East "
                         "and Saudi Arabia through Cairo."
                     ),
+
                     "strengths": [
                         "Competitive route availability",
                         "Convenient Cairo connection",
                         "Suitable for regional travel"
                     ],
+
                     "concerns": [
                         "Connection times may vary",
                         "Service experience can vary by aircraft"
                     ]
                 },
 
+
                 "Emirates": {
                     "route": ["LOS", "DXB", "JED"],
                     "duration": "9h 30m",
                     "description": "Stop over at Dubai",
+
                     "service_score": 9.1,
                     "punctuality_score": 8.7,
                     "comfort_score": 9.0,
                     "transit_score": 9.2,
+
                     "historical_summary": (
                         "Historically recognised for strong cabin "
                         "service, modern aircraft and a well-developed "
                         "Dubai transit experience."
                     ),
+
                     "strengths": [
                         "Strong cabin service reputation",
                         "Modern aircraft experience",
                         "Well-developed Dubai transit hub"
                     ],
+
                     "concerns": [
                         "Often more expensive",
                         "Longer total journey depending on connection"
                     ]
                 },
 
+
                 "Turkish Airlines": {
                     "route": ["LOS", "IST", "JED"],
                     "duration": "10h 15m",
                     "description": "Stop over at Istanbul",
+
                     "service_score": 8.7,
                     "punctuality_score": 8.1,
                     "comfort_score": 8.5,
                     "transit_score": 8.6,
+
                     "historical_summary": (
                         "Historically offers extensive international "
                         "connections through Istanbul and is known "
                         "for broad destination coverage."
                     ),
+
                     "strengths": [
                         "Extensive international network",
                         "Strong onboard service",
                         "Good Istanbul connectivity"
                     ],
+
                     "concerns": [
                         "Transit time can vary",
                         "Airport navigation may be busy"
                     ]
                 },
 
+
                 "Saudia": {
                     "route": ["LOS", "NBO", "JED"],
                     "duration": "14h 30m",
                     "description": "Connection via Nairobi",
+
                     "service_score": 8.2,
                     "punctuality_score": 7.9,
                     "comfort_score": 8.0,
                     "transit_score": 7.5,
+
                     "historical_summary": (
                         "A Saudi-focused airline option that can be "
                         "particularly relevant for passengers travelling "
                         "for Hajj and Umrah."
                     ),
+
                     "strengths": [
                         "Saudi Arabia travel experience",
                         "Relevant for Hajj and Umrah passengers",
                         "Strong regional focus"
                     ],
+
                     "concerns": [
                         "Longer journey in this route configuration",
                         "Connection convenience may vary"
                     ]
                 },
 
+
                 "Ethiopian Airlines": {
                     "route": ["LOS", "ADD", "JED"],
                     "duration": "8h 55m",
                     "description": "Stop over at Addis Ababa",
+
                     "service_score": 8.0,
                     "punctuality_score": 8.2,
                     "comfort_score": 7.8,
                     "transit_score": 8.0,
+
                     "historical_summary": (
                         "Historically provides strong African route "
                         "connectivity through Addis Ababa with broad "
                         "regional coverage."
                     ),
+
                     "strengths": [
                         "Strong African connectivity",
                         "Competitive routing",
                         "Extensive regional network"
                     ],
+
                     "concerns": [
                         "Transit experience depends on connection time",
                         "Service consistency may vary"
                     ]
                 },
 
+
                 "Qatar Airways": {
                     "route": ["LOS", "DOH", "JED"],
                     "duration": "9h 45m",
                     "description": "Stop over at Doha",
+
                     "service_score": 9.2,
                     "punctuality_score": 8.9,
                     "comfort_score": 9.1,
                     "transit_score": 9.3,
+
                     "historical_summary": (
                         "Historically recognised for premium service "
                         "standards and a strong Doha transit experience."
                     ),
+
                     "strengths": [
                         "High service reputation",
                         "Strong cabin comfort",
                         "Efficient Doha transit hub"
                     ],
+
                     "concerns": [
                         "Often positioned at a higher price",
                         "Connection time still needs consideration"
@@ -1031,11 +1061,24 @@ def flight_search(request):
                     )
 
                     flight_id = (
-                        f"FL-"
-                        f"{origin_code}-"
+                        f"FL-{origin_code}-"
                         f"{destination_code}-"
                         f"{i + 1:03d}"
                     )
+
+                    # FIX:
+                    # Generate the random departure time
+                    # separately instead of placing the list
+                    # inside the f-string.
+
+                    departure_time = random.choice(
+                        [
+                            '13:40',
+                            '14:00',
+                            '10:15'
+                        ]
+                    )
+
 
                     search_results.append({
 
@@ -1052,11 +1095,7 @@ def flight_search(request):
 
                         'departure': (
                             f"{origin_code} at "
-                            f"{random.choice([
-                                '13:40',
-                                '14:00',
-                                '10:15'
-                            ])}"
+                            f"{departure_time}"
                         ),
 
                         'arrival': (
@@ -1071,17 +1110,11 @@ def flight_search(request):
                             len(stops_list) - 1
                         ),
 
-                        'badge': (
-                            "Connecting"
-                        ),
+                        'badge': "Connecting",
 
-                        'route_display': (
-                            route_display
-                        ),
+                        'route_display': route_display,
 
-                        'route_description': (
-                            description
-                        ),
+                        'route_description': description,
 
                         'protocols': (
                             'Standard Economy'
@@ -1096,7 +1129,9 @@ def flight_search(request):
 
                         'booking_url': '#',
 
-                        # AI / HISTORICAL DATA
+                        # =========================================
+                        # HISTORICAL / AI DATA
+                        # =========================================
 
                         'service_score': (
                             route_data[
@@ -1151,11 +1186,18 @@ def flight_search(request):
                     base_price + 150
                 )
 
+                direct_departure_time = random.choice(
+                    [
+                        '12:00',
+                        '09:30'
+                    ]
+                )
+
+
                 search_results.append({
 
                     'id': (
-                        f"FL-"
-                        f"{origin_code}-"
+                        f"FL-{origin_code}-"
                         f"{destination_code}-"
                         f"{len(search_results) + 1:03d}"
                     ),
@@ -1173,10 +1215,7 @@ def flight_search(request):
 
                     'departure': (
                         f"{origin_code} at "
-                        f"{random.choice([
-                            '12:00',
-                            '09:30'
-                        ])}"
+                        f"{direct_departure_time}"
                     ),
 
                     'arrival': (
@@ -1215,6 +1254,10 @@ def flight_search(request):
                     ),
 
                     'booking_url': '#',
+
+                    # =============================================
+                    # HISTORICAL / AI DATA
+                    # =============================================
 
                     'service_score': 8.5,
 
@@ -1269,8 +1312,6 @@ def flight_search(request):
         # =========================================================
 
         context = {
-
-            # Keep BOTH names so your existing template works.
 
             'origin': origin_code,
 
@@ -1328,7 +1369,6 @@ def flight_search(request):
 
             }
         )
-
 @login_required
 def flight_details(request):
 
