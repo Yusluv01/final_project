@@ -1637,6 +1637,10 @@ def flight_details(request, flight_id):
     ai_analysis = None
     ai_error = None
 
+    # =========================================================
+    # GEMINI AI FLIGHT INTELLIGENCE
+    # =========================================================
+
     try:
 
         from google import genai
@@ -1724,13 +1728,11 @@ Rules:
 """
 
         response = client.models.generate_content(
-
             model=getattr(
                 settings,
                 'GEMINI_MODEL',
                 'gemini-3.7-flash'
             ),
-
             contents=prompt
         )
 
@@ -1747,6 +1749,11 @@ Rules:
             'The available Travelbolt flight intelligence '
             'is still shown above.'
         )
+
+
+    # =========================================================
+    # CONTEXT
+    # =========================================================
 
     context = {
 
@@ -1791,6 +1798,7 @@ Rules:
         'ai_error': ai_error,
 
     }
+
 
     return render(
         request,
