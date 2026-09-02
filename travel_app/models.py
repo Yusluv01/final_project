@@ -1316,3 +1316,114 @@ class FlightSearchHistory(models.Model):
             f"{self.origin} → {self.destination} - "
             f"{self.searched_at.strftime('%Y-%m-%d')}"
         )
+
+
+# ============================================================
+# FLIGHT
+# ============================================================
+
+class Flight(models.Model):
+    """
+    Stores individual flight search results so that users can
+    open a flight and view its full Travelbolt intelligence.
+    """
+
+    flight_id = models.CharField(
+        max_length=50,
+        unique=True
+    )
+
+    airline = models.CharField(
+        max_length=100
+    )
+
+    origin = models.CharField(
+        max_length=10
+    )
+
+    destination = models.CharField(
+        max_length=10
+    )
+
+    departure_date = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    departure = models.CharField(
+        max_length=100
+    )
+
+    arrival = models.CharField(
+        max_length=100
+    )
+
+    duration = models.CharField(
+        max_length=50
+    )
+
+    stops = models.IntegerField(
+        default=0
+    )
+
+    price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
+
+    service_score = models.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        default=0
+    )
+
+    punctuality_score = models.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        default=0
+    )
+
+    comfort_score = models.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        default=0
+    )
+
+    transit_score = models.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        default=0
+    )
+
+    historical_summary = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    strengths = models.JSONField(
+        default=list,
+        blank=True
+    )
+
+    concerns = models.JSONField(
+        default=list,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    def __str__(self):
+        return (
+            f"{self.flight_id} - "
+            f"{self.airline} - "
+            f"{self.origin} → {self.destination}"
+        )
+
+    class Meta:
+        ordering = ['price']
