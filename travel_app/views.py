@@ -751,38 +751,299 @@ def send_message(request):
     except Exception as e:
         logger.error(f"Send message error: {e}")
         return JsonResponse({'success': False, 'error': str(e)})
-        
+
+
+# ============================================================
+# COMPETITIVE FLIGHT RATING
+# ============================================================
+
+def calculate_flight_competitive_score(
+    flight,
+    all_flights
+):
+    """
+    Calculate a competitive score for one flight
+    against all available flights in the same search.
+
+    Score breakdown:
+        Service quality        = 30%
+        Punctuality            = 25%
+        Comfort                = 20%
+        Transit experience     = 15%
+        Price competitiveness  = 10%
+
+    Returns:
+        overall_score
+        price_score
+        rating
+        rating_level
+    """
+
+    if not all_flights:
+        all_flights = [flight]
+
+
+    # ========================================================
+    # COLLECT ALL FLIGHT PRICES
+    # ========================================================
+
+    prices = [
+        float(item["price"])
+        for item in all_flights
+        if item.get("price") is not None
+    ]
+
+
+    current_price = float(
+        flight["price"]
+    )
+
+
+    if prices:
+
+        min_price = min(
+            prices
+        )
+
+        max_price = max(
+            prices
+        )
+
+    else:
+
+        min_price = current_price
+
+        max_price = current_price
+
+
+    # ========================================================
+    # PRICE COMPETITIVENESS
+    #
+    # Cheapest flight gets the highest price score.
+    # ========================================================
+
+    if max_price == min_price:
+
+        price_score = 10.0
+
+    else:
+
+        price_score = (
+            10
+            - (
+                (
+                    current_price
+                    - min_price
+                )
+                / (
+                    max_price
+                    - min_price
+                )
+            ) * 10
+        )
+
+
+    # Keep price score between 0 and 10
+
+    price_score = max(
+        0,
+        min(
+            10,
+            price_score
+        )
+    )
+
+
+    # ========================================================
+    # SERVICE QUALITY
+    # ========================================================
+
+    service_score = float(
+        flight.get(
+            "service_score",
+            0
+        )
+    )
+
+
+    # ========================================================
+    # PUNCTUALITY
+    # ========================================================
+
+    punctuality_score = float(
+        flight.get(
+            "punctuality_score",
+            0
+        )
+    )
+
+
+    # ========================================================
+    # COMFORT
+    # ========================================================
+
+    comfort_score = float(
+        flight.get(
+            "comfort_score",
+            0
+        )
+    )
+
+
+    # ========================================================
+    # TRANSIT EXPERIENCE
+    # ========================================================
+
+    transit_score = float(
+        flight.get(
+            "transit_score",
+            0
+        )
+    )
+
+
+    # ========================================================
+    # OVERALL COMPETITIVE SCORE
+    # ========================================================
+
+    overall_score = (
+
+        service_score * 0.30
+
+        + punctuality_score * 0.25
+
+        + comfort_score * 0.20
+
+        + transit_score * 0.15
+
+        + price_score * 0.10
+
+    )
+
+
+    overall_score = round(
+        overall_score,
+        1
+    )
+
+
+    # ========================================================
+    # COMPETITIVE RATING
+    # ========================================================
+
+    if overall_score >= 9.0:
+
+        rating = "Excellent Choice"
+
+        rating_level = "excellent"
+
+    elif overall_score >= 8.0:
+
+        rating = "Strong Choice"
+
+        rating_level = "strong"
+
+    elif overall_score >= 7.0:
+
+        rating = "Good Choice"
+
+        rating_level = "good"
+
+    elif overall_score >= 6.0:
+
+        rating = "Average"
+
+        rating_level = "average"
+
+    else:
+
+        rating = "Weak Choice"
+
+        rating_level = "weak"
+
+
+    # ========================================================
+    # RETURN COMPETITIVE INFORMATION
+    # ========================================================
+
+    return {
+
+        "overall_score":
+            overall_score,
+
+        "price_score":
+            round(
+                price_score,
+                1
+            ),
+
+        "rating":
+            rating,
+
+        "rating_level":
+            rating_level,
+
+    }
+
+
+
+# ============================================================
+# FLIGHT SEARCH
+# ============================================================
+
 @login_required
 def flight_search(request):
 
     try:
+
+        # =====================================================
+        # GET SEARCH PARAMETERS
+        # =====================================================
 
         origin_code = request.GET.get(
             'origin',
             ''
         ).upper().strip()
 
+
         destination_code = request.GET.get(
             'destination',
             ''
         ).upper().strip()
+
 
         date = request.GET.get(
             'date',
             ''
         )
 
+
         return_date = request.GET.get(
             'return_date',
             ''
         )
 
-        adults = int(
-            request.GET.get(
-                'adults',
-                1
+
+        try:
+
+            adults = int(
+                request.GET.get(
+                    'adults',
+                    1
+                )
             )
-        )
+
+        except (
+            ValueError,
+            TypeError
+        ):
+
+            adults = 1
+
+
+        # =====================================================
+        # SEARCH STATUS
+        # =====================================================
 
         search_performed = bool(
             origin_code
@@ -790,54 +1051,91 @@ def flight_search(request):
             and date
         )
 
+
         search_results = []
 
+
         total_results = 0
+
 
         seasonal_warning = None
 
 
-        # =========================================================
-        # OGUN STATE / IPERU SEARCH HANDLING
-        # =========================================================
+        # =====================================================
+        # PERFORM SEARCH
+        # =====================================================
 
         if search_performed:
 
+            # =================================================
+            # OGUN STATE / IPERU SEARCH HANDLING
+            # =================================================
+
             is_ogun_state_search = (
+
                 origin_code == "IPERU"
+
                 or origin_code == "OGUN"
+
             )
+
 
             if is_ogun_state_search:
 
                 seasonal_warning = {
-                    'title': 'Seasonal Charter Service',
+
+                    'title':
+                        'Seasonal Charter Service',
+
                     'message': (
-                        'Direct flights from Gateway International '
-                        'Airport (Iperu) to Saudi Arabia are only '
-                        'available during Hajj/Umrah seasons. '
+                        'Direct flights from Gateway '
+                        'International Airport (Iperu) '
+                        'to Saudi Arabia are only available '
+                        'during Hajj/Umrah seasons. '
                         'Flights from Lagos (LOS) are being shown.'
                     )
+
                 }
+
 
                 origin_code = "LOS"
 
 
-            # =====================================================
+            # =================================================
             # FLIGHT ROUTE DATABASE
-            # =====================================================
+            # =================================================
 
             flight_routes_db = {
 
-                "EgyptAir": {
-                    "route": ["LOS", "CAI", "JED"],
-                    "duration": "10h 40m",
-                    "description": "Stop over at Cairo",
+                # =================================================
+                # EGYPTAIR
+                # =================================================
 
-                    "service_score": 7.8,
-                    "punctuality_score": 7.6,
-                    "comfort_score": 7.5,
-                    "transit_score": 7.8,
+                "EgyptAir": {
+
+                    "route": [
+                        "LOS",
+                        "CAI",
+                        "JED"
+                    ],
+
+                    "duration":
+                        "10h 40m",
+
+                    "description":
+                        "Stop over at Cairo",
+
+                    "service_score":
+                        7.8,
+
+                    "punctuality_score":
+                        7.6,
+
+                    "comfort_score":
+                        7.5,
+
+                    "transit_score":
+                        7.8,
 
                     "historical_summary": (
                         "Historically known for providing a practical "
@@ -846,27 +1144,55 @@ def flight_search(request):
                     ),
 
                     "strengths": [
+
                         "Competitive route availability",
+
                         "Convenient Cairo connection",
+
                         "Suitable for regional travel"
+
                     ],
 
                     "concerns": [
+
                         "Connection times may vary",
+
                         "Service experience can vary by aircraft"
+
                     ]
+
                 },
 
 
-                "Emirates": {
-                    "route": ["LOS", "DXB", "JED"],
-                    "duration": "9h 30m",
-                    "description": "Stop over at Dubai",
+                # =================================================
+                # EMIRATES
+                # =================================================
 
-                    "service_score": 9.1,
-                    "punctuality_score": 8.7,
-                    "comfort_score": 9.0,
-                    "transit_score": 9.2,
+                "Emirates": {
+
+                    "route": [
+                        "LOS",
+                        "DXB",
+                        "JED"
+                    ],
+
+                    "duration":
+                        "9h 30m",
+
+                    "description":
+                        "Stop over at Dubai",
+
+                    "service_score":
+                        9.1,
+
+                    "punctuality_score":
+                        8.7,
+
+                    "comfort_score":
+                        9.0,
+
+                    "transit_score":
+                        9.2,
 
                     "historical_summary": (
                         "Historically recognised for strong cabin "
@@ -875,27 +1201,55 @@ def flight_search(request):
                     ),
 
                     "strengths": [
+
                         "Strong cabin service reputation",
+
                         "Modern aircraft experience",
+
                         "Well-developed Dubai transit hub"
+
                     ],
 
                     "concerns": [
+
                         "Often more expensive",
+
                         "Longer total journey depending on connection"
+
                     ]
+
                 },
 
 
-                "Turkish Airlines": {
-                    "route": ["LOS", "IST", "JED"],
-                    "duration": "10h 15m",
-                    "description": "Stop over at Istanbul",
+                # =================================================
+                # TURKISH AIRLINES
+                # =================================================
 
-                    "service_score": 8.7,
-                    "punctuality_score": 8.1,
-                    "comfort_score": 8.5,
-                    "transit_score": 8.6,
+                "Turkish Airlines": {
+
+                    "route": [
+                        "LOS",
+                        "IST",
+                        "JED"
+                    ],
+
+                    "duration":
+                        "10h 15m",
+
+                    "description":
+                        "Stop over at Istanbul",
+
+                    "service_score":
+                        8.7,
+
+                    "punctuality_score":
+                        8.1,
+
+                    "comfort_score":
+                        8.5,
+
+                    "transit_score":
+                        8.6,
 
                     "historical_summary": (
                         "Historically offers extensive international "
@@ -904,27 +1258,55 @@ def flight_search(request):
                     ),
 
                     "strengths": [
+
                         "Extensive international network",
+
                         "Strong onboard service",
+
                         "Good Istanbul connectivity"
+
                     ],
 
                     "concerns": [
+
                         "Transit time can vary",
+
                         "Airport navigation may be busy"
+
                     ]
+
                 },
 
 
-                "Saudia": {
-                    "route": ["LOS", "NBO", "JED"],
-                    "duration": "14h 30m",
-                    "description": "Connection via Nairobi",
+                # =================================================
+                # SAUDIA
+                # =================================================
 
-                    "service_score": 8.2,
-                    "punctuality_score": 7.9,
-                    "comfort_score": 8.0,
-                    "transit_score": 7.5,
+                "Saudia": {
+
+                    "route": [
+                        "LOS",
+                        "NBO",
+                        "JED"
+                    ],
+
+                    "duration":
+                        "14h 30m",
+
+                    "description":
+                        "Connection via Nairobi",
+
+                    "service_score":
+                        8.2,
+
+                    "punctuality_score":
+                        7.9,
+
+                    "comfort_score":
+                        8.0,
+
+                    "transit_score":
+                        7.5,
 
                     "historical_summary": (
                         "A Saudi-focused airline option that can be "
@@ -933,27 +1315,55 @@ def flight_search(request):
                     ),
 
                     "strengths": [
+
                         "Saudi Arabia travel experience",
+
                         "Relevant for Hajj and Umrah passengers",
+
                         "Strong regional focus"
+
                     ],
 
                     "concerns": [
+
                         "Longer journey in this route configuration",
+
                         "Connection convenience may vary"
+
                     ]
+
                 },
 
 
-                "Ethiopian Airlines": {
-                    "route": ["LOS", "ADD", "JED"],
-                    "duration": "8h 55m",
-                    "description": "Stop over at Addis Ababa",
+                # =================================================
+                # ETHIOPIAN AIRLINES
+                # =================================================
 
-                    "service_score": 8.0,
-                    "punctuality_score": 8.2,
-                    "comfort_score": 7.8,
-                    "transit_score": 8.0,
+                "Ethiopian Airlines": {
+
+                    "route": [
+                        "LOS",
+                        "ADD",
+                        "JED"
+                    ],
+
+                    "duration":
+                        "8h 55m",
+
+                    "description":
+                        "Stop over at Addis Ababa",
+
+                    "service_score":
+                        8.0,
+
+                    "punctuality_score":
+                        8.2,
+
+                    "comfort_score":
+                        7.8,
+
+                    "transit_score":
+                        8.0,
 
                     "historical_summary": (
                         "Historically provides strong African route "
@@ -962,27 +1372,55 @@ def flight_search(request):
                     ),
 
                     "strengths": [
+
                         "Strong African connectivity",
+
                         "Competitive routing",
+
                         "Extensive regional network"
+
                     ],
 
                     "concerns": [
+
                         "Transit experience depends on connection time",
+
                         "Service consistency may vary"
+
                     ]
+
                 },
 
 
-                "Qatar Airways": {
-                    "route": ["LOS", "DOH", "JED"],
-                    "duration": "9h 45m",
-                    "description": "Stop over at Doha",
+                # =================================================
+                # QATAR AIRWAYS
+                # =================================================
 
-                    "service_score": 9.2,
-                    "punctuality_score": 8.9,
-                    "comfort_score": 9.1,
-                    "transit_score": 9.3,
+                "Qatar Airways": {
+
+                    "route": [
+                        "LOS",
+                        "DOH",
+                        "JED"
+                    ],
+
+                    "duration":
+                        "9h 45m",
+
+                    "description":
+                        "Stop over at Doha",
+
+                    "service_score":
+                        9.2,
+
+                    "punctuality_score":
+                        8.9,
+
+                    "comfort_score":
+                        9.1,
+
+                    "transit_score":
+                        9.3,
 
                     "historical_summary": (
                         "Historically recognised for premium service "
@@ -990,15 +1428,23 @@ def flight_search(request):
                     ),
 
                     "strengths": [
+
                         "High service reputation",
+
                         "Strong cabin comfort",
+
                         "Efficient Doha transit hub"
+
                     ],
 
                     "concerns": [
+
                         "Often positioned at a higher price",
+
                         "Connection time still needs consideration"
+
                     ]
+
                 }
 
             }
@@ -1008,17 +1454,28 @@ def flight_search(request):
             # SAUDI ARABIA DESTINATIONS
             # =====================================================
 
-            if destination_code in ["JED", "MED"]:
+            if destination_code in [
+                "JED",
+                "MED"
+            ]:
+
+                # =================================================
+                # SELECT AIRLINES
+                # =================================================
 
                 airlines_list = list(
                     flight_routes_db.keys()
                 )
 
+
                 random.shuffle(
                     airlines_list
                 )
 
-                selected_airlines = airlines_list[:6]
+
+                selected_airlines = (
+                    airlines_list[:6]
+                )
 
 
                 # =================================================
@@ -1029,36 +1486,69 @@ def flight_search(request):
                     selected_airlines
                 ):
 
-                    route_data = flight_routes_db[
-                        airline_name
-                    ]
-
-                    stops_list = route_data[
-                        'route'
-                    ]
-
-                    duration = route_data[
-                        'duration'
-                    ]
-
-                    description = route_data[
-                        'description'
-                    ]
-
-                    route_display = " → ".join(
-                        stops_list
+                    route_data = (
+                        flight_routes_db[
+                            airline_name
+                        ]
                     )
+
+
+                    stops_list = (
+                        route_data[
+                            'route'
+                        ]
+                    )
+
+
+                    duration = (
+                        route_data[
+                            'duration'
+                        ]
+                    )
+
+
+                    description = (
+                        route_data[
+                            'description'
+                        ]
+                    )
+
+
+                    route_display = (
+                        " → ".join(
+                            stops_list
+                        )
+                    )
+
+
+                    # =================================================
+                    # BASE PRICE
+                    # =================================================
 
                     base_price = (
+
                         750
+
                         if destination_code == "JED"
+
                         else 850
+
                     )
 
+
                     price = (
+
                         base_price
-                        + (i * 60)
-                        - random.randint(0, 30)
+
+                        + (
+                            i * 60
+                        )
+
+                        - random.randint(
+                            0,
+                            30
+                        )
+
                     )
 
 
@@ -1067,10 +1557,15 @@ def flight_search(request):
                     # =================================================
 
                     flight_id = (
+
                         f"FL-{origin_code}-"
+
                         f"{destination_code}-"
+
                         f"{date.replace('-', '')}-"
+
                         f"{i + 1:03d}"
+
                     )
 
 
@@ -1079,11 +1574,17 @@ def flight_search(request):
                     # =================================================
 
                     departure_time = random.choice(
+
                         [
+
                             '13:40',
+
                             '14:00',
+
                             '10:15'
+
                         ]
+
                     )
 
 
@@ -1093,12 +1594,17 @@ def flight_search(request):
 
                     try:
 
-                        departure_date = datetime.strptime(
-                            date,
-                            '%Y-%m-%d'
-                        ).date()
+                        departure_date = (
+                            datetime.strptime(
+                                date,
+                                '%Y-%m-%d'
+                            ).date()
+                        )
 
-                    except (ValueError, TypeError):
+                    except (
+                        ValueError,
+                        TypeError
+                    ):
 
                         departure_date = None
 
@@ -1109,16 +1615,20 @@ def flight_search(request):
 
                     flight_data = {
 
-                        'id': flight_id,
+                        'id':
+                            flight_id,
 
-                        'airline': airline_name,
+                        'airline':
+                            airline_name,
 
-                        'price': round(
-                            price,
-                            2
-                        ),
+                        'price':
+                            round(
+                                price,
+                                2
+                            ),
 
-                        'currency': 'NGN',
+                        'currency':
+                            'NGN',
 
                         'departure': (
                             f"{origin_code} at "
@@ -1131,21 +1641,23 @@ def flight_search(request):
                             f"{destination_code}"
                         ),
 
-                        'duration': duration,
+                        'duration':
+                            duration,
 
-                        'stops': (
-                            len(stops_list) - 1
-                        ),
+                        'stops':
+                            len(stops_list) - 1,
 
-                        'badge': "Connecting",
+                        'badge':
+                            "Connecting",
 
-                        'route_display': route_display,
+                        'route_display':
+                            route_display,
 
-                        'route_description': description,
+                        'route_description':
+                            description,
 
-                        'protocols': (
-                            'Standard Economy'
-                        ),
+                        'protocols':
+                            'Standard Economy',
 
                         'description': (
                             f'Operated by '
@@ -1154,7 +1666,9 @@ def flight_search(request):
                             f'& Umrah Services.'
                         ),
 
-                        'booking_url': '#',
+                        'booking_url':
+                            '#',
+
 
                         # =============================================
                         # SERVICE INTELLIGENCE
@@ -1207,86 +1721,85 @@ def flight_search(request):
 
                     # =================================================
                     # SAVE FLIGHT TO DATABASE
-                    #
-                    # IMPORTANT:
-                    # Only fields that actually exist in the
-                    # Flight model are stored here.
                     # =================================================
 
                     Flight.objects.update_or_create(
 
-                        flight_id=flight_id,
+                        flight_id=
+                            flight_id,
 
                         defaults={
 
-                            'airline': airline_name,
+                            'airline':
+                                airline_name,
 
-                            'origin': origin_code,
+                            'origin':
+                                origin_code,
 
-                            'destination': destination_code,
+                            'destination':
+                                destination_code,
 
-                            'departure_date': departure_date,
+                            'departure_date':
+                                departure_date,
 
-                            'departure': flight_data[
-                                'departure'
-                            ],
+                            'departure':
+                                flight_data[
+                                    'departure'
+                                ],
 
-                            'arrival': flight_data[
-                                'arrival'
-                            ],
+                            'arrival':
+                                flight_data[
+                                    'arrival'
+                                ],
 
-                            'duration': duration,
+                            'duration':
+                                duration,
 
-                            'stops': (
-                                len(stops_list) - 1
-                            ),
+                            'stops':
+                                len(
+                                    stops_list
+                                ) - 1,
 
-                            'price': round(
-                                price,
-                                2
-                            ),
+                            'price':
+                                round(
+                                    price,
+                                    2
+                                ),
 
-                            'service_score': (
+                            'service_score':
                                 route_data[
                                     'service_score'
-                                ]
-                            ),
+                                ],
 
-                            'punctuality_score': (
+                            'punctuality_score':
                                 route_data[
                                     'punctuality_score'
-                                ]
-                            ),
+                                ],
 
-                            'comfort_score': (
+                            'comfort_score':
                                 route_data[
                                     'comfort_score'
-                                ]
-                            ),
+                                ],
 
-                            'transit_score': (
+                            'transit_score':
                                 route_data[
                                     'transit_score'
-                                ]
-                            ),
+                                ],
 
-                            'historical_summary': (
+                            'historical_summary':
                                 route_data[
                                     'historical_summary'
-                                ]
-                            ),
+                                ],
 
-                            'strengths': (
+                            'strengths':
                                 route_data[
                                     'strengths'
-                                ]
-                            ),
+                                ],
 
-                            'concerns': (
+                            'concerns':
                                 route_data[
                                     'concerns'
-                                ]
-                            ),
+                                ],
 
                         }
 
@@ -1310,11 +1823,14 @@ def flight_search(request):
                     base_price + 150
                 )
 
-                direct_departure_time = random.choice(
-                    [
-                        '12:00',
-                        '09:30'
-                    ]
+
+                direct_departure_time = (
+                    random.choice(
+                        [
+                            '12:00',
+                            '09:30'
+                        ]
+                    )
                 )
 
 
@@ -1323,25 +1839,35 @@ def flight_search(request):
                 # =====================================================
 
                 direct_flight_id = (
+
                     f"FL-{origin_code}-"
+
                     f"{destination_code}-"
+
                     f"{date.replace('-', '')}-"
+
                     f"{len(search_results) + 1:03d}"
+
                 )
 
 
                 # =====================================================
-                # SAVE DIRECT FLIGHT DATE
+                # PARSE DIRECT FLIGHT DATE
                 # =====================================================
 
                 try:
 
-                    departure_date = datetime.strptime(
-                        date,
-                        '%Y-%m-%d'
-                    ).date()
+                    departure_date = (
+                        datetime.strptime(
+                            date,
+                            '%Y-%m-%d'
+                        ).date()
+                    )
 
-                except (ValueError, TypeError):
+                except (
+                    ValueError,
+                    TypeError
+                ):
 
                     departure_date = None
 
@@ -1352,16 +1878,20 @@ def flight_search(request):
 
                 direct_flight_data = {
 
-                    'id': direct_flight_id,
+                    'id':
+                        direct_flight_id,
 
-                    'airline': 'Saudia Direct',
+                    'airline':
+                        'Saudia Direct',
 
-                    'price': round(
-                        direct_price,
-                        2
-                    ),
+                    'price':
+                        round(
+                            direct_price,
+                            2
+                        ),
 
-                    'currency': 'NGN',
+                    'currency':
+                        'NGN',
 
                     'departure': (
                         f"{origin_code} at "
@@ -1373,43 +1903,50 @@ def flight_search(request):
                         f"{destination_code}"
                     ),
 
-                    'duration': '5h 15m',
+                    'duration':
+                        '5h 15m',
 
-                    'stops': 0,
+                    'stops':
+                        0,
 
-                    'badge': 'Direct',
+                    'badge':
+                        'Direct',
 
                     'route_display': (
                         f"{origin_code} → "
                         f"{destination_code}"
                     ),
 
-                    'route_description': (
-                        'Direct flight to Saudi Arabia'
-                    ),
+                    'route_description':
+                        'Direct flight to Saudi Arabia',
 
-                    'protocols': (
-                        'Standard Economy'
-                    ),
+                    'protocols':
+                        'Standard Economy',
 
                     'description': (
                         'Direct flight operated by Saudia '
                         'for Al-Iklas Hajj & Umrah Services.'
                     ),
 
-                    'booking_url': '#',
+                    'booking_url':
+                        '#',
+
 
                     # =============================================
                     # SERVICE INTELLIGENCE
                     # =============================================
 
-                    'service_score': 8.5,
+                    'service_score':
+                        8.5,
 
-                    'punctuality_score': 8.2,
+                    'punctuality_score':
+                        8.2,
 
-                    'comfort_score': 8.3,
+                    'comfort_score':
+                        8.3,
 
-                    'transit_score': 10.0,
+                    'transit_score':
+                        10.0,
 
                     'historical_summary': (
                         'A direct route eliminates transit '
@@ -1439,25 +1976,27 @@ def flight_search(request):
 
 
                 # =====================================================
-                # SAVE DIRECT FLIGHT TO DATABASE
-                #
-                # IMPORTANT:
-                # Only actual Flight model fields go here.
+                # SAVE DIRECT FLIGHT
                 # =====================================================
 
                 Flight.objects.update_or_create(
 
-                    flight_id=direct_flight_id,
+                    flight_id=
+                        direct_flight_id,
 
                     defaults={
 
-                        'airline': 'Saudia Direct',
+                        'airline':
+                            'Saudia Direct',
 
-                        'origin': origin_code,
+                        'origin':
+                            origin_code,
 
-                        'destination': destination_code,
+                        'destination':
+                            destination_code,
 
-                        'departure_date': departure_date,
+                        'departure_date':
+                            departure_date,
 
                         'departure': (
                             f"{origin_code} at "
@@ -1469,22 +2008,29 @@ def flight_search(request):
                             f"{destination_code}"
                         ),
 
-                        'duration': '5h 15m',
+                        'duration':
+                            '5h 15m',
 
-                        'stops': 0,
+                        'stops':
+                            0,
 
-                        'price': round(
-                            direct_price,
-                            2
-                        ),
+                        'price':
+                            round(
+                                direct_price,
+                                2
+                            ),
 
-                        'service_score': 8.5,
+                        'service_score':
+                            8.5,
 
-                        'punctuality_score': 8.2,
+                        'punctuality_score':
+                            8.2,
 
-                        'comfort_score': 8.3,
+                        'comfort_score':
+                            8.3,
 
-                        'transit_score': 10.0,
+                        'transit_score':
+                            10.0,
 
                         'historical_summary': (
                             'A direct route eliminates transit '
@@ -1525,6 +2071,78 @@ def flight_search(request):
 
 
                 # =====================================================
+                # COMPETITIVE FLIGHT RATING
+                #
+                # IMPORTANT:
+                # All flights must be present before calculating
+                # competitive scores.
+                # =====================================================
+
+                for flight in search_results:
+
+                    flight[
+                        "competitive"
+                    ] = (
+                        calculate_flight_competitive_score(
+
+                            flight,
+
+                            search_results
+
+                        )
+                    )
+
+
+                # =====================================================
+                # RANK FLIGHTS
+                # =====================================================
+
+                search_results.sort(
+
+                    key=lambda flight:
+                        flight[
+                            "competitive"
+                        ][
+                            "overall_score"
+                        ],
+
+                    reverse=True
+
+                )
+
+
+                # =====================================================
+                # ADD RANK INFORMATION
+                # =====================================================
+
+                total_flights = len(
+                    search_results
+                )
+
+
+                for index, flight in enumerate(
+
+                    search_results,
+
+                    start=1
+
+                ):
+
+                    flight[
+                        "competitive"
+                    ][
+                        "rank"
+                    ] = index
+
+
+                    flight[
+                        "competitive"
+                    ][
+                        "total"
+                    ] = total_flights
+
+
+                # =====================================================
                 # TOTAL RESULTS
                 # =====================================================
 
@@ -1546,37 +2164,60 @@ def flight_search(request):
 
         context = {
 
-            'origin': origin_code,
+            'origin':
+                origin_code,
 
-            'destination': destination_code,
+            'destination':
+                destination_code,
 
-            'origin_code': origin_code,
+            'origin_code':
+                origin_code,
 
-            'destination_code': destination_code,
+            'destination_code':
+                destination_code,
 
-            'date': date,
+            'date':
+                date,
 
-            'return_date': return_date,
+            'return_date':
+                return_date,
 
-            'adults': adults,
+            'adults':
+                adults,
 
-            'search_results': search_results,
+            'search_results':
+                search_results,
 
-            'total_results': total_results,
+            'total_results':
+                total_results,
 
-            'search_performed': search_performed,
+            'search_performed':
+                search_performed,
 
-            'seasonal_warning': seasonal_warning,
+            'seasonal_warning':
+                seasonal_warning,
 
         }
 
 
+        # =========================================================
+        # RENDER
+        # =========================================================
+
         return render(
+
             request,
+
             'travel_app/search.html',
+
             context
+
         )
 
+
+    # =========================================================
+    # ERROR HANDLING
+    # =========================================================
 
     except Exception as e:
 
@@ -1584,9 +2225,13 @@ def flight_search(request):
             f"Flight Search Error: {e}"
         )
 
+
         return render(
+
             request,
+
             'travel_app/search.html',
+
             {
 
                 'error': (
@@ -1594,16 +2239,19 @@ def flight_search(request):
                     'searching for flights.'
                 ),
 
-                'search_performed': False,
+                'search_performed':
+                    False,
 
-                'search_results': [],
+                'search_results':
+                    [],
 
-                'total_results': 0,
+                'total_results':
+                    0,
 
             }
+
         )
-        
-@login_required
+
 def flight_details(request, flight_id):
 
     flight = get_object_or_404(
