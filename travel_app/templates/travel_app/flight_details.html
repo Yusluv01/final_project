@@ -4,70 +4,176 @@
 Flight Intelligence | Travelbolt
 {% endblock %}
 
-
 {% block content %}
 
 <div class="max-w-6xl mx-auto space-y-6">
 
+```
+<!-- ========================================================= -->
+<!-- BACK BUTTON -->
+<!-- ========================================================= -->
 
-    <!-- BACK BUTTON -->
+<a
+    href="{% url 'travel_app:flight_search' %}"
+    class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+>
 
-    <a
-        href="{% url 'travel_app:flight_search' %}"
-        class="inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800"
-    >
+    <span class="text-lg">
+        ←
+    </span>
 
-        ← Back to Flight Search
+    Back to Flight Search
 
-    </a>
+</a>
 
 
-    <!-- FLIGHT HEADER -->
+<!-- ========================================================= -->
+<!-- FLIGHT HEADER -->
+<!-- ========================================================= -->
 
-    <div class="bg-gradient-to-r from-blue-700 to-indigo-700 rounded-2xl p-8 text-white shadow-lg">
+<div class="bg-gradient-to-r from-blue-700 to-indigo-700 rounded-2xl p-8 text-white shadow-lg">
 
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+
+
+        <!-- FLIGHT INFORMATION -->
+
+        <div>
+
+            <p class="text-blue-200 text-sm font-semibold tracking-wide">
+
+                TRAVELBOLT FLIGHT INTELLIGENCE
+
+            </p>
+
+
+            <h1 class="text-3xl font-bold mt-2">
+
+                {{ airline }}
+
+            </h1>
+
+
+            <p class="text-blue-100 text-lg mt-2">
+
+                {{ origin }}
+
+                <span class="mx-2">
+                    →
+                </span>
+
+                {{ destination }}
+
+            </p>
+
+
+            <p class="text-blue-200 text-sm mt-2">
+
+                Flight ID:
+
+                <span class="font-semibold">
+                    {{ flight_id }}
+                </span>
+
+            </p>
+
+        </div>
+
+
+        <!-- PRICE -->
+
+        <div class="text-left md:text-right">
+
+            <p class="text-blue-200 text-sm">
+
+                Estimated Price
+
+            </p>
+
+
+            <p class="text-3xl font-bold">
+
+                ₦{{ price }}
+
+            </p>
+
+
+            <p class="text-blue-200 text-xs mt-1">
+
+                Per passenger
+
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- COMPETITIVE SUMMARY -->
+<!-- ========================================================= -->
+
+{% if competitive %}
+
+<div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+
+
+    <!-- SECTION HEADER -->
+
+    <div class="bg-gray-50 border-b border-gray-200 p-6">
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
 
             <div>
 
-                <p class="text-blue-200 text-sm font-semibold">
+                <div class="flex items-center gap-2">
 
-                    FLIGHT INTELLIGENCE
+                    <span class="material-symbols-outlined text-blue-600">
+                        leaderboard
+                    </span>
 
-                </p>
 
-                <h1 class="text-3xl font-bold mt-2">
+                    <h2 class="text-xl font-bold text-gray-900">
 
-                    {{ airline }}
+                        Competitive Flight Assessment
 
-                </h1>
+                    </h2>
 
-                <p class="text-blue-100 mt-2">
+                </div>
 
-                    {{ origin }} → {{ destination }}
 
-                </p>
+                <p class="text-sm text-gray-500 mt-1">
 
-                <p class="text-blue-200 text-sm mt-1">
-
-                    Flight ID: {{ flight_id }}
+                    Travelbolt compares this flight against the other available options in the current search.
 
                 </p>
 
             </div>
 
 
+            <!-- RANK -->
+
             <div class="text-left md:text-right">
 
-                <p class="text-blue-200 text-sm">
+                <p class="text-xs uppercase tracking-wide text-gray-400 font-bold">
 
-                    Estimated Price
+                    Competitive Rank
 
                 </p>
 
-                <p class="text-3xl font-bold">
 
-                    ₦{{ price }}
+                <p class="text-2xl font-extrabold text-blue-700">
+
+                    #{{ competitive.rank }}
+
+                    <span class="text-sm font-semibold text-gray-400">
+
+                        of {{ competitive.total }}
+
+                    </span>
 
                 </p>
 
@@ -78,81 +184,402 @@ Flight Intelligence | Travelbolt
     </div>
 
 
-    <!-- FLIGHT DETAILS -->
+    <!-- COMPETITIVE CONTENT -->
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="p-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
 
-        <div class="bg-white border rounded-xl p-5">
+            <!-- OVERALL SCORE -->
 
-            <p class="text-xs text-gray-400 uppercase">
+            <div class="border border-gray-200 rounded-xl p-6 text-center">
+
+                <p class="text-xs uppercase tracking-wide text-gray-400 font-bold">
+
+                    Travelbolt Score
+
+                </p>
+
+
+                <div class="mt-3">
+
+                    <span class="text-4xl font-extrabold text-gray-900">
+
+                        {{ competitive.overall_score }}
+
+                    </span>
+
+
+                    <span class="text-lg text-gray-400 font-semibold">
+
+                        /10
+
+                    </span>
+
+                </div>
+
+
+                <!-- RATING -->
+
+                <div class="mt-3">
+
+                    {% if competitive.rating_level == "excellent" %}
+
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">
+
+                            <span class="material-symbols-outlined text-sm">
+                                verified
+                            </span>
+
+                            Excellent Choice
+
+                        </span>
+
+                    {% elif competitive.rating_level == "strong" %}
+
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
+
+                            <span class="material-symbols-outlined text-sm">
+                                thumb_up
+                            </span>
+
+                            Strong Choice
+
+                        </span>
+
+                    {% elif competitive.rating_level == "good" %}
+
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-xs font-bold">
+
+                            <span class="material-symbols-outlined text-sm">
+                                check_circle
+                            </span>
+
+                            Good Choice
+
+                        </span>
+
+                    {% elif competitive.rating_level == "average" %}
+
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold">
+
+                            <span class="material-symbols-outlined text-sm">
+                                remove_circle
+                            </span>
+
+                            Average
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold">
+
+                            <span class="material-symbols-outlined text-sm">
+                                warning
+                            </span>
+
+                            Weak Choice
+
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <p class="text-xs text-gray-400 mt-3">
+
+                    Based on service, punctuality, comfort, transit and price competitiveness.
+
+                </p>
+
+            </div>
+
+
+            <!-- PRICE COMPETITIVENESS -->
+
+            <div class="border border-gray-200 rounded-xl p-6">
+
+                <div class="flex items-center justify-between">
+
+                    <p class="text-xs uppercase tracking-wide text-gray-400 font-bold">
+
+                        Price Competitiveness
+
+                    </p>
+
+
+                    <span class="material-symbols-outlined text-green-600">
+                        payments
+                    </span>
+
+                </div>
+
+
+                <p class="text-3xl font-extrabold text-gray-900 mt-3">
+
+                    {{ competitive.price_score }}/10
+
+                </p>
+
+
+                <div class="w-full bg-gray-100 rounded-full h-2 mt-4">
+
+                    <div
+                        class="bg-green-500 h-2 rounded-full"
+                        style="width: {{ competitive.price_score }}0%;"
+                    ></div>
+
+                </div>
+
+
+                <p class="text-xs text-gray-500 mt-3">
+
+                    Higher scores indicate a more competitive price compared with the available flight options.
+
+                </p>
+
+            </div>
+
+
+            <!-- RANKING -->
+
+            <div class="border border-gray-200 rounded-xl p-6">
+
+                <div class="flex items-center justify-between">
+
+                    <p class="text-xs uppercase tracking-wide text-gray-400 font-bold">
+
+                        Market Position
+
+                    </p>
+
+
+                    <span class="material-symbols-outlined text-purple-600">
+                        analytics
+                    </span>
+
+                </div>
+
+
+                <p class="text-3xl font-extrabold text-gray-900 mt-3">
+
+                    #{{ competitive.rank }}
+
+                </p>
+
+
+                <p class="text-sm font-semibold text-gray-600 mt-1">
+
+                    of {{ competitive.total }} available options
+
+                </p>
+
+
+                {% if competitive.rank == 1 %}
+
+                    <p class="text-xs text-green-600 font-bold mt-4">
+
+                        ★ Top-ranked option in this search
+
+                    </p>
+
+                {% elif competitive.rank <= 3 %}
+
+                    <p class="text-xs text-blue-600 font-bold mt-4">
+
+                        Top 3 competitive option
+
+                    </p>
+
+                {% else %}
+
+                    <p class="text-xs text-gray-500 mt-4">
+
+                        Other options may provide stronger overall value.
+
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+<!-- ========================================================= -->
+<!-- FLIGHT DETAILS -->
+<!-- ========================================================= -->
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+
+    <!-- DURATION -->
+
+    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+
+        <div class="flex items-center justify-between">
+
+            <p class="text-xs text-gray-400 uppercase font-bold">
 
                 Duration
 
             </p>
 
-            <p class="font-bold text-lg text-gray-900 mt-2">
 
-                {{ duration }}
-
-            </p>
+            <span class="material-symbols-outlined text-blue-500">
+                schedule
+            </span>
 
         </div>
 
 
-        <div class="bg-white border rounded-xl p-5">
+        <p class="font-bold text-lg text-gray-900 mt-3">
 
-            <p class="text-xs text-gray-400 uppercase">
+            {{ duration }}
+
+        </p>
+
+    </div>
+
+
+    <!-- STOPS -->
+
+    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+
+        <div class="flex items-center justify-between">
+
+            <p class="text-xs text-gray-400 uppercase font-bold">
 
                 Stops
 
             </p>
 
-            <p class="font-bold text-lg text-gray-900 mt-2">
 
-                {% if stops == "0" %}
-
-                    Direct
-
-                {% else %}
-
-                    {{ stops }} Stop{{ stops|pluralize }}
-
-                {% endif %}
-
-            </p>
+            <span class="material-symbols-outlined text-blue-500">
+                connecting_airports
+            </span>
 
         </div>
 
 
-        <div class="bg-white border rounded-xl p-5">
+        <p class="font-bold text-lg text-gray-900 mt-3">
 
-            <p class="text-xs text-gray-400 uppercase">
+            {% if stops == "0" %}
+
+                <span class="text-teal-600">
+                    Direct
+                </span>
+
+            {% else %}
+
+                {{ stops }}
+                Stop{{ stops|pluralize }}
+
+            {% endif %}
+
+        </p>
+
+    </div>
+
+
+    <!-- SERVICE SCORE -->
+
+    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+
+        <div class="flex items-center justify-between">
+
+            <p class="text-xs text-gray-400 uppercase font-bold">
 
                 Service Score
 
             </p>
 
-            <p class="font-bold text-lg text-green-600 mt-2">
 
-                {{ service_score }}/10
-
-            </p>
+            <span class="material-symbols-outlined text-green-600">
+                room_service
+            </span>
 
         </div>
 
 
-        <div class="bg-white border rounded-xl p-5">
+        <p class="font-bold text-lg text-green-600 mt-3">
 
-            <p class="text-xs text-gray-400 uppercase">
+            {{ service_score }}/10
+
+        </p>
+
+    </div>
+
+
+    <!-- PUNCTUALITY -->
+
+    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+
+        <div class="flex items-center justify-between">
+
+            <p class="text-xs text-gray-400 uppercase font-bold">
 
                 Punctuality
 
             </p>
 
-            <p class="font-bold text-lg text-blue-600 mt-2">
 
-                {{ punctuality_score }}/10
+            <span class="material-symbols-outlined text-blue-600">
+                timer
+            </span>
+
+        </div>
+
+
+        <p class="font-bold text-lg text-blue-600 mt-3">
+
+            {{ punctuality_score }}/10
+
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- SERVICE PERFORMANCE BREAKDOWN -->
+<!-- ========================================================= -->
+
+<div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+
+    <div class="flex items-center gap-3 mb-6">
+
+        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+
+            <span class="material-symbols-outlined text-blue-700">
+                assessment
+            </span>
+
+        </div>
+
+
+        <div>
+
+            <h2 class="text-xl font-bold text-gray-900">
+
+                Service Performance Breakdown
+
+            </h2>
+
+
+            <p class="text-sm text-gray-500">
+
+                Travelbolt's reference assessment of the flight service dimensions.
 
             </p>
 
@@ -161,91 +588,123 @@ Flight Intelligence | Travelbolt
     </div>
 
 
-    <!-- HISTORICAL INFORMATION -->
-
-    <div class="bg-white border border-gray-200 rounded-xl p-6">
-
-        <h2 class="text-xl font-bold text-gray-900">
-
-            Historical Service Information
-
-        </h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
 
-        <p class="text-gray-600 leading-7 mt-4">
+        <!-- SERVICE -->
 
-            {{ historical_summary }}
+        <div>
 
-        </p>
+            <div class="flex justify-between items-center mb-2">
 
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-
-
-            <!-- STRENGTHS -->
-
-            <div>
-
-                <h3 class="font-bold text-green-700 mb-3">
-
-                    Strengths
-
-                </h3>
+                <span class="text-sm font-semibold text-gray-700">
+                    Service Quality
+                </span>
 
 
-                <ul class="space-y-2">
-
-                    {% for item in strengths %}
-
-                        <li class="flex gap-2 text-gray-700">
-
-                            <span class="text-green-600">
-
-                                ✓
-
-                            </span>
-
-                            {{ item }}
-
-                        </li>
-
-                    {% endfor %}
-
-                </ul>
+                <span class="text-sm font-bold text-gray-900">
+                    {{ service_score }}/10
+                </span>
 
             </div>
 
 
-            <!-- CONCERNS -->
+            <div class="w-full bg-gray-100 rounded-full h-2">
 
-            <div>
+                <div
+                    class="bg-green-500 h-2 rounded-full"
+                    style="width: {{ service_score }}0%;"
+                ></div>
 
-                <h3 class="font-bold text-orange-600 mb-3">
+            </div>
 
-                    Things to Consider
-
-                </h3>
+        </div>
 
 
-                <ul class="space-y-2">
+        <!-- PUNCTUALITY -->
 
-                    {% for item in concerns %}
+        <div>
 
-                        <li class="flex gap-2 text-gray-700">
+            <div class="flex justify-between items-center mb-2">
 
-                            <span class="text-orange-500">
+                <span class="text-sm font-semibold text-gray-700">
+                    Punctuality
+                </span>
 
-                                !
 
-                            </span>
+                <span class="text-sm font-bold text-gray-900">
+                    {{ punctuality_score }}/10
+                </span>
 
-                            {{ item }}
+            </div>
 
-                        </li>
 
-                    {% endfor %}
+            <div class="w-full bg-gray-100 rounded-full h-2">
 
-                </ul>
+                <div
+                    class="bg-blue-500 h-2 rounded-full"
+                    style="width: {{ punctuality_score }}0%;"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- COMFORT -->
+
+        <div>
+
+            <div class="flex justify-between items-center mb-2">
+
+                <span class="text-sm font-semibold text-gray-700">
+                    Comfort
+                </span>
+
+
+                <span class="text-sm font-bold text-gray-900">
+                    {{ comfort_score }}/10
+                </span>
+
+            </div>
+
+
+            <div class="w-full bg-gray-100 rounded-full h-2">
+
+                <div
+                    class="bg-purple-500 h-2 rounded-full"
+                    style="width: {{ comfort_score }}0%;"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TRANSIT -->
+
+        <div>
+
+            <div class="flex justify-between items-center mb-2">
+
+                <span class="text-sm font-semibold text-gray-700">
+                    Transit Experience
+                </span>
+
+
+                <span class="text-sm font-bold text-gray-900">
+                    {{ transit_score }}/10
+                </span>
+
+            </div>
+
+
+            <div class="w-full bg-gray-100 rounded-full h-2">
+
+                <div
+                    class="bg-teal-500 h-2 rounded-full"
+                    style="width: {{ transit_score }}0%;"
+                ></div>
 
             </div>
 
@@ -253,44 +712,205 @@ Flight Intelligence | Travelbolt
 
     </div>
 
-
-    <!-- AI ANALYSIS -->
-
-    <div class="bg-white border border-purple-200 rounded-xl shadow-sm overflow-hidden">
+</div>
 
 
-        <div class="bg-purple-50 border-b border-purple-200 p-5 flex items-center gap-3">
+<!-- ========================================================= -->
+<!-- SERVICE / HISTORICAL INTELLIGENCE -->
+<!-- ========================================================= -->
 
-            <div class="w-11 h-11 bg-purple-600 rounded-lg flex items-center justify-center text-white text-xl">
-
-                ✨
-
-            </div>
+<div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
 
 
-            <div>
+    <div class="flex items-start gap-3">
 
-                <h2 class="font-bold text-purple-900">
+        <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
 
-                    Travelbolt AI Flight Intelligence
-
-                </h2>
-
-                <p class="text-sm text-purple-700">
-
-                    AI analysis based on available flight and historical service information.
-
-                </p>
-
-            </div>
+            <span class="material-symbols-outlined text-indigo-700">
+                history
+            </span>
 
         </div>
 
 
-        <div class="p-6">
+        <div>
+
+            <h2 class="text-xl font-bold text-gray-900">
+
+                Travelbolt Service Intelligence
+
+            </h2>
 
 
-            {% if ai_analysis %}
+            <p class="text-sm text-gray-500 mt-1">
+
+                Service context and reference information for this flight option.
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- SUMMARY -->
+
+    <div class="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-5">
+
+        <p class="text-gray-700 leading-7">
+
+            {{ historical_summary }}
+
+        </p>
+
+    </div>
+
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-7">
+
+
+        <!-- ================================================= -->
+        <!-- STRENGTHS -->
+        <!-- ================================================= -->
+
+        <div>
+
+            <h3 class="font-bold text-green-700 mb-4 flex items-center gap-2">
+
+                <span class="material-symbols-outlined">
+                    check_circle
+                </span>
+
+                Strengths
+
+            </h3>
+
+
+            <ul class="space-y-3">
+
+                {% for item in strengths %}
+
+                    <li class="flex gap-3 text-gray-700">
+
+                        <span class="text-green-600 font-bold">
+                            ✓
+                        </span>
+
+                        <span>
+                            {{ item }}
+                        </span>
+
+                    </li>
+
+                {% empty %}
+
+                    <li class="text-sm text-gray-400">
+                        No strengths recorded.
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- CONCERNS -->
+        <!-- ================================================= -->
+
+        <div>
+
+            <h3 class="font-bold text-orange-600 mb-4 flex items-center gap-2">
+
+                <span class="material-symbols-outlined">
+                    warning
+                </span>
+
+                Things to Consider
+
+            </h3>
+
+
+            <ul class="space-y-3">
+
+                {% for item in concerns %}
+
+                    <li class="flex gap-3 text-gray-700">
+
+                        <span class="text-orange-500 font-bold">
+                            !
+                        </span>
+
+                        <span>
+                            {{ item }}
+                        </span>
+
+                    </li>
+
+                {% empty %}
+
+                    <li class="text-sm text-gray-400">
+                        No specific concerns recorded.
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- AI ANALYSIS -->
+<!-- ========================================================= -->
+
+<div class="bg-white border border-purple-200 rounded-xl shadow-sm overflow-hidden">
+
+
+    <!-- AI HEADER -->
+
+    <div class="bg-purple-50 border-b border-purple-200 p-5 flex items-center gap-3">
+
+        <div class="w-11 h-11 bg-purple-600 rounded-lg flex items-center justify-center text-white text-xl">
+
+            ✨
+
+        </div>
+
+
+        <div>
+
+            <h2 class="font-bold text-purple-900">
+
+                Travelbolt AI Flight Recommendation
+
+            </h2>
+
+
+            <p class="text-sm text-purple-700">
+
+                AI-assisted decision support based on the available flight intelligence.
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- AI CONTENT -->
+
+    <div class="p-6">
+
+
+        {% if ai_analysis %}
+
+            <div class="bg-purple-50 border border-purple-100 rounded-xl p-5">
 
                 <div class="text-gray-700 leading-7 whitespace-pre-line">
 
@@ -298,41 +918,174 @@ Flight Intelligence | Travelbolt
 
                 </div>
 
+            </div>
 
-            {% else %}
 
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <!-- AI DISCLAIMER -->
 
-                    <p class="font-semibold text-yellow-800">
+            <div class="flex items-start gap-2 mt-4 text-xs text-gray-400">
 
-                        AI Analysis Temporarily Unavailable
+                <span class="material-symbols-outlined text-sm">
+                    info
+                </span>
 
-                    </p>
+                <p>
 
-                    <p class="text-sm text-yellow-700 mt-1">
+                    AI recommendations are decision-support suggestions.
+                    Staff should consider client preferences, current availability,
+                    price, travel dates and airline confirmation before booking.
 
-                        {{ ai_error }}
+                </p>
 
-                    </p>
+            </div>
+
+
+        {% else %}
+
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
+
+                <div class="flex items-start gap-3">
+
+                    <span class="material-symbols-outlined text-yellow-600">
+                        warning
+                    </span>
+
+
+                    <div>
+
+                        <p class="font-semibold text-yellow-800">
+
+                            AI Analysis Temporarily Unavailable
+
+                        </p>
+
+
+                        <p class="text-sm text-yellow-700 mt-1">
+
+                            {{ ai_error|default:"AI analysis is currently unavailable. The available Travelbolt flight intelligence is still shown above." }}
+
+                        </p>
+
+                    </div>
 
                 </div>
 
-            {% endif %}
+            </div>
 
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- FINAL STAFF RECOMMENDATION CARD -->
+<!-- ========================================================= -->
+
+{% if competitive %}
+
+<div class="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-6 text-white shadow-lg">
+
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+
+
+        <div>
+
+            <p class="text-gray-400 text-xs uppercase tracking-wide font-bold">
+
+                Staff Decision Support
+
+            </p>
+
+
+            <h2 class="text-xl font-bold mt-2">
+
+                {% if competitive.rating_level == "excellent" %}
+
+                    This is an excellent flight option.
+
+                {% elif competitive.rating_level == "strong" %}
+
+                    This is a strong flight option.
+
+                {% elif competitive.rating_level == "good" %}
+
+                    This is a good flight option.
+
+                {% elif competitive.rating_level == "average" %}
+
+                    This flight should be compared carefully with alternatives.
+
+                {% else %}
+
+                    Other available flights may provide better overall value.
+
+                {% endif %}
+
+            </h2>
+
+
+            <p class="text-gray-400 text-sm mt-2">
+
+                Travelbolt Score:
+                <span class="text-white font-bold">
+                    {{ competitive.overall_score }}/10
+                </span>
+
+                • Rank #{{ competitive.rank }} of {{ competitive.total }}
+
+            </p>
 
         </div>
 
+
+        <a
+            href="{% url 'travel_app:flight_search' %}"
+            class="inline-flex items-center justify-center px-5 py-3 bg-white text-gray-900 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors"
+        >
+
+            Compare Other Flights
+
+        </a>
+
     </div>
 
+</div>
 
-    <!-- DATA NOTICE -->
+{% endif %}
 
-    <div class="text-xs text-gray-400 text-center pb-8">
 
-        Travelbolt AI provides decision-support insights based on available flight and historical service information. Live flight status should be confirmed with the airline or a connected flight-data provider.
+<!-- ========================================================= -->
+<!-- DATA NOTICE -->
+<!-- ========================================================= -->
 
-    </div>
+<div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs text-gray-500 text-center leading-6">
 
+    <strong class="text-gray-600">
+        Travelbolt Intelligence Notice:
+    </strong>
+
+    The competitive scores and service indicators are decision-support
+    assessments generated from the flight information available to Travelbolt.
+    They should not be interpreted as verified live airline performance,
+    live flight status, or guaranteed historical statistics.
+
+    Live flight status, availability and final pricing should be confirmed
+    with the airline or a connected flight-data provider before booking.
+
+</div>
+
+
+<!-- FOOTER -->
+
+<div class="text-xs text-gray-400 text-center pb-8">
+
+    Travelbolt AI provides decision-support insights for authorised
+    administration and staff users.
+
+</div>
+```
 
 </div>
 
