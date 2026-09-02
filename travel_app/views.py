@@ -1754,7 +1754,7 @@ Rules:
 
         'price': flight.price,
 
-        'currency': flight.currency,
+        'currency': 'NGN',
 
         'service_score': flight.service_score,
 
