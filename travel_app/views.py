@@ -986,7 +986,6 @@ def calculate_flight_competitive_score(
     }
 
 
-
 # ============================================================
 # FLIGHT SEARCH
 # ============================================================
@@ -997,6 +996,318 @@ def flight_search(request):
     try:
 
         # =====================================================
+        # CHECK FOR A NEW SEARCH
+        # =====================================================
+
+        has_new_search = bool(
+            request.GET.get('origin')
+            or request.GET.get('destination')
+            or request.GET.get('date')
+            or request.GET.get('return_date')
+            or request.GET.get('adults')
+        )
+
+        # =====================================================
+        # RESTORE PREVIOUS SEARCH
+        # =====================================================
+        #
+        # When the user clicks "Compare Other Flights" from
+        # Flight Intelligence, the URL is simply:
+        #
+        # /search/
+        #
+        # There are no GET search parameters.
+        #
+        # In that situation we retrieve the previous search
+        # from the Django session and restore the exact flights.
+        # =====================================================
+
+        if not has_new_search:
+
+            saved_search = request.session.get(
+                'last_flight_search'
+            )
+
+            if saved_search:
+
+                saved_flight_ids = saved_search.get(
+                    'flight_ids',
+                    []
+                )
+
+                if saved_flight_ids:
+
+                    # =========================================
+                    # GET SAVED FLIGHTS
+                    # =========================================
+
+                    saved_flights = Flight.objects.filter(
+                        flight_id__in=saved_flight_ids
+                    )
+
+                    flights_by_id = {
+                        flight.flight_id: flight
+                        for flight in saved_flights
+                    }
+
+                    search_results = []
+
+                    # =========================================
+                    # RESTORE FLIGHTS IN SAVED ORDER
+                    # =========================================
+
+                    for flight_id in saved_flight_ids:
+
+                        flight = flights_by_id.get(
+                            flight_id
+                        )
+
+                        if not flight:
+                            continue
+
+                        # =====================================
+                        # REBUILD SEARCH RESULT
+                        # =====================================
+
+                        flight_data = {
+
+                            'id':
+                                flight.flight_id,
+
+                            'airline':
+                                flight.airline,
+
+                            'price':
+                                float(
+                                    flight.price
+                                ),
+
+                            'currency':
+                                'NGN',
+
+                            'departure':
+                                flight.departure,
+
+                            'arrival':
+                                flight.arrival,
+
+                            'duration':
+                                flight.duration,
+
+                            'stops':
+                                flight.stops,
+
+                            'badge':
+                                (
+                                    'Direct'
+                                    if flight.stops == 0
+                                    else 'Connecting'
+                                ),
+
+                            'route_display':
+                                flight.arrival,
+
+                            'route_description':
+                                (
+                                    'Direct flight to Saudi Arabia'
+                                    if flight.stops == 0
+                                    else 'Connecting flight to Saudi Arabia'
+                                ),
+
+                            'protocols':
+                                'Standard Economy',
+
+                            'description':
+                                (
+                                    f'Operated by '
+                                    f'{flight.airline} '
+                                    f'for Al-Iklas Hajj '
+                                    f'& Umrah Services.'
+                                ),
+
+                            'booking_url':
+                                '#',
+
+                            # =================================
+                            # SERVICE INTELLIGENCE
+                            # =================================
+
+                            'service_score':
+                                float(
+                                    flight.service_score
+                                ),
+
+                            'punctuality_score':
+                                float(
+                                    flight.punctuality_score
+                                ),
+
+                            'comfort_score':
+                                float(
+                                    flight.comfort_score
+                                ),
+
+                            'transit_score':
+                                float(
+                                    flight.transit_score
+                                ),
+
+                            'historical_summary':
+                                flight.historical_summary,
+
+                            'strengths':
+                                (
+                                    flight.strengths
+                                    or []
+                                ),
+
+                            'concerns':
+                                (
+                                    flight.concerns
+                                    or []
+                                ),
+                        }
+
+                        search_results.append(
+                            flight_data
+                        )
+
+                    # =========================================
+                    # RECALCULATE COMPETITIVE SCORES
+                    # =========================================
+
+                    for flight in search_results:
+
+                        flight[
+                            'competitive'
+                        ] = (
+                            calculate_flight_competitive_score(
+                                flight,
+                                search_results
+                            )
+                        )
+
+                    # =========================================
+                    # RANK FLIGHTS
+                    # =========================================
+
+                    search_results.sort(
+
+                        key=lambda flight:
+                            flight[
+                                'competitive'
+                            ][
+                                'overall_score'
+                            ],
+
+                        reverse=True
+
+                    )
+
+                    # =========================================
+                    # ADD RANK INFORMATION
+                    # =========================================
+
+                    total_flights = len(
+                        search_results
+                    )
+
+                    for index, flight in enumerate(
+
+                        search_results,
+
+                        start=1
+
+                    ):
+
+                        flight[
+                            'competitive'
+                        ][
+                            'rank'
+                        ] = index
+
+                        flight[
+                            'competitive'
+                        ][
+                            'total'
+                        ] = total_flights
+
+                    # =========================================
+                    # RESTORE SEARCH PAGE
+                    # =========================================
+
+                    return render(
+
+                        request,
+
+                        'travel_app/search.html',
+
+                        {
+
+                            'origin':
+                                saved_search.get(
+                                    'origin',
+                                    ''
+                                ),
+
+                            'destination':
+                                saved_search.get(
+                                    'destination',
+                                    ''
+                                ),
+
+                            'origin_code':
+                                saved_search.get(
+                                    'origin',
+                                    ''
+                                ),
+
+                            'destination_code':
+                                saved_search.get(
+                                    'destination',
+                                    ''
+                                ),
+
+                            'date':
+                                saved_search.get(
+                                    'date',
+                                    ''
+                                ),
+
+                            'return_date':
+                                saved_search.get(
+                                    'return_date',
+                                    ''
+                                ),
+
+                            'adults':
+                                saved_search.get(
+                                    'adults',
+                                    1
+                                ),
+
+                            'search_results':
+                                search_results,
+
+                            'total_results':
+                                len(
+                                    search_results
+                                ),
+
+                            'search_performed':
+                                bool(
+                                    search_results
+                                ),
+
+                            'seasonal_warning':
+                                saved_search.get(
+                                    'seasonal_warning'
+                                ),
+
+                        }
+                    )
+
+        # =====================================================
         # GET SEARCH PARAMETERS
         # =====================================================
 
@@ -1005,24 +1316,20 @@ def flight_search(request):
             ''
         ).upper().strip()
 
-
         destination_code = request.GET.get(
             'destination',
             ''
         ).upper().strip()
-
 
         date = request.GET.get(
             'date',
             ''
         )
 
-
         return_date = request.GET.get(
             'return_date',
             ''
         )
-
 
         try:
 
@@ -1040,7 +1347,6 @@ def flight_search(request):
 
             adults = 1
 
-
         # =====================================================
         # SEARCH STATUS
         # =====================================================
@@ -1051,15 +1357,11 @@ def flight_search(request):
             and date
         )
 
-
         search_results = []
-
 
         total_results = 0
 
-
         seasonal_warning = None
-
 
         # =====================================================
         # PERFORM SEARCH
@@ -1079,7 +1381,6 @@ def flight_search(request):
 
             )
 
-
             if is_ogun_state_search:
 
                 seasonal_warning = {
@@ -1097,19 +1398,13 @@ def flight_search(request):
 
                 }
 
-
                 origin_code = "LOS"
-
 
             # =================================================
             # FLIGHT ROUTE DATABASE
             # =================================================
 
             flight_routes_db = {
-
-                # =================================================
-                # EGYPTAIR
-                # =================================================
 
                 "EgyptAir": {
 
@@ -1163,11 +1458,6 @@ def flight_search(request):
 
                 },
 
-
-                # =================================================
-                # EMIRATES
-                # =================================================
-
                 "Emirates": {
 
                     "route": [
@@ -1219,11 +1509,6 @@ def flight_search(request):
                     ]
 
                 },
-
-
-                # =================================================
-                # TURKISH AIRLINES
-                # =================================================
 
                 "Turkish Airlines": {
 
@@ -1277,11 +1562,6 @@ def flight_search(request):
 
                 },
 
-
-                # =================================================
-                # SAUDIA
-                # =================================================
-
                 "Saudia": {
 
                     "route": [
@@ -1334,11 +1614,6 @@ def flight_search(request):
 
                 },
 
-
-                # =================================================
-                # ETHIOPIAN AIRLINES
-                # =================================================
-
                 "Ethiopian Airlines": {
 
                     "route": [
@@ -1390,11 +1665,6 @@ def flight_search(request):
                     ]
 
                 },
-
-
-                # =================================================
-                # QATAR AIRWAYS
-                # =================================================
 
                 "Qatar Airways": {
 
@@ -1449,10 +1719,9 @@ def flight_search(request):
 
             }
 
-
-            # =====================================================
+            # =================================================
             # SAUDI ARABIA DESTINATIONS
-            # =====================================================
+            # =================================================
 
             if destination_code in [
                 "JED",
@@ -1467,16 +1736,13 @@ def flight_search(request):
                     flight_routes_db.keys()
                 )
 
-
                 random.shuffle(
                     airlines_list
                 )
 
-
                 selected_airlines = (
                     airlines_list[:6]
                 )
-
 
                 # =================================================
                 # GENERATE CONNECTING FLIGHTS
@@ -1492,13 +1758,11 @@ def flight_search(request):
                         ]
                     )
 
-
                     stops_list = (
                         route_data[
                             'route'
                         ]
                     )
-
 
                     duration = (
                         route_data[
@@ -1506,20 +1770,17 @@ def flight_search(request):
                         ]
                     )
 
-
                     description = (
                         route_data[
                             'description'
                         ]
                     )
 
-
                     route_display = (
                         " → ".join(
                             stops_list
                         )
                     )
-
 
                     # =================================================
                     # BASE PRICE
@@ -1534,7 +1795,6 @@ def flight_search(request):
                         else 850
 
                     )
-
 
                     price = (
 
@@ -1551,7 +1811,6 @@ def flight_search(request):
 
                     )
 
-
                     # =================================================
                     # UNIQUE FLIGHT ID
                     # =================================================
@@ -1567,7 +1826,6 @@ def flight_search(request):
                         f"{i + 1:03d}"
 
                     )
-
 
                     # =================================================
                     # DEPARTURE TIME
@@ -1586,7 +1844,6 @@ def flight_search(request):
                         ]
 
                     )
-
 
                     # =================================================
                     # PARSE DEPARTURE DATE
@@ -1608,9 +1865,8 @@ def flight_search(request):
 
                         departure_date = None
 
-
                     # =================================================
-                    # FLIGHT DATA FOR SEARCH PAGE
+                    # FLIGHT DATA
                     # =================================================
 
                     flight_data = {
@@ -1645,7 +1901,9 @@ def flight_search(request):
                             duration,
 
                         'stops':
-                            len(stops_list) - 1,
+                            len(
+                                stops_list
+                            ) - 1,
 
                         'badge':
                             "Connecting",
@@ -1669,55 +1927,46 @@ def flight_search(request):
                         'booking_url':
                             '#',
 
-
                         # =============================================
                         # SERVICE INTELLIGENCE
                         # =============================================
 
-                        'service_score': (
+                        'service_score':
                             route_data[
                                 'service_score'
-                            ]
-                        ),
+                            ],
 
-                        'punctuality_score': (
+                        'punctuality_score':
                             route_data[
                                 'punctuality_score'
-                            ]
-                        ),
+                            ],
 
-                        'comfort_score': (
+                        'comfort_score':
                             route_data[
                                 'comfort_score'
-                            ]
-                        ),
+                            ],
 
-                        'transit_score': (
+                        'transit_score':
                             route_data[
                                 'transit_score'
-                            ]
-                        ),
+                            ],
 
-                        'historical_summary': (
+                        'historical_summary':
                             route_data[
                                 'historical_summary'
-                            ]
-                        ),
+                            ],
 
-                        'strengths': (
+                        'strengths':
                             route_data[
                                 'strengths'
-                            ]
-                        ),
+                            ],
 
-                        'concerns': (
+                        'concerns':
                             route_data[
                                 'concerns'
-                            ]
-                        ),
+                            ],
 
                     }
-
 
                     # =================================================
                     # SAVE FLIGHT TO DATABASE
@@ -1805,7 +2054,6 @@ def flight_search(request):
 
                     )
 
-
                     # =================================================
                     # ADD TO SEARCH RESULTS
                     # =================================================
@@ -1813,7 +2061,6 @@ def flight_search(request):
                     search_results.append(
                         flight_data
                     )
-
 
                 # =====================================================
                 # DIRECT SAUDIA FLIGHT
@@ -1823,7 +2070,6 @@ def flight_search(request):
                     base_price + 150
                 )
 
-
                 direct_departure_time = (
                     random.choice(
                         [
@@ -1832,7 +2078,6 @@ def flight_search(request):
                         ]
                     )
                 )
-
 
                 # =====================================================
                 # DIRECT FLIGHT ID
@@ -1849,7 +2094,6 @@ def flight_search(request):
                     f"{len(search_results) + 1:03d}"
 
                 )
-
 
                 # =====================================================
                 # PARSE DIRECT FLIGHT DATE
@@ -1871,9 +2115,8 @@ def flight_search(request):
 
                     departure_date = None
 
-
                 # =====================================================
-                # DIRECT SAUDIA SEARCH DATA
+                # DIRECT FLIGHT DATA
                 # =====================================================
 
                 direct_flight_data = {
@@ -1931,7 +2174,6 @@ def flight_search(request):
                     'booking_url':
                         '#',
 
-
                     # =============================================
                     # SERVICE INTELLIGENCE
                     # =============================================
@@ -1973,7 +2215,6 @@ def flight_search(request):
                     ]
 
                 }
-
 
                 # =====================================================
                 # SAVE DIRECT FLIGHT
@@ -2060,22 +2301,16 @@ def flight_search(request):
 
                 )
 
-
                 # =====================================================
-                # ADD DIRECT FLIGHT TO SEARCH RESULTS
+                # ADD DIRECT FLIGHT
                 # =====================================================
 
                 search_results.append(
                     direct_flight_data
                 )
 
-
                 # =====================================================
                 # COMPETITIVE FLIGHT RATING
-                #
-                # IMPORTANT:
-                # All flights must be present before calculating
-                # competitive scores.
                 # =====================================================
 
                 for flight in search_results:
@@ -2091,7 +2326,6 @@ def flight_search(request):
 
                         )
                     )
-
 
                 # =====================================================
                 # RANK FLIGHTS
@@ -2110,7 +2344,6 @@ def flight_search(request):
 
                 )
 
-
                 # =====================================================
                 # ADD RANK INFORMATION
                 # =====================================================
@@ -2118,7 +2351,6 @@ def flight_search(request):
                 total_flights = len(
                     search_results
                 )
-
 
                 for index, flight in enumerate(
 
@@ -2134,13 +2366,11 @@ def flight_search(request):
                         "rank"
                     ] = index
 
-
                     flight[
                         "competitive"
                     ][
                         "total"
                     ] = total_flights
-
 
                 # =====================================================
                 # TOTAL RESULTS
@@ -2150,13 +2380,53 @@ def flight_search(request):
                     search_results
                 )
 
+                # =====================================================
+                # SAVE SEARCH TO SESSION
+                # =====================================================
+                #
+                # This allows Flight Intelligence to return to
+                # the exact same search results.
+                # =====================================================
+
+                request.session[
+                    'last_flight_search'
+                ] = {
+
+                    'origin':
+                        origin_code,
+
+                    'destination':
+                        destination_code,
+
+                    'date':
+                        date,
+
+                    'return_date':
+                        return_date,
+
+                    'adults':
+                        adults,
+
+                    'flight_ids': [
+
+                        flight['id']
+
+                        for flight in search_results
+
+                    ],
+
+                    'seasonal_warning':
+                        seasonal_warning,
+
+                }
+
+                request.session.modified = True
 
             else:
 
                 search_performed = False
 
                 total_results = 0
-
 
         # =========================================================
         # CONTEXT
@@ -2199,7 +2469,6 @@ def flight_search(request):
 
         }
 
-
         # =========================================================
         # RENDER
         # =========================================================
@@ -2214,7 +2483,6 @@ def flight_search(request):
 
         )
 
-
     # =========================================================
     # ERROR HANDLING
     # =========================================================
@@ -2224,7 +2492,6 @@ def flight_search(request):
         logger.error(
             f"Flight Search Error: {e}"
         )
-
 
         return render(
 
