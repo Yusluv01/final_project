@@ -223,6 +223,12 @@ path(
         views.flight_search,
         name='flight_search'
     ),
+    
+    path(
+    'flight/details/',
+    views.flight_details,
+    name='flight_details'
+),
 
     path(
         'api/flights/search/',
