@@ -5914,13 +5914,16 @@ def accept_agent_invitation(request, token):
 
 
 def custom_logout(request):
-    user_role = getattr(request.user, 'role', None)
+    # Remember which portal the user is logging out from
+    current_host = request.get_host().lower()
 
     logout(request)
 
-    if user_role == 'client':
+    # Client portal
+    if current_host.startswith('client.'):
         return redirect('travel_app:client_login')
 
+    # Admin/staff portal
     return redirect('travel_app:admin_login')
 
 def landing_page(request):
