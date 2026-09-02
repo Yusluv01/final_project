@@ -2256,19 +2256,6 @@ def flight_search(request):
 def flight_details(request, flight_id):
 
     # =========================================================
-    # ADMIN / STAFF ACCESS ONLY
-    # =========================================================
-
-    if request.user.role not in ['admin', 'staff']:
-        messages.error(
-            request,
-            'You do not have permission to access Flight Intelligence.'
-        )
-
-        return redirect('travel_app:dashboard')
-
-
-    # =========================================================
     # GET SELECTED FLIGHT
     # =========================================================
 
@@ -2281,13 +2268,13 @@ def flight_details(request, flight_id):
     # =========================================================
     # FIND COMPARABLE FLIGHTS
     #
-    # Flights are compared using the same:
+    # Flights are compared using:
     # - origin
     # - destination
     # - departure date
     #
-    # No historical/score data is passed through the URL.
-    # Everything is retrieved server-side.
+    # Comparison data is retrieved server-side.
+    # Nothing except the flight ID is passed through the URL.
     # =========================================================
 
     comparable_flights = Flight.objects.filter(
@@ -2420,8 +2407,9 @@ def flight_details(request, flight_id):
             break
 
 
-    # Fallback in case the selected flight
-    # somehow wasn't found.
+    # =========================================================
+    # FALLBACK
+    # =========================================================
 
     if selected_comparison is None:
 
@@ -2431,7 +2419,9 @@ def flight_details(request, flight_id):
 
             'airline': flight.airline,
 
-            'price': float(flight.price),
+            'price': float(
+                flight.price
+            ),
 
             'competitive': {
 
@@ -2462,8 +2452,6 @@ def flight_details(request, flight_id):
 
     # =========================================================
     # PREPARE PEER COMPARISON FOR AI
-    #
-    # Only useful comparison information is sent to Gemini.
     # =========================================================
 
     ai_comparison = []
@@ -2528,9 +2516,9 @@ def flight_details(request, flight_id):
         )
 
 
-        # -----------------------------------------------------
+        # =====================================================
         # FORMAT COMPETITIVE DATA FOR GEMINI
-        # -----------------------------------------------------
+        # =====================================================
 
         comparison_text = "\n".join(
 
@@ -2550,14 +2538,15 @@ def flight_details(request, flight_id):
                 )
 
                 for item in ai_comparison
+
             ]
 
         )
 
 
-        # -----------------------------------------------------
+        # =====================================================
         # GEMINI PROMPT
-        # -----------------------------------------------------
+        # =====================================================
 
         prompt = f"""
 You are the Travelbolt Flight Intelligence Assistant.
@@ -2816,16 +2805,11 @@ IMPORTANT RULES
     # =========================================================
 
     return render(
-
         request,
-
         'travel_app/flight_details.html',
-
         context
-
     )
-    
-@login_required
+
 def flight_search_api(request):
     origin = request.GET.get('origin', 'LHR').upper()
     destination = request.GET.get('destination', 'JED').upper()
