@@ -47,7 +47,7 @@ import importlib
 import os
 import io
 import uuid
-
+import random
 import openai
 import resend
 from django.core.mail import send_mail
