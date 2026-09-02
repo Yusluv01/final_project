@@ -63,6 +63,7 @@ from .models import (
     Agent,
     ClientDocument,
     AgentInvitation,
+    Flight,
 )
 
 from .forms import (
@@ -1369,182 +1370,103 @@ def flight_search(request):
 
             }
         )
+        
 @login_required
-def flight_details(request):
+def flight_details(request, flight_id):
 
-    airline = request.GET.get(
-        'airline',
-        ''
+    flight = get_object_or_404(
+        Flight,
+        flight_id=flight_id
     )
-
-    origin = request.GET.get(
-        'origin',
-        ''
-    )
-
-    destination = request.GET.get(
-        'destination',
-        ''
-    )
-
-    flight_id = request.GET.get(
-        'flight_id',
-        ''
-    )
-
-    duration = request.GET.get(
-        'duration',
-        ''
-    )
-
-    stops = request.GET.get(
-        'stops',
-        ''
-    )
-
-    price = request.GET.get(
-        'price',
-        ''
-    )
-
-    departure = request.GET.get(
-        'departure',
-        ''
-    )
-
-    arrival = request.GET.get(
-        'arrival',
-        ''
-    )
-
-    service_score = request.GET.get(
-        'service_score',
-        ''
-    )
-
-    punctuality_score = request.GET.get(
-        'punctuality_score',
-        ''
-    )
-
-    comfort_score = request.GET.get(
-        'comfort_score',
-        ''
-    )
-
-    transit_score = request.GET.get(
-        'transit_score',
-        ''
-    )
-
-    historical_summary = request.GET.get(
-        'historical_summary',
-        ''
-    )
-
-
-    strengths = request.GET.getlist(
-        'strength'
-    )
-
-    concerns = request.GET.getlist(
-        'concern'
-    )
-
-
-    # =========================================================
-    # AI ANALYSIS
-    # =========================================================
 
     ai_analysis = None
-
     ai_error = None
-
 
     try:
 
         from google import genai
 
-
         client = genai.Client(
-
             api_key=settings.GEMINI_API_KEY
-
         )
 
-
         prompt = f"""
-You are the Travelbolt AI Flight Intelligence Assistant.
+You are the Travelbolt Flight Intelligence Assistant.
 
-Analyse the following flight information.
+Analyse the following available flight and
+Travelbolt service intelligence data.
 
 Airline:
-{airline}
+{flight.airline}
 
 Flight ID:
-{flight_id}
+{flight.flight_id}
 
 Route:
-{origin} to {destination}
+{flight.origin} to {flight.destination}
 
 Departure:
-{departure}
+{flight.departure}
 
 Arrival:
-{arrival}
+{flight.arrival}
 
 Duration:
-{duration}
+{flight.duration}
 
 Stops:
-{stops}
+{flight.stops}
 
 Price:
-₦{price}
+₦{flight.price}
 
-Historical Service Score:
-{service_score}/10
+Service Score:
+{flight.service_score}/10
 
-Historical Punctuality Score:
-{punctuality_score}/10
+Punctuality Score:
+{flight.punctuality_score}/10
 
-Historical Comfort Score:
-{comfort_score}/10
+Comfort Score:
+{flight.comfort_score}/10
 
 Transit Score:
-{transit_score}/10
+{flight.transit_score}/10
 
-Historical Summary:
-{historical_summary}
+Service Intelligence:
+{flight.historical_summary}
 
-Known Strengths:
-{", ".join(strengths)}
+Strengths:
+{", ".join(flight.strengths or [])}
 
-Possible Concerns:
-{", ".join(concerns)}
+Things to Consider:
+{", ".join(flight.concerns or [])}
 
-Provide a professional flight intelligence report.
+Provide a professional decision-support report for a
+Travelbolt travel agent.
 
-Include these sections:
+Include:
 
 1. Overall Assessment
 2. Service Experience
 3. Punctuality Insight
 4. Comfort Insight
 5. Transit Experience
-6. Best For
-7. Important Considerations
-8. Final AI Recommendation
+6. Value for Money
+7. Best For
+8. Important Considerations
+9. Final Travelbolt Recommendation
 
-Important rules:
+Rules:
 
-- Do not claim access to live flight tracking.
 - Base the analysis only on the supplied information.
-- Clearly describe the information as historical or available service data.
 - Do not invent statistics.
-- Give practical advice for a travel agency selecting flights for clients.
+- Do not claim access to live flight tracking.
+- Do not present the supplied service intelligence as
+  verified live operational data.
+- Clearly distinguish available service intelligence
+  from live flight information.
+- Give practical advice for selecting flights for clients.
 """
-
 
         response = client.models.generate_content(
 
@@ -1555,12 +1477,9 @@ Important rules:
             ),
 
             contents=prompt
-
         )
 
-
         ai_analysis = response.text
-
 
     except Exception as e:
 
@@ -1570,44 +1489,47 @@ Important rules:
 
         ai_error = (
             'AI analysis is temporarily unavailable. '
-            'The historical flight information is '
-            'still available below.'
+            'The available Travelbolt flight intelligence '
+            'is still shown above.'
         )
-
 
     context = {
 
-        'flight_id': flight_id,
+        'flight': flight,
 
-        'airline': airline,
+        'flight_id': flight.flight_id,
 
-        'origin': origin,
+        'airline': flight.airline,
 
-        'destination': destination,
+        'origin': flight.origin,
 
-        'duration': duration,
+        'destination': flight.destination,
 
-        'stops': stops,
+        'departure': flight.departure,
 
-        'price': price,
+        'arrival': flight.arrival,
 
-        'departure': departure,
+        'duration': flight.duration,
 
-        'arrival': arrival,
+        'stops': flight.stops,
 
-        'service_score': service_score,
+        'price': flight.price,
 
-        'punctuality_score': punctuality_score,
+        'currency': flight.currency,
 
-        'comfort_score': comfort_score,
+        'service_score': flight.service_score,
 
-        'transit_score': transit_score,
+        'punctuality_score': flight.punctuality_score,
 
-        'historical_summary': historical_summary,
+        'comfort_score': flight.comfort_score,
 
-        'strengths': strengths,
+        'transit_score': flight.transit_score,
 
-        'concerns': concerns,
+        'historical_summary': flight.historical_summary,
+
+        'strengths': flight.strengths or [],
+
+        'concerns': flight.concerns or [],
 
         'ai_analysis': ai_analysis,
 
@@ -1615,17 +1537,12 @@ Important rules:
 
     }
 
-
     return render(
-
         request,
-
         'travel_app/flight_details.html',
-
         context
-
     )
-
+    
 @login_required
 def flight_search_api(request):
     origin = request.GET.get('origin', 'LHR').upper()
