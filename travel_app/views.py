@@ -2252,19 +2252,272 @@ def flight_search(request):
 
         )
 
+@login_required
 def flight_details(request, flight_id):
+
+    # =========================================================
+    # ADMIN / STAFF ACCESS ONLY
+    # =========================================================
+
+    if request.user.role not in ['admin', 'staff']:
+        messages.error(
+            request,
+            'You do not have permission to access Flight Intelligence.'
+        )
+
+        return redirect('travel_app:dashboard')
+
+
+    # =========================================================
+    # GET SELECTED FLIGHT
+    # =========================================================
 
     flight = get_object_or_404(
         Flight,
         flight_id=flight_id
     )
 
-    ai_analysis = None
-    ai_error = None
+
+    # =========================================================
+    # FIND COMPARABLE FLIGHTS
+    #
+    # Flights are compared using the same:
+    # - origin
+    # - destination
+    # - departure date
+    #
+    # No historical/score data is passed through the URL.
+    # Everything is retrieved server-side.
+    # =========================================================
+
+    comparable_flights = Flight.objects.filter(
+        origin=flight.origin,
+        destination=flight.destination,
+        departure_date=flight.departure_date
+    ).order_by('price')
+
+
+    # Make sure the selected flight is included
+    if not comparable_flights.filter(
+        id=flight.id
+    ).exists():
+
+        comparable_flights = list(
+            comparable_flights
+        )
+
+        comparable_flights.append(
+            flight
+        )
+
+
+    # =========================================================
+    # CONVERT FLIGHTS TO COMPARISON DATA
+    # =========================================================
+
+    comparison_data = []
+
+    for item in comparable_flights:
+
+        comparison_data.append({
+
+            'id': item.id,
+
+            'flight_id': item.flight_id,
+
+            'airline': item.airline,
+
+            'origin': item.origin,
+
+            'destination': item.destination,
+
+            'departure': item.departure,
+
+            'arrival': item.arrival,
+
+            'duration': item.duration,
+
+            'stops': item.stops,
+
+            'price': float(item.price),
+
+            'service_score': float(
+                item.service_score or 0
+            ),
+
+            'punctuality_score': float(
+                item.punctuality_score or 0
+            ),
+
+            'comfort_score': float(
+                item.comfort_score or 0
+            ),
+
+            'transit_score': float(
+                item.transit_score or 0
+            ),
+
+        })
+
+
+    # =========================================================
+    # CALCULATE COMPETITIVE SCORES
+    # =========================================================
+
+    for item in comparison_data:
+
+        item['competitive'] = (
+            calculate_flight_competitive_score(
+                item,
+                comparison_data
+            )
+        )
+
+
+    # =========================================================
+    # RANK FLIGHTS
+    # =========================================================
+
+    comparison_data.sort(
+        key=lambda item:
+            item['competitive']['overall_score'],
+        reverse=True
+    )
+
+
+    # =========================================================
+    # ADD RANK INFORMATION
+    # =========================================================
+
+    total_flights = len(
+        comparison_data
+    )
+
+    for index, item in enumerate(
+        comparison_data,
+        start=1
+    ):
+
+        item['competitive']['rank'] = index
+
+        item['competitive']['total'] = (
+            total_flights
+        )
+
+
+    # =========================================================
+    # FIND SELECTED FLIGHT'S COMPETITIVE DATA
+    # =========================================================
+
+    selected_comparison = None
+
+    for item in comparison_data:
+
+        if item['flight_id'] == flight.flight_id:
+
+            selected_comparison = item
+
+            break
+
+
+    # Fallback in case the selected flight
+    # somehow wasn't found.
+
+    if selected_comparison is None:
+
+        selected_comparison = {
+
+            'flight_id': flight.flight_id,
+
+            'airline': flight.airline,
+
+            'price': float(flight.price),
+
+            'competitive': {
+
+                'overall_score': 0,
+
+                'price_score': 0,
+
+                'rating': 'Not Rated',
+
+                'rating_level': 'average',
+
+                'rank': 1,
+
+                'total': max(
+                    1,
+                    total_flights
+                ),
+
+            }
+
+        }
+
+
+    competitive = (
+        selected_comparison['competitive']
+    )
+
+
+    # =========================================================
+    # PREPARE PEER COMPARISON FOR AI
+    #
+    # Only useful comparison information is sent to Gemini.
+    # =========================================================
+
+    ai_comparison = []
+
+    for item in comparison_data:
+
+        ai_comparison.append({
+
+            'airline': item['airline'],
+
+            'price': item['price'],
+
+            'duration': item['duration'],
+
+            'stops': item['stops'],
+
+            'service_score': item[
+                'service_score'
+            ],
+
+            'punctuality_score': item[
+                'punctuality_score'
+            ],
+
+            'comfort_score': item[
+                'comfort_score'
+            ],
+
+            'transit_score': item[
+                'transit_score'
+            ],
+
+            'competitive_score': item[
+                'competitive'
+            ]['overall_score'],
+
+            'price_score': item[
+                'competitive'
+            ]['price_score'],
+
+            'rank': item[
+                'competitive'
+            ]['rank'],
+
+        })
+
 
     # =========================================================
     # GEMINI AI FLIGHT INTELLIGENCE
     # =========================================================
+
+    ai_analysis = None
+
+    ai_error = None
 
     try:
 
@@ -2274,11 +2527,50 @@ def flight_details(request, flight_id):
             api_key=settings.GEMINI_API_KEY
         )
 
+
+        # -----------------------------------------------------
+        # FORMAT COMPETITIVE DATA FOR GEMINI
+        # -----------------------------------------------------
+
+        comparison_text = "\n".join(
+
+            [
+                (
+                    f"- {item['airline']}: "
+                    f"Price ₦{item['price']:,.2f}, "
+                    f"Duration {item['duration']}, "
+                    f"Stops {item['stops']}, "
+                    f"Service {item['service_score']}/10, "
+                    f"Punctuality {item['punctuality_score']}/10, "
+                    f"Comfort {item['comfort_score']}/10, "
+                    f"Transit {item['transit_score']}/10, "
+                    f"Competitive Score "
+                    f"{item['competitive_score']}/10, "
+                    f"Rank #{item['rank']}"
+                )
+
+                for item in ai_comparison
+            ]
+
+        )
+
+
+        # -----------------------------------------------------
+        # GEMINI PROMPT
+        # -----------------------------------------------------
+
         prompt = f"""
 You are the Travelbolt Flight Intelligence Assistant.
 
-Analyse the following available flight and
-Travelbolt service intelligence data.
+You are assisting a Travelbolt administrator or travel agent
+in evaluating a flight for a client.
+
+Analyse the selected flight using ONLY the information supplied
+below.
+
+============================================================
+SELECTED FLIGHT
+============================================================
 
 Airline:
 {flight.airline}
@@ -2302,7 +2594,7 @@ Stops:
 {flight.stops}
 
 Price:
-₦{flight.price}
+₦{flight.price:,.2f}
 
 Service Score:
 {flight.service_score}/10
@@ -2316,52 +2608,106 @@ Comfort Score:
 Transit Score:
 {flight.transit_score}/10
 
-Service Intelligence:
-{flight.historical_summary}
+Travelbolt Competitive Score:
+{competitive['overall_score']}/10
+
+Travelbolt Price Score:
+{competitive['price_score']}/10
+
+Travelbolt Competitive Rating:
+{competitive['rating']}
+
+Competitive Rank:
+#{competitive['rank']} of {competitive['total']}
+
+
+============================================================
+TRAVELBOLT SERVICE INTELLIGENCE
+============================================================
+
+Historical / Service Summary:
+{flight.historical_summary or 'No service summary available.'}
 
 Strengths:
-{", ".join(flight.strengths or [])}
+{", ".join(flight.strengths or []) or 'None supplied.'}
 
 Things to Consider:
-{", ".join(flight.concerns or [])}
+{", ".join(flight.concerns or []) or 'None supplied.'}
+
+
+============================================================
+COMPETING FLIGHTS
+============================================================
+
+{comparison_text}
+
+
+============================================================
+YOUR TASK
+============================================================
 
 Provide a professional decision-support report for a
 Travelbolt travel agent.
 
-Include:
+The report must include:
 
 1. Overall Assessment
-2. Service Experience
-3. Punctuality Insight
-4. Comfort Insight
-5. Transit Experience
-6. Value for Money
-7. Best For
-8. Important Considerations
-9. Final Travelbolt Recommendation
+2. Competitive Position
+3. Service Experience
+4. Punctuality Insight
+5. Comfort Insight
+6. Transit Experience
+7. Value for Money
+8. Comparison With Other Available Flights
+9. Best For
+10. Important Considerations
+11. Final Travelbolt Recommendation
 
-Rules:
 
-- Base the analysis only on the supplied information.
+============================================================
+IMPORTANT RULES
+============================================================
+
+- Base the analysis ONLY on the supplied information.
 - Do not invent statistics.
+- Do not invent airline policies.
 - Do not claim access to live flight tracking.
-- Do not present the supplied service intelligence as
+- Do not claim that the supplied service intelligence is
   verified live operational data.
-- Clearly distinguish available service intelligence
-  from live flight information.
-- Give practical advice for selecting flights for clients.
+- Treat Travelbolt scores as decision-support assessments.
+- Do not create new numerical scores.
+- Do not change the supplied competitive score or ranking.
+- Explain why the selected flight ranks where it does.
+- Compare price, service quality, punctuality, comfort,
+  transit experience, duration and stops where relevant.
+- Clearly identify trade-offs.
+- Give practical advice that a Travelbolt agent can use
+  when recommending the flight to a client.
+- If another flight is stronger overall, clearly explain why.
+- If the selected flight is the strongest option, explain why.
+- Keep the recommendation professional and concise.
 """
 
+
+        # =====================================================
+        # CALL GEMINI
+        # =====================================================
+
         response = client.models.generate_content(
+
             model=getattr(
                 settings,
                 'GEMINI_MODEL',
                 'gemini-3.7-flash'
             ),
+
             contents=prompt
+
         )
 
+
         ai_analysis = response.text
+
 
     except Exception as e:
 
@@ -2372,7 +2718,7 @@ Rules:
         ai_error = (
             'AI analysis is temporarily unavailable. '
             'The available Travelbolt flight intelligence '
-            'is still shown above.'
+            'and competitive ranking are still shown above.'
         )
 
 
@@ -2381,6 +2727,10 @@ Rules:
     # =========================================================
 
     context = {
+
+        # -----------------------------------------------------
+        # SELECTED FLIGHT
+        # -----------------------------------------------------
 
         'flight': flight,
 
@@ -2404,19 +2754,55 @@ Rules:
 
         'currency': 'NGN',
 
+
+        # -----------------------------------------------------
+        # SERVICE SCORES
+        # -----------------------------------------------------
+
         'service_score': flight.service_score,
 
-        'punctuality_score': flight.punctuality_score,
+        'punctuality_score': (
+            flight.punctuality_score
+        ),
 
-        'comfort_score': flight.comfort_score,
+        'comfort_score': (
+            flight.comfort_score
+        ),
 
-        'transit_score': flight.transit_score,
+        'transit_score': (
+            flight.transit_score
+        ),
 
-        'historical_summary': flight.historical_summary,
 
-        'strengths': flight.strengths or [],
+        # -----------------------------------------------------
+        # SERVICE INTELLIGENCE
+        # -----------------------------------------------------
 
-        'concerns': flight.concerns or [],
+        'historical_summary': (
+            flight.historical_summary
+        ),
+
+        'strengths': (
+            flight.strengths or []
+        ),
+
+        'concerns': (
+            flight.concerns or []
+        ),
+
+
+        # -----------------------------------------------------
+        # COMPETITIVE INTELLIGENCE
+        # -----------------------------------------------------
+
+        'competitive': competitive,
+
+        'comparison_flights': comparison_data,
+
+
+        # -----------------------------------------------------
+        # AI
+        # -----------------------------------------------------
 
         'ai_analysis': ai_analysis,
 
@@ -2425,10 +2811,18 @@ Rules:
     }
 
 
+    # =========================================================
+    # RENDER
+    # =========================================================
+
     return render(
+
         request,
+
         'travel_app/flight_details.html',
+
         context
+
     )
     
 @login_required
