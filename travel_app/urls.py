@@ -225,7 +225,7 @@ path(
     ),
     
     path(
-    'flight/details/',
+    'flight/details/<str:flight_id>/',
     views.flight_details,
     name='flight_details'
 ),
