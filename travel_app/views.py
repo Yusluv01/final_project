@@ -684,73 +684,300 @@ class MessagingView(LoginRequiredMixin, TemplateView):
         }
         return context
 
+def normalize_phone_number(phone):
+    """
+    Convert Nigerian phone numbers to E.164 format.
+    
+    Examples:
+    08025460284      -> +2348025460284
+    2348025460284    -> +2348025460284
+    +2348025460284   -> +2348025460284
+    """
+
+    if not phone:
+        return None
+
+    phone = str(phone).strip()
+
+    # Remove spaces, hyphens and parentheses
+    phone = phone.replace(" ", "")
+    phone = phone.replace("-", "")
+    phone = phone.replace("(", "")
+    phone = phone.replace(")", "")
+
+    # Already starts with +
+    if phone.startswith("+"):
+        return phone
+
+    # Nigerian number starting with 0
+    if phone.startswith("0"):
+        return "+234" + phone[1:]
+
+    # Nigerian international number without +
+    if phone.startswith("234"):
+        return "+" + phone
+
+    return phone
+
+
 @csrf_exempt
 @login_required
 def send_message(request):
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+    if request.method != "POST":
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Invalid request method"
+            },
+            status=400
+        )
+
     try:
-        message_content = request.POST.get('content', '')
-        recipient_group = request.POST.get('group', 'umrah')
-        attachment = request.FILES.get('attachment')
+
+        message_content = request.POST.get("content", "").strip()
+        recipient_group = request.POST.get("group", "umrah")
+        attachment = request.FILES.get("attachment")
+
+        logger.info(
+            f"Messaging request received. Group: {recipient_group}"
+        )
+
         if not message_content:
-            return JsonResponse({'success': False, 'error': 'Message content is empty.'})
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Message content is empty."
+                }
+            )
+
+        # ============================
+        # HANDLE ATTACHMENT
+        # ============================
+
         file_url = None
+
         if attachment:
-            file_name = default_storage.save(f'messages/{attachment.name}', ContentFile(attachment.read()))
-            file_url = request.build_absolute_uri(settings.MEDIA_URL + file_name)
-        if recipient_group == 'test':
-            clients = Client.objects.filter(phone__contains='2348025460284')
-        elif recipient_group == 'all':
+
+            file_name = default_storage.save(
+                f"messages/{attachment.name}",
+                ContentFile(attachment.read())
+            )
+
+            file_url = request.build_absolute_uri(
+                settings.MEDIA_URL + file_name
+            )
+
+        # ============================
+        # SELECT RECIPIENTS
+        # ============================
+
+        if recipient_group == "test":
+
+            clients = Client.objects.filter(
+                phone__contains="8025460284"
+            )
+
+        elif recipient_group == "all":
+
             clients = Client.objects.all()
+
         else:
-            clients = Client.objects.filter(travel_type=recipient_group)
-        if not clients:
-            return JsonResponse({'success': False, 'error': 'No clients found in this group.'})
+
+            clients = Client.objects.filter(
+                travel_type=recipient_group
+            )
+
+        logger.info(
+            f"Number of clients found: {clients.count()}"
+        )
+
+        if not clients.exists():
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "No clients found in this group."
+                }
+            )
+
         sent_count = 0
         failed_count = 0
+
+        # ============================
+        # SEND MESSAGE
+        # ============================
+
         for client in clients:
-            personalized_message = message_content.replace('{name}', client.full_name)
+
+            phone_number = normalize_phone_number(
+                client.phone
+            )
+
+            logger.info(
+                f"Attempting WhatsApp message to: {phone_number}"
+            )
+
+            personalized_message = message_content.replace(
+                "{name}",
+                client.full_name
+            )
+
             if file_url:
-                personalized_message += f"\n\n📎 Attachment: {file_url}"
-            try:
-                message_obj = Message.objects.create(
-                    sender=request.user,
-                    recipient=str(client.phone),
-                    recipient_name=client.full_name,
-                    message_type='whatsapp',
-                    content=personalized_message,
-                    status='pending'
+
+                personalized_message += (
+                    f"\n\n📎 Attachment: {file_url}"
                 )
-                url = f"https://api.twilio.com/2010-04-01/Accounts/{settings.TWILIO_ACCOUNT_SID}/Messages.json"
+
+            message_obj = Message.objects.create(
+
+                sender=request.user,
+
+                recipient=phone_number,
+
+                recipient_name=client.full_name,
+
+                message_type="whatsapp",
+
+                content=personalized_message,
+
+                status="pending"
+
+            )
+
+            try:
+
+                url = (
+                    "https://api.twilio.com/"
+                    f"2010-04-01/Accounts/"
+                    f"{settings.TWILIO_ACCOUNT_SID}/"
+                    "Messages.json"
+                )
+
                 payload = {
-                    "To": f"whatsapp:{client.phone}",
+
+                    "To": f"whatsapp:{phone_number}",
+
                     "From": settings.TWILIO_WHATSAPP_NUMBER,
+
                     "Body": personalized_message
+
                 }
-                auth = (settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                response = requests.post(url, data=payload, auth=auth)
-                if response.status_code == 201:
-                    message_obj.status = 'sent'
+
+                auth = (
+
+                    settings.TWILIO_ACCOUNT_SID,
+
+                    settings.TWILIO_AUTH_TOKEN
+
+                )
+
+                response = requests.post(
+
+                    url,
+
+                    data=payload,
+
+                    auth=auth,
+
+                    timeout=30
+
+                )
+
+                # IMPORTANT:
+                # This will appear in Render logs
+
+                logger.info(
+                    f"Twilio response for {phone_number}: "
+                    f"{response.status_code} - "
+                    f"{response.text}"
+                )
+
+                if response.status_code in [200, 201]:
+
+                    message_obj.status = "sent"
+
                     message_obj.save()
+
                     sent_count += 1
+
+                    logger.info(
+                        f"WhatsApp sent successfully to "
+                        f"{phone_number}"
+                    )
+
                 else:
-                    message_obj.status = 'failed'
-                    message_obj.error_message = response.text
+
+                    message_obj.status = "failed"
+
+                    message_obj.error_message = (
+                        f"Twilio {response.status_code}: "
+                        f"{response.text}"
+                    )
+
                     message_obj.save()
+
                     failed_count += 1
+
+                    logger.error(
+                        f"Twilio failed for {phone_number}: "
+                        f"{response.status_code} - "
+                        f"{response.text}"
+                    )
+
             except Exception as e:
+
                 failed_count += 1
-                logger.error(f"Failed to send to {client.phone}: {e}")
-        return JsonResponse({
-            'success': True,
-            'message': f'Sent to {sent_count} clients. Failed: {failed_count}',
-            'sent_count': sent_count,
-            'failed_count': failed_count
-        })
+
+                message_obj.status = "failed"
+
+                message_obj.error_message = str(e)
+
+                message_obj.save()
+
+                logger.exception(
+                    f"Exception sending WhatsApp to "
+                    f"{phone_number}"
+                )
+
+        return JsonResponse(
+
+            {
+
+                "success": True,
+
+                "message": (
+                    f"Sent to {sent_count} clients. "
+                    f"Failed: {failed_count}"
+                ),
+
+                "sent_count": sent_count,
+
+                "failed_count": failed_count
+
+            }
+
+        )
+
     except Exception as e:
-        logger.error(f"Send message error: {e}")
-        return JsonResponse({'success': False, 'error': str(e)})
+
+        logger.exception(
+            "Critical send message error"
+        )
+
+        return JsonResponse(
+
+            {
+
+                "success": False,
+
+                "error": str(e)
+
+            },
+
+            status=500
+
+        )
 
 
 # ============================================================
