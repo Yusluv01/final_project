@@ -768,25 +768,35 @@ def send_message(request):
                 settings.MEDIA_URL + file_name
             )
 
-        # ============================
-        # SELECT RECIPIENTS
-        # ============================
+# ============================
+# SELECT RECIPIENTS
+# ============================
 
-        if recipient_group == "test":
+if recipient_group == "test":
 
-            clients = Client.objects.filter(
-                phone__contains="8025460284"
-            )
+    # Test with the known Sandbox WhatsApp number
+    clients = Client.objects.filter(
+        phone__contains="8025460284"
+    )
 
-        elif recipient_group == "all":
+elif recipient_group == "all":
 
-            clients = Client.objects.all()
+    # Send to every client
+    clients = Client.objects.all()
 
-        else:
+elif recipient_group == "student":
 
-            clients = Client.objects.filter(
-                travel_type=recipient_group
-            )
+    # Frontend uses "student",
+    # database uses "visa_student"
+    clients = Client.objects.filter(
+        travel_type="visa_student"
+    )
+
+else:
+
+    clients = Client.objects.filter(
+        travel_type=recipient_group
+    )
 
         logger.info(
             f"Number of clients found: {clients.count()}"
