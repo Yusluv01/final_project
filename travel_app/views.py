@@ -768,35 +768,33 @@ def send_message(request):
                 settings.MEDIA_URL + file_name
             )
 
-# ============================
-# SELECT RECIPIENTS
-# ============================
+        # ============================
+        # SELECT RECIPIENTS
+        # ============================
 
-if recipient_group == "test":
+        if recipient_group == "test":
 
-    # Test with the known Sandbox WhatsApp number
-    clients = Client.objects.filter(
-        phone__contains="8025460284"
-    )
+            clients = Client.objects.filter(
+                phone__contains="8025460284"
+            )
 
-elif recipient_group == "all":
+        elif recipient_group == "all":
 
-    # Send to every client
-    clients = Client.objects.all()
+            clients = Client.objects.all()
 
-elif recipient_group == "student":
+        elif recipient_group == "student":
 
-    # Frontend uses "student",
-    # database uses "visa_student"
-    clients = Client.objects.filter(
-        travel_type="visa_student"
-    )
+            # Frontend uses "student"
+            # Database uses "visa_student"
+            clients = Client.objects.filter(
+                travel_type="visa_student"
+            )
 
-else:
+        else:
 
-    clients = Client.objects.filter(
-        travel_type=recipient_group
-    )
+            clients = Client.objects.filter(
+                travel_type=recipient_group
+            )
 
         logger.info(
             f"Number of clients found: {clients.count()}"
@@ -840,19 +838,12 @@ else:
                 )
 
             message_obj = Message.objects.create(
-
                 sender=request.user,
-
                 recipient=phone_number,
-
                 recipient_name=client.full_name,
-
                 message_type="whatsapp",
-
                 content=personalized_message,
-
                 status="pending"
-
             )
 
             try:
@@ -865,37 +856,22 @@ else:
                 )
 
                 payload = {
-
                     "To": f"whatsapp:{phone_number}",
-
                     "From": settings.TWILIO_WHATSAPP_NUMBER,
-
                     "Body": personalized_message
-
                 }
 
                 auth = (
-
                     settings.TWILIO_ACCOUNT_SID,
-
                     settings.TWILIO_AUTH_TOKEN
-
                 )
 
                 response = requests.post(
-
                     url,
-
                     data=payload,
-
                     auth=auth,
-
                     timeout=30
-
                 )
-
-                # IMPORTANT:
-                # This will appear in Render logs
 
                 logger.info(
                     f"Twilio response for {phone_number}: "
@@ -906,7 +882,6 @@ else:
                 if response.status_code in [200, 201]:
 
                     message_obj.status = "sent"
-
                     message_obj.save()
 
                     sent_count += 1
@@ -951,22 +926,15 @@ else:
                 )
 
         return JsonResponse(
-
             {
-
                 "success": True,
-
                 "message": (
                     f"Sent to {sent_count} clients. "
                     f"Failed: {failed_count}"
                 ),
-
                 "sent_count": sent_count,
-
                 "failed_count": failed_count
-
             }
-
         )
 
     except Exception as e:
@@ -976,19 +944,12 @@ else:
         )
 
         return JsonResponse(
-
             {
-
                 "success": False,
-
                 "error": str(e)
-
             },
-
             status=500
-
         )
-
 
 # ============================================================
 # COMPETITIVE FLIGHT RATING
