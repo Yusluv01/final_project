@@ -3442,14 +3442,13 @@ def ai_assistant_chat(request):
         # ============================================================
         # CANCEL CURRENT BOOKING
         # ============================================================
-
-        if booking_state and query_lower in [
-            'cancel',
-            'cancel booking',
-            'start over',
-            'reset',
-            'no',
-        ] and booking_state.get('step') != 'confirm':
+            
+            if booking_state and query_lower in [
+                'cancel',
+                'cancel booking',
+                'start over',
+                'reset',
+            ] and booking_state.get('step') != 'confirm':
 
             clear_ai_booking_session(request)
 
