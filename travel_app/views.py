@@ -3353,152 +3353,884 @@ def export_report(request):
             booking.travel_date_start.strftime('%Y-%m-%d'),
         ])
     return response
+    
+def parse_ai_booking_date(value):
+    """
+    Convert common user-entered date formats into a Python date.
+    """
+    value = value.strip()
+
+    formats = [
+        '%Y-%m-%d',
+        '%d-%m-%Y',
+        '%d/%m/%Y',
+        '%B %d, %Y',
+        '%d %B %Y',
+        '%b %d, %Y',
+        '%d %b %Y',
+    ]
+
+    for date_format in formats:
+        try:
+            return datetime.strptime(value, date_format).date()
+        except ValueError:
+            continue
+
+    return None
+
+
+def clear_ai_booking_session(request):
+    """
+    Remove any active AI booking conversation.
+    """
+    request.session.pop('ai_booking', None)
+    request.session.modified = True
+
 
 @csrf_exempt
 @login_required(login_url='travel_app:client_login')
 def ai_assistant_chat(request):
-    if request.method == 'POST':
+
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid request method.'
+        })
+
+    try:
+        data = json.loads(request.body)
+        query = data.get('message', '').strip()
+
+        if not query:
+            return JsonResponse({
+                'success': False,
+                'error': 'Please enter a question.'
+            })
+
+        query_lower = query.lower()
+
+        # ============================================================
+        # CLIENT CHECK
+        # ============================================================
+
+        if (
+            request.user.is_staff
+            or getattr(request.user, 'role', None) != 'client'
+        ):
+            return JsonResponse({
+                'success': False,
+                'error': 'Only clients can use the AI booking assistant.'
+            })
+
         try:
-            data = json.loads(request.body)
-            query = data.get('message', '').strip().lower()
+            client = request.user.client_profile
+        except Client.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': (
+                    'Your client profile is not linked. '
+                    'Please contact Travelbolt support.'
+                )
+            })
 
-            if not query:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Please enter a question.'
-                })
+        # ============================================================
+        # CURRENT AI BOOKING SESSION
+        # ============================================================
 
-            ai_response = None
+        booking_state = request.session.get('ai_booking')
 
-            # ============================================================
-            # OPENAI AI ASSISTANT
-            # ============================================================
-            if hasattr(settings, 'OPENAI_API_KEY') and settings.OPENAI_API_KEY:
-                try:
-                    from openai import OpenAI
+        # ============================================================
+        # CANCEL CURRENT BOOKING
+        # ============================================================
 
-                    client = OpenAI(
-                        api_key=settings.OPENAI_API_KEY
-                    )
+        if booking_state and query_lower in [
+            'cancel',
+            'cancel booking',
+            'start over',
+            'reset',
+            'no',
+        ] and booking_state.get('step') != 'confirm':
 
-                    response = client.responses.create(
-                        model="gpt-5.6-luna",
-                        instructions=(
-                            "You are Travelbolt AI, a helpful travel assistant "
-                            "specializing in Hajj, Umrah, travel planning, "
-                            "visa information, flights, hotels, passports, "
-                            "and travel documentation. "
-                            "Give clear, concise and helpful answers. "
-                            "When discussing official travel or visa requirements, "
-                            "remind users that requirements can change and should "
-                            "be verified with the relevant official authority."
-                        ),
-                        input=query
-                    )
-
-                    ai_response = response.output_text.strip()
-
-                    logger.info(
-                        "OpenAI response generated successfully."
-                    )
-
-                except Exception as e:
-                    logger.error(
-                        f"OpenAI error: {e}",
-                        exc_info=True
-                    )
-
-            # ============================================================
-            # FALLBACK RESPONSES
-            # ============================================================
-            if ai_response:
-                return JsonResponse({
-                    'success': True,
-                    'response': ai_response
-                })
-
-            if 'umrah' in query or 'umra' in query:
-                response = """**Umrah Visa & Document Requirements**:
-
-1. Valid international passport with at least 6 months validity.
-2. Digital passport photograph.
-3. Nusuk platform booking where applicable.
-4. Meningococcal Meningitis (ACYW135) vaccination certificate.
-5. Confirmed travel arrangements.
-
-Requirements may change, so travelers should verify the latest requirements before travelling."""
-
-            elif 'hajj' in query:
-                response = """**Hajj Visa & Document Requirements**:
-
-1. Valid passport with sufficient validity.
-2. Hajj visa processed through the appropriate authorized channels.
-3. Medical fitness documentation where required.
-4. Required vaccination certificates.
-5. Biometric enrollment where applicable.
-
-Hajj requirements can change, so please verify the latest requirements with the appropriate authorities."""
-
-            elif 'visa' in query or 'document' in query:
-                response = """Do you need documents for Umrah or Hajj?
-
-- **Umrah:** Passport, required vaccination documentation and applicable travel arrangements.
-- **Hajj:** Passport, Hajj visa, medical documentation and required vaccination records.
-
-Please tell me whether you are planning Hajj or Umrah and I can guide you further."""
-
-            elif (
-                'woman' in query
-                or 'female' in query
-                or 'mahram' in query
-            ):
-                response = """**Women Traveling for Pilgrimage**:
-
-Requirements for women can depend on current Saudi regulations, age, nationality and the type of pilgrimage.
-
-Because these rules can change, travelers should verify the current requirements with the official Saudi authorities or an authorized travel agency."""
-
-            elif 'package' in query:
-                response = """**Our Hajj & Umrah Packages:**
-
-Travelbolt AI can help you explore Hajj and Umrah packages based on your preferred accommodation, duration and travel requirements.
-
-Package prices vary depending on accommodation level, hotel location, flights and other services."""
-
-            else:
-                response = """I'm your Travelbolt AI travel assistant.
-
-I can help you with:
-
-- **Umrah** requirements
-- **Hajj** requirements
-- **Visa** information
-- **Travel documents**
-- **Hajj & Umrah packages**
-- **Flight and hotel planning**
-
-Please tell me what you are planning and I'll help you."""
+            clear_ai_booking_session(request)
 
             return JsonResponse({
                 'success': True,
-                'response': response
+                'response': (
+                    'No problem. I cancelled the current booking process. '
+                    'You can start again whenever you are ready.'
+                )
             })
 
-        except Exception as e:
-            logger.error(
-                f"AI Assistant error: {e}",
-                exc_info=True
+        # ============================================================
+        # CONFIRMATION STEP
+        # ============================================================
+
+        if booking_state and booking_state.get('step') == 'confirm':
+
+            confirmation_words = [
+                'yes',
+                'yes please',
+                'confirm',
+                'confirm booking',
+                'book it',
+                'yes book it',
+                'proceed',
+                'proceed with booking',
+                'go ahead',
+                'go ahead with booking',
+            ]
+
+            if query_lower in confirmation_words:
+
+                package = get_object_or_404(
+                    TravelPackage,
+                    pk=booking_state['package_id'],
+                    is_active=True
+                )
+
+                travel_date_start = parse_ai_booking_date(
+                    booking_state['travel_date_start']
+                )
+
+                travel_date_end = parse_ai_booking_date(
+                    booking_state['travel_date_end']
+                )
+
+                if not travel_date_start or not travel_date_end:
+                    clear_ai_booking_session(request)
+
+                    return JsonResponse({
+                        'success': False,
+                        'error': (
+                            'I could not validate the travel dates. '
+                            'Please start the booking again.'
+                        )
+                    })
+
+                # Final package availability check
+                if travel_date_start < package.available_from:
+                    clear_ai_booking_session(request)
+
+                    return JsonResponse({
+                        'success': False,
+                        'error': (
+                            f'{package.name} is only available from '
+                            f'{package.available_from.strftime("%B %d, %Y")}. '
+                            'Please start the booking again.'
+                        )
+                    })
+
+                if travel_date_end > package.available_until:
+                    clear_ai_booking_session(request)
+
+                    return JsonResponse({
+                        'success': False,
+                        'error': (
+                            f'{package.name} is only available until '
+                            f'{package.available_until.strftime("%B %d, %Y")}. '
+                            'Please start the booking again.'
+                        )
+                    })
+
+                # ====================================================
+                # CREATE BOOKING
+                # ====================================================
+
+                with transaction.atomic():
+
+                    booking = Booking.objects.create(
+                        client=client,
+                        package=package,
+                        status='pending',
+                        total_amount=package.price,
+                        paid_amount=0,
+                        discount_amount=0,
+                        payment_status='pending',
+                        travel_date_start=travel_date_start,
+                        travel_date_end=travel_date_end,
+                        travel_class=booking_state.get(
+                            'travel_class',
+                            'economy'
+                        ),
+                        special_requests=booking_state.get(
+                            'special_requests',
+                            ''
+                        ),
+                    )
+
+                    # ================================================
+                    # NOTIFY ADMIN / STAFF
+                    # ================================================
+
+                    admin_users = Agent.objects.filter(
+                        models.Q(role__in=['admin', 'staff']) |
+                        models.Q(is_staff=True),
+                        is_active=True
+                    ).distinct()
+
+                    for admin in admin_users:
+                        Notification.objects.create(
+                            recipient=admin,
+                            title='New Package Booking',
+                            message=(
+                                f'{client.full_name} created a booking '
+                                f'via Travelbolt AI for '
+                                f'{package.name}. '
+                                f'Booking: {booking.booking_id}. '
+                                f'Amount: ₦{package.price:,.2f}.'
+                            ),
+                            notification_type='info',
+                            link=reverse(
+                                'travel_app:client_booking_detail',
+                                kwargs={'pk': booking.pk}
+                            ),
+                            link_text='View Booking'
+                        )
+
+                clear_ai_booking_session(request)
+
+                return JsonResponse({
+                    'success': True,
+                    'response': (
+                        f'✅ Your booking request has been created successfully!\n\n'
+                        f'**Booking ID:** {booking.booking_id}\n'
+                        f'**Package:** {package.name}\n'
+                        f'**Travel:** '
+                        f'{travel_date_start.strftime("%B %d, %Y")} '
+                        f'to '
+                        f'{travel_date_end.strftime("%B %d, %Y")}\n'
+                        f'**Travel Class:** '
+                        f'{booking.get_travel_class_display()}\n'
+                        f'**Amount:** ₦{package.price:,.2f}\n\n'
+                        f'Your booking is currently **Pending Documents**. '
+                        f'Our staff will review it and you can proceed with '
+                        f'payment from your booking details.'
+                    )
+                })
+
+            elif query_lower in [
+                'no',
+                'no thanks',
+                'cancel',
+                'cancel booking',
+            ]:
+
+                clear_ai_booking_session(request)
+
+                return JsonResponse({
+                    'success': True,
+                    'response': (
+                        'No problem. I cancelled the booking request. '
+                        'Nothing has been created.'
+                    )
+                })
+
+            else:
+                return JsonResponse({
+                    'success': True,
+                    'response': (
+                        'Please confirm your booking by replying **Yes** '
+                        'or reply **No** to cancel it.'
+                    )
+                })
+
+        # ============================================================
+        # PACKAGE SELECTION
+        # ============================================================
+
+        if booking_state and booking_state.get('step') == 'package':
+
+            packages = list(
+                TravelPackage.objects.filter(
+                    is_active=True,
+                    package_type__in=[
+                        'umrah',
+                        'umrah_ramadan',
+                        'umrah_regular',
+                    ],
+                    available_until__gte=timezone.now().date()
+                ).order_by('price')
+            )
+
+            selected_package = None
+
+            # User selected a number
+            if query_lower.isdigit():
+
+                package_number = int(query_lower)
+
+                if 1 <= package_number <= len(packages):
+                    selected_package = packages[package_number - 1]
+
+            # User typed package name
+            if not selected_package:
+
+                for package in packages:
+
+                    if package.name.lower() in query_lower:
+                        selected_package = package
+                        break
+
+            if not selected_package:
+
+                return JsonResponse({
+                    'success': True,
+                    'response': (
+                        'Please select one of the available packages '
+                        'by entering its number:\n\n'
+                        + '\n'.join(
+                            [
+                                f'**{index}. {package.name}** — '
+                                f'₦{package.price:,.2f} '
+                                f'({package.duration_days} days)'
+                                for index, package
+                                in enumerate(packages, start=1)
+                            ]
+                        )
+                    )
+                })
+
+            booking_state['package_id'] = selected_package.pk
+            booking_state['package_name'] = selected_package.name
+            booking_state['package_price'] = str(
+                selected_package.price
+            )
+            booking_state['package_duration'] = (
+                selected_package.duration_days
+            )
+            booking_state['step'] = 'start_date'
+
+            request.session['ai_booking'] = booking_state
+            request.session.modified = True
+
+            return JsonResponse({
+                'success': True,
+                'response': (
+                    f'Great choice! You selected **'
+                    f'{selected_package.name}**.\n\n'
+                    f'**Price:** ₦{selected_package.price:,.2f}\n'
+                    f'**Duration:** {selected_package.duration_days} days\n\n'
+                    f'Please enter your **travel start date**.\n\n'
+                    f'Example: `10 December 2026`'
+                )
+            })
+
+        # ============================================================
+        # START DATE
+        # ============================================================
+
+        if booking_state and booking_state.get('step') == 'start_date':
+
+            start_date = parse_ai_booking_date(query)
+
+            if not start_date:
+
+                return JsonResponse({
+                    'success': True,
+                    'response': (
+                        'I could not understand that date.\n\n'
+                        'Please enter your travel start date like:\n'
+                        '**10 December 2026**'
+                    )
+                })
+
+            package = get_object_or_404(
+                TravelPackage,
+                pk=booking_state['package_id'],
+                is_active=True
+            )
+
+            if start_date < package.available_from:
+
+                return JsonResponse({
+                    'success': True,
+                    'response': (
+                        f'That date is too early for this package.\n\n'
+                        f'**{package.name}** is available from '
+                        f'**{package.available_from.strftime("%B %d, %Y")}**.\n\n'
+                        f'Please enter another start date.'
+                    )
+                })
+
+            if start_date > package.available_until:
+
+                return JsonResponse({
+                    'success': True,
+                    'response': (
+                        f'That date is outside the package availability '
+                        f'period.\n\n'
+                        f'**{package.name}** is available until '
+                        f'**{package.available_until.strftime("%B %d, %Y")}**.\n\n'
+                        f'Please enter another start date.'
+                    )
+                })
+
+            booking_state['travel_date_start'] = start_date.strftime(
+                '%Y-%m-%d'
+            )
+            booking_state['step'] = 'end_date'
+
+            request.session['ai_booking'] = booking_state
+            request.session.modified = True
+
+            # Automatically calculate an end date from package duration
+            if package.duration_days and package.duration_days > 0:
+
+                suggested_end = (
+                    start_date +
+                    timedelta(days=package.duration_days)
+                )
+
+                if suggested_end <= package.available_until:
+
+                    booking_state['travel_date_end'] = (
+                        suggested_end.strftime('%Y-%m-%d')
+                    )
+                    booking_state['step'] = 'travel_class'
+
+                    request.session['ai_booking'] = booking_state
+                    request.session.modified = True
+
+                    return JsonResponse({
+                        'success': True,
+                        'response': (
+                            f'Perfect. Your start date is '
+                            f'**{start_date.strftime("%B %d, %Y")}**.\n\n'
+                            f'Based on the package duration of '
+                            f'**{package.duration_days} days**, your '
+                            f'suggested end date is '
+                            f'**{suggested_end.strftime("%B %d, %Y")}**.\n\n'
+                            f'What travel class would you like?\n\n'
+                            f'1. Economy\n'
+                            f'2. Premium Economy\n'
+                            f'3. Business\n'
+                            f'4. First Class'
+                        )
+                    })
+
+            return JsonResponse({
+                'success': True,
+                'response': (
+                    f'Your start date is '
+                    f'**{start_date.strftime("%B %d, %Y")}**.\n\n'
+                    f'Please enter your travel end date.'
+                )
+            })
+
+        # ============================================================
+        # END DATE
+        # ============================================================
+
+        if booking_state and booking_state.get('step') == 'end_date':
+
+            end_date = parse_ai_booking_date(query)
+
+            if not end_date:
+
+                return JsonResponse({
+                    'success': True,
+                    'response': (
+                        'I could not understand that date.\n\n'
+                        'Please enter the travel end date like:\n'
+                        '**24 December 2026**'
+                    )
+                })
+
+            start_date = parse_ai_booking_date(
+                booking_state['travel_date_start']
+            )
+
+            package = get_object_or_404(
+                TravelPackage,
+                pk=booking_state['package_id'],
+                is_active=True
+            )
+
+            if end_date < start_date:
+
+                return JsonResponse({
+                    'success': True,
+                    'response': (
+                        'The end date cannot be before the start date.\n\n'
+                        'Please enter another end date.'
+                    )
+                })
+
+            if end_date > package.available_until:
+
+                return JsonResponse({
+                    'success': True,
+                    'response': (
+                        f'That date is outside the availability period '
+                        f'for **{package.name}**.\n\n'
+                        f'The package is available until '
+                        f'**{package.available_until.strftime("%B %d, %Y")}**.'
+                    )
+                })
+
+            booking_state['travel_date_end'] = end_date.strftime(
+                '%Y-%m-%d'
+            )
+            booking_state['step'] = 'travel_class'
+
+            request.session['ai_booking'] = booking_state
+            request.session.modified = True
+
+            return JsonResponse({
+                'success': True,
+                'response': (
+                    'What travel class would you like?\n\n'
+                    '1. Economy\n'
+                    '2. Premium Economy\n'
+                    '3. Business\n'
+                    '4. First Class'
+                )
+            })
+
+        # ============================================================
+        # TRAVEL CLASS
+        # ============================================================
+
+        if booking_state and booking_state.get('step') == 'travel_class':
+
+            class_map = {
+                '1': 'economy',
+                'economy': 'economy',
+
+                '2': 'premium_economy',
+                'premium economy': 'premium_economy',
+
+                '3': 'business',
+                'business class': 'business',
+
+                '4': 'first',
+                'first': 'first',
+                'first class': 'first',
+            }
+
+            travel_class = class_map.get(query_lower)
+
+            if not travel_class:
+
+                return JsonResponse({
+                    'success': True,
+                    'response': (
+                        'Please select a travel class:\n\n'
+                        '1. Economy\n'
+                        '2. Premium Economy\n'
+                        '3. Business\n'
+                        '4. First Class'
+                    )
+                })
+
+            booking_state['travel_class'] = travel_class
+            booking_state['step'] = 'special_requests'
+
+            request.session['ai_booking'] = booking_state
+            request.session.modified = True
+
+            return JsonResponse({
+                'success': True,
+                'response': (
+                    'Do you have any special requests for this booking?\n\n'
+                    'For example: hotel preference, airport assistance, '
+                    'room preference, or other travel requirements.\n\n'
+                    'If you have none, simply reply **No**.'
+                )
+            })
+
+        # ============================================================
+        # SPECIAL REQUESTS
+        # ============================================================
+
+        if booking_state and booking_state.get('step') == 'special_requests':
+
+            if query_lower in [
+                'no',
+                'none',
+                'no request',
+                'no requests',
+                'nothing',
+                'no special requests',
+            ]:
+                special_requests = ''
+            else:
+                special_requests = query
+
+            booking_state['special_requests'] = special_requests
+            booking_state['step'] = 'confirm'
+
+            request.session['ai_booking'] = booking_state
+            request.session.modified = True
+
+            package = get_object_or_404(
+                TravelPackage,
+                pk=booking_state['package_id']
+            )
+
+            start_date = parse_ai_booking_date(
+                booking_state['travel_date_start']
+            )
+
+            end_date = parse_ai_booking_date(
+                booking_state['travel_date_end']
+            )
+
+            travel_class_display = dict(
+                Booking.TRAVEL_CLASS_CHOICES
+            ).get(
+                booking_state['travel_class'],
+                booking_state['travel_class']
+            )
+
+            special_text = (
+                special_requests
+                if special_requests
+                else 'None'
             )
 
             return JsonResponse({
-                'success': False,
-                'error': 'An error occurred. Please try again.'
+                'success': True,
+                'response': (
+                    '**Please review your booking:**\n\n'
+                    f'**Package:** {package.name}\n'
+                    f'**Price:** ₦{package.price:,.2f}\n'
+                    f'**Travel dates:** '
+                    f'{start_date.strftime("%B %d, %Y")} '
+                    f'to '
+                    f'{end_date.strftime("%B %d, %Y")}\n'
+                    f'**Travel class:** {travel_class_display}\n'
+                    f'**Special requests:** {special_text}\n\n'
+                    'Would you like me to create this booking request?\n\n'
+                    '**Reply Yes to confirm or No to cancel.**'
+                )
             })
 
-    return JsonResponse({
-        'success': False,
-        'error': 'Invalid request method.'
-    })
+        # ============================================================
+        # NEW UMRAH BOOKING REQUEST
+        # ============================================================
+
+        booking_words = [
+            'book',
+            'booking',
+            'reserve',
+            'reservation',
+        ]
+
+        wants_booking = any(
+            word in query_lower.split()
+            for word in booking_words
+        )
+
+        wants_umrah = (
+            'umrah' in query_lower
+            or 'umra' in query_lower
+        )
+
+        if wants_booking and wants_umrah:
+
+            packages = list(
+                TravelPackage.objects.filter(
+                    is_active=True,
+                    package_type__in=[
+                        'umrah',
+                        'umrah_ramadan',
+                        'umrah_regular',
+                    ],
+                    available_until__gte=timezone.now().date()
+                ).order_by('price')
+            )
+
+            if not packages:
+
+                return JsonResponse({
+                    'success': True,
+                    'response': (
+                        'I am sorry, but there are currently no active '
+                        'Umrah packages available for booking.'
+                    )
+                })
+
+            request.session['ai_booking'] = {
+                'step': 'package',
+                'client_id': client.pk,
+            }
+
+            request.session.modified = True
+
+            package_list = '\n'.join(
+                [
+                    f'**{index}. {package.name}**\n'
+                    f'   ₦{package.price:,.2f} — '
+                    f'{package.duration_days} days'
+                    for index, package
+                    in enumerate(packages, start=1)
+                ]
+            )
+
+            return JsonResponse({
+                'success': True,
+                'response': (
+                    'Absolutely! I can help you create an '
+                    '**Umrah booking request**.\n\n'
+                    'Here are the currently available Umrah packages:\n\n'
+                    f'{package_list}\n\n'
+                    'Please enter the **number** of the package '
+                    'you would like to book.'
+                )
+            })
+
+        # ============================================================
+        # NORMAL AI RESPONSE
+        # ============================================================
+
+        ai_response = None
+
+        if hasattr(settings, 'OPENAI_API_KEY') and settings.OPENAI_API_KEY:
+
+            try:
+                from openai import OpenAI
+
+                client_ai = OpenAI(
+                    api_key=settings.OPENAI_API_KEY
+                )
+
+                response = client_ai.responses.create(
+                    model="gpt-5.6-luna",
+                    instructions=(
+                        "You are Travelbolt AI, a helpful travel assistant "
+                        "specializing in Hajj, Umrah, travel planning, "
+                        "visa information, flights, hotels, passports, "
+                        "and travel documentation. "
+                        "Give clear, concise and helpful answers. "
+                        "When discussing official travel or visa requirements, "
+                        "remind users that requirements can change and should "
+                        "be verified with the relevant official authority."
+                    ),
+                    input=query
+                )
+
+                ai_response = response.output_text.strip()
+
+                logger.info(
+                    "OpenAI response generated successfully."
+                )
+
+            except Exception as e:
+                logger.error(
+                    f"OpenAI error: {e}",
+                    exc_info=True
+                )
+
+        # ============================================================
+        # FALLBACK RESPONSES
+        # ============================================================
+
+        if ai_response:
+
+            return JsonResponse({
+                'success': True,
+                'response': ai_response
+            })
+
+        if 'umrah' in query_lower or 'umra' in query_lower:
+
+            response = (
+                '**Umrah Visa & Document Requirements:**\n\n'
+                '1. Valid international passport with at least 6 months validity.\n'
+                '2. Digital passport photograph.\n'
+                '3. Nusuk platform booking where applicable.\n'
+                '4. Meningococcal Meningitis (ACYW135) vaccination certificate.\n'
+                '5. Confirmed travel arrangements.\n\n'
+                'Requirements may change, so travelers should verify '
+                'the latest requirements before travelling.'
+            )
+
+        elif 'hajj' in query_lower:
+
+            response = (
+                '**Hajj Visa & Document Requirements:**\n\n'
+                '1. Valid passport with sufficient validity.\n'
+                '2. Hajj visa processed through the appropriate authorized channels.\n'
+                '3. Medical fitness documentation where required.\n'
+                '4. Required vaccination certificates.\n'
+                '5. Biometric enrollment where applicable.\n\n'
+                'Hajj requirements can change, so please verify the latest '
+                'requirements with the appropriate authorities.'
+            )
+
+        elif (
+            'visa' in query_lower
+            or 'document' in query_lower
+        ):
+
+            response = (
+                'Do you need documents for Umrah or Hajj?\n\n'
+                '- **Umrah:** Passport, required vaccination documentation '
+                'and applicable travel arrangements.\n'
+                '- **Hajj:** Passport, Hajj visa, medical documentation '
+                'and required vaccination records.\n\n'
+                'Please tell me whether you are planning Hajj or Umrah '
+                'and I can guide you further.'
+            )
+
+        elif (
+            'woman' in query_lower
+            or 'female' in query_lower
+            or 'mahram' in query_lower
+        ):
+
+            response = (
+                '**Women Traveling for Pilgrimage:**\n\n'
+                'Requirements for women can depend on current Saudi '
+                'regulations, age, nationality and the type of pilgrimage.\n\n'
+                'Because these rules can change, travelers should verify '
+                'the current requirements with the official Saudi authorities '
+                'or an authorized travel agency.'
+            )
+
+        elif 'package' in query_lower:
+
+            response = (
+                '**Our Hajj & Umrah Packages:**\n\n'
+                'Travelbolt AI can help you explore Hajj and Umrah packages '
+                'based on your preferred accommodation, duration and '
+                'travel requirements.\n\n'
+                'If you want to book an Umrah package, say '
+                '**"I want to book Umrah"**.'
+            )
+
+        else:
+
+            response = (
+                "I'm your Travelbolt AI travel assistant.\n\n"
+                "I can help you with:\n\n"
+                "- **Umrah** requirements\n"
+                "- **Hajj** requirements\n"
+                "- **Visa** information\n"
+                "- **Travel documents**\n"
+                "- **Hajj & Umrah packages**\n"
+                "- **Flight and hotel planning**\n"
+                "- **Umrah booking**\n\n"
+                "Please tell me what you are planning and I'll help you."
+            )
+
+        return JsonResponse({
+            'success': True,
+            'response': response
+        })
+
+    except Exception as e:
+
+        logger.error(
+            f"AI Assistant error: {e}",
+            exc_info=True
+        )
+
+        return JsonResponse({
+            'success': False,
+            'error': 'An error occurred. Please try again.'
+        })
 
 @login_required(login_url='travel_app:client_login')
 def client_ai_assistant(request):
